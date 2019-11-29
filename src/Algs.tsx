@@ -1,12 +1,33 @@
 // source: "https://sites.google.com/view/kianroux/cmll" and https://github.com/AshleyF/briefcubing/blob/master/algs.js
 
 //type oll_case = "o"|"h"|"pi"|"u"|"t"|"s"|"as"|"l"
-type SelectorCMLL = {
-    all_flag: boolean,
-    oll: string[]
+
+import { Selector } from "./Types";
+import { triggerAsyncId } from "async_hooks";
+
+const get_active_names = (sel : Selector) => {
+    let res = []
+    for (let i = 0; i < sel.names.length; i++) {
+        if (sel.flags[i]) {
+            res.push(sel.names[i]);
+        }
+    }
+    return res
 }
 
-const cmll_algs = [
+export type AlgDesc = {
+    id: string,
+    alg: string,
+    kind: string
+}
+
+const empty_alg : AlgDesc = {
+    id: "empty",
+    alg: "",
+    kind: "any"
+}
+
+const cmll_algs : AlgDesc[] = [
     { id: "o_adjacent_swap", alg: "R U R' F' R U R' U' R' F R2 U' R'", kind: "cmll" },
     { id: "o_diagonal_swap", alg: "r2 D r' U r D' R2 U' F' U' F", kind: "cmll" },
     { id: "h_columns", alg: "R U R' U R U' R' U R U2 R'", kind: "cmll" },
@@ -51,23 +72,65 @@ const cmll_algs = [
     { id: "l_back_commutator", alg: "U R' U2 R' D' R U2 R' D R2", kind: "cmll" }
 ]
 
-let select_cmll = (selector: SelectorCMLL) => {
-    let lookup = new Set(selector.oll)
-    let get_pref = (id: string) => {
+let triggerAlgs: AlgDesc[] = [
+    { id: "RUR'_1", alg: "R U R'", kind:"trigger"},
+    { id: "RUR'_2", alg: "r U r'", kind:"trigger"},
+    { id: "RU'R'-1", alg: "R U' R'", kind:"trigger"},
+    { id: "RU'R'-2", alg: "r U' r'", kind:"trigger"},
+    { id: "R'U'R_1", alg: "R' U' R", kind:"trigger"},
+    { id: "R'U'R_2", alg: "r' U' r", kind:"trigger"},
+    { id: "R'UR_1", alg: "R' U R", kind:"trigger"},
+    { id: "R'UR_2", alg: "r' U r", kind:"trigger"}
+]
+
+let oriAlgs: AlgDesc[] =
+["WG", "WB", "WO", "WR",
+"YG", "YB", "YO", "YR",
+"BW", "BY", "BO", "BR",
+"GW", "GY", "GO", "GR",
+"OW", "OY", "OB", "OG",
+"RW", "RY", "RB", "RG"].map(s => ({id: s, alg: "", kind:"orientation" }))
+
+let get_algset = (kind : string) => {
+    switch (kind) {
+        case "cmll": return cmll_algs;
+        case "trigger": return triggerAlgs;
+        case "orientation": return oriAlgs;
+        default: return []
+    }
+}
+
+let alg_generator = (selector: Selector) => {
+    let algSet = get_algset(selector.kind)
+    let lookup = new Set(get_active_names(selector))
+    let get_prefix = (id: string) => {
         let s = ""
         for (let i = 0, l = id.length; i < l; i++) {
-            if (id[i] == "_") break;
+            if (id[i] === "_") break;
             s += id[i]
         }
         return s
     }
-    if (selector.all_flag) {
-        return cmll_algs
-    } else {
-        return cmll_algs.filter(alg => {
-            let pref = get_pref(alg.id);
-            return lookup.has(pref)
-        })
+    let algs : AlgDesc[] = (() => {
+        if (selector.flags.every(x => x)) {
+            return algSet
+        } else {
+            return algSet.filter(alg => {
+                let prefix = get_prefix(alg.id);
+                return lookup.has(prefix)
+            })
+        }
+    })()
+
+    let next = () => {
+        if (algs.length === 0) {
+            return empty_alg
+        } else {
+            let idx = Math.floor( Math.random() * algs.length )
+            return algs[idx]
+        }
     }
+    return next
 }
-export {cmll_algs, select_cmll}
+
+export { alg_generator}

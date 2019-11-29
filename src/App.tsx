@@ -1,113 +1,92 @@
 import React, { useEffect } from 'react'
 import CubeSim from './CubeSim'
 import { FaceletCube, CubieCube, Move, CubeUtil } from './CubeLib';
-import { CubieT, MoveT } from "./Defs";
-const HEIGHT = 300, WIDTH = 300;
+import { CubieT, MoveT, defaultKeyMapping } from "./Defs";
+import AppView from "./AppView"
+import { AppState, StateT } from "./Types"
+import { useKeyControl, useAppState } from "./Hooks"
+import { alg_generator, AlgDesc } from "./Algs"
+import { rand_choice } from './Math';
 
-type AppProps = { };
 
-
-// Hook
-function useKeyControl(keyMapping: {[key: string]: string} ) {
-  // State for keeping track of whether key is pressed
-  const [move, setMove] = React.useState<[string, number]>( ["", 0] );
-
-  // If pressed key is our target key then set to true
-  function downHandler({ key }: {key : string}) {
-    key = key.toUpperCase()
-    if (keyMapping.hasOwnProperty(key)) {
-      setMove( ([_, cnt]) => [keyMapping[key], cnt + 1] );
-    }
-  }
-
-  // Add event listeners
-  React.useEffect(() => {
-    window.addEventListener('keydown', downHandler);
-    // Remove event listeners on cleanup
-    return () => {
-      window.removeEventListener('keydown', downHandler);
-    };
-  }, []); // Empty array ensures that effect is only run on mount and unmount
-
-  return move;
-}
-const keyMapping = {
-  "I": "R",
-  "K": "R'",
-  "W": "B",
-  "O": "B'",
-  "S": "D",
-  "L": "D'",
-  "D": "L",
-  "E": "L'",
-  "J": "U",
-  "F": "U'",
-  "H": "F",
-  "G": "F'",
-  ";": "y",
-  "A": "y'",
-  "U": "r",
-  "R": "l'",
-  "M": "r'",
-  "V": "l",
-  "T": "x",
-  "Y": "x",
-  "N": "x'",
-  "B": "x'",
-  ".": "M'",
-  "X": "M'",
-  "5": "M",
-  "6": "M",
-  "P": "z",
-  "Q": "z'",
-  "Z": "d",
-  "C": "u'",
-  ",": "u",
-  "/": "d'",
-}
-
-type AppState = {
-  cube: CubieT,
-  state: "solving",
-  moveHistory: MoveT[]
-}
-const initState : AppState = {
-  cube: CubieCube.id,
-  state: "solving",
-  moveHistory: []
-}
+type AppProps = {}
 
 function App(props: AppProps) {
-  //const [locations, setLocations] = React.useState([])
-  let [state, setState] = React.useState(initState)
-  let {cube} = state
-  let facelet = FaceletCube.from_cubie(cube)
-  let keyMove = useKeyControl(keyMapping)
+  let [state, setState] = useAppState()
+  let keyMove = useKeyControl(defaultKeyMapping)
+
+  let generator = alg_generator( state.config.cmllSelector )
+  let trig_generator = alg_generator( state.config.triggerSelector )
+
+  //console.log("current selector = ", state.config.orientationSelector)
+  let ori_generator = alg_generator( state.config.orientationSelector)
 
   useEffect( () => {
     let [move_str, _] = keyMove
     if (move_str === "") return;
-    console.log(move_str)
-    let moves = Move.parse(move_str)
-    if (moves.length > 0) {
-      let move = moves[0]
-      setState( {...state, cube: CubieCube.apply(state.cube, move), moveHistory: [...state.moveHistory, move] })
-    }
-  },[keyMove])
+    // case match on kind of operation
+    if (move_str[0] === "#") {
+      if (move_str === "#scramble") {
+        // enter cleared solving state based on selection
+        let trigger_alg : AlgDesc = trig_generator()
 
-  let cmll_solved = CubeUtil.is_cmll_solved(cube)
+        let alg : AlgDesc = generator();
+
+        let alg_str = trigger_alg.alg + " " + rand_choice(["U", "", "U'", "U2"]) + " " + alg.alg
+        let moves : MoveT[] = Move.inv(Move.parse(alg_str));
+
+        //console.log("moves", Move.to_string(moves))
+
+        let cube = CubeUtil.get_random_l10p()
+        cube = CubieCube.apply(cube, moves)
+
+        // ori based on ...?
+        let ori : string = ori_generator().id
+        //console.log("current ori selector's ori ", ori)
+
+        setState( {
+          cube,
+          moveHistory: [],
+          stateName: "solving",
+          info: {
+            cube,
+            desc: [trigger_alg, alg]
+          },
+          ori
+        })
+      } else if (move_str === "#redo") {
+        setState( {
+          cube: state.info.cube,
+          moveHistory: [],
+          stateName: "solving",
+        })
+      }
+    } else { // move
+      // only allow this in solving state
+      if (state.stateName === "solving") {
+        //console.log(move_str)
+        let moves = Move.parse(move_str)
+        if (moves.length > 0) {
+          let move = moves[0]
+          let cube = CubieCube.apply(state.cube, move)
+          let cmll_solved = CubeUtil.is_cmll_solved(cube)
+          let newState : StateT = cmll_solved ? "solved" : "solving";
+          setState( {
+            cube: CubieCube.apply(state.cube, move),
+            moveHistory: [...state.moveHistory, move],
+            stateName: newState
+          })
+        }
+      }
+    }
+  }, [keyMove])
+
+  let {cube} = state
+
+  let facelet = FaceletCube.from_cubie(cube)
 
   return (
-    <div>
-    <CubeSim
-      width={WIDTH}
-      height={HEIGHT}
-      cube={facelet}
-    />
-    <div>
-      {cmll_solved ? "CMLL Solved" : "Not solved"}
-    </div>
-    </div>
+    <AppView state={state} setState={setState} />
   )
 }
 export default App

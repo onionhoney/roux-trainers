@@ -159,3 +159,42 @@ LLLFFFRRRBBB
    DDD`
 
 export {color_map}
+
+const defaultKeyMapping = {
+    "I": "R",
+    "K": "R'",
+    "W": "B",
+    "O": "B'",
+    "S": "D",
+    "L": "D'",
+    "D": "L",
+    "E": "L'",
+    "J": "U",
+    "F": "U'",
+    "H": "F",
+    "G": "F'",
+    ";": "y",
+    "A": "y'",
+    "U": "r",
+    "R": "l'",
+    "M": "r'",
+    "V": "l",
+    "T": "x",
+    "Y": "x",
+    "N": "x'",
+    "B": "x'",
+    ".": "M'",
+    "X": "M'",
+    "5": "M",
+    "6": "M",
+    "P": "z",
+    "Q": "z'",
+    "Z": "d",
+    "C": "u'",
+    ",": "u",
+    "/": "d'",
+    "ENTER": "#scramble",
+    " ": "#redo",
+  }
+
+export {defaultKeyMapping}
