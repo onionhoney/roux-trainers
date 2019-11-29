@@ -1,25 +1,25 @@
 {
   "files": {
-    "main.css": "/static/css/main.34de6062.chunk.css",
-    "main.js": "/static/js/main.763ea0f8.chunk.js",
-    "main.js.map": "/static/js/main.763ea0f8.chunk.js.map",
-    "runtime-main.js": "/static/js/runtime-main.b2be49b5.js",
-    "runtime-main.js.map": "/static/js/runtime-main.b2be49b5.js.map",
-    "static/css/2.8271af8e.chunk.css": "/static/css/2.8271af8e.chunk.css",
-    "static/js/2.4fdca857.chunk.js": "/static/js/2.4fdca857.chunk.js",
-    "static/js/2.4fdca857.chunk.js.map": "/static/js/2.4fdca857.chunk.js.map",
-    "index.html": "/index.html",
-    "precache-manifest.cb2d7142dd4b439bda65521edd04a2e1.js": "/precache-manifest.cb2d7142dd4b439bda65521edd04a2e1.js",
-    "service-worker.js": "/service-worker.js",
-    "static/css/2.8271af8e.chunk.css.map": "/static/css/2.8271af8e.chunk.css.map",
-    "static/css/main.34de6062.chunk.css.map": "/static/css/main.34de6062.chunk.css.map",
-    "static/media/index.css": "/static/media/roboto-latin-900italic.ebf6d164.woff2"
+    "main.css": "/cmll-trainer/static/css/main.34de6062.chunk.css",
+    "main.js": "/cmll-trainer/static/js/main.9ec1b457.chunk.js",
+    "main.js.map": "/cmll-trainer/static/js/main.9ec1b457.chunk.js.map",
+    "runtime-main.js": "/cmll-trainer/static/js/runtime-main.6241c7a7.js",
+    "runtime-main.js.map": "/cmll-trainer/static/js/runtime-main.6241c7a7.js.map",
+    "static/css/2.cdf5760c.chunk.css": "/cmll-trainer/static/css/2.cdf5760c.chunk.css",
+    "static/js/2.4fdca857.chunk.js": "/cmll-trainer/static/js/2.4fdca857.chunk.js",
+    "static/js/2.4fdca857.chunk.js.map": "/cmll-trainer/static/js/2.4fdca857.chunk.js.map",
+    "index.html": "/cmll-trainer/index.html",
+    "precache-manifest.b3f3019d49f695c027e4c95f72f7fde8.js": "/cmll-trainer/precache-manifest.b3f3019d49f695c027e4c95f72f7fde8.js",
+    "service-worker.js": "/cmll-trainer/service-worker.js",
+    "static/css/2.cdf5760c.chunk.css.map": "/cmll-trainer/static/css/2.cdf5760c.chunk.css.map",
+    "static/css/main.34de6062.chunk.css.map": "/cmll-trainer/static/css/main.34de6062.chunk.css.map",
+    "static/media/index.css": "/cmll-trainer/static/media/roboto-latin-900italic.ebf6d164.woff2"
   },
   "entrypoints": [
-    "static/js/runtime-main.b2be49b5.js",
-    "static/css/2.8271af8e.chunk.css",
+    "static/js/runtime-main.6241c7a7.js",
+    "static/css/2.cdf5760c.chunk.css",
     "static/js/2.4fdca857.chunk.js",
     "static/css/main.34de6062.chunk.css",
-    "static/js/main.763ea0f8.chunk.js"
+    "static/js/main.9ec1b457.chunk.js"
   ]
 }
