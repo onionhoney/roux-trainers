@@ -38,7 +38,6 @@
       "last 1 safari version"
     ]
   },
-  "homepage": "http://onionhoney.github.io/cmll-trainer",
   "devDependencies": {
     "gh-pages": "^2.1.1"
   }
