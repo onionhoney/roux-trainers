@@ -47,7 +47,7 @@ let CubieCube = (function () {
         let [co, cp] = apply_partial(cube.co, cube.cp, move.coc, move.cpc, C_MOD)
         let [eo, ep] = apply_partial(cube.eo, cube.ep, move.eoc, move.epc, E_MOD)
         let toc = Array(move.tpc.length).fill(0)
-        let [_, tp] = apply_partial([0, 0, 0, 0, 0, 0], cube.tp, toc, move.tpc, T_MOD)
+        let [, tp] = apply_partial([0, 0, 0, 0, 0, 0], cube.tp, toc, move.tpc, T_MOD)
         return ({ co, cp, eo, ep, tp })
     }
 
@@ -338,10 +338,11 @@ let CubeUtil = (() => {
         ep: [0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1],
     }
     let u_premove = [[], Move.all["U"], Move.all["U'"], Move.all["U2"]]
-    let m_premove = [[], Move.all["M"], Move.all["M'"], Move.all["M2"]]
+    //let m_premove = [[], Move.all["M"], Move.all["M'"], Move.all["M2"]]
     let m2_premove = [[], Move.all["M2"]]
-    let m2u_premove = [[], Move.parse("U"), Move.parse("U'"), Move.parse("U2"),
-    Move.parse("M2"), Move.parse("M2U"), Move.parse("M2U'"), Move.parse("M2U2")]
+    //let m2u_premove = [[], Move.parse("U"), Move.parse("U'"), Move.parse("U2"),
+    //Move.parse("M2"), Move.parse("M2U"), Move.parse("M2U'"), Move.parse("M2U2")]
+
     let is_cmll_solved = (cube: CubieT) => {
         return is_mask_solved(cube, cmll_mask, u_premove)
     }

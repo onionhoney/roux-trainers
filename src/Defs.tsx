@@ -160,7 +160,7 @@ LLLFFFRRRBBB
 
 export {color_map}
 
-const defaultKeyMapping = {
+const defaultKeyMapping : { [key: string]: string } = {
     "I": "R",
     "K": "R'",
     "W": "B",

@@ -1,9 +1,8 @@
 // source: "https://sites.google.com/view/kianroux/cmll" and https://github.com/AshleyF/briefcubing/blob/master/algs.js
 
 //type oll_case = "o"|"h"|"pi"|"u"|"t"|"s"|"as"|"l"
-
 import { Selector } from "./Types";
-import { triggerAsyncId } from "async_hooks";
+import { rand_choice } from "./Math";
 
 const get_active_names = (sel : Selector) => {
     let res = []
@@ -63,7 +62,7 @@ const cmll_algs : AlgDesc[] = [
     { id: "as_back_slash", alg: "U' F' L F L' U2' L' U2 L", kind: "cmll" },
     { id: "as_x_checkerboard", alg: "U' R U2' R' U2 R' F R F'", kind: "cmll" },
     { id: "as_forward_slash", alg: "U' L' U R U' L U R'", kind: "cmll" },
-    { id: "as_left_bar", alg: "R' U' R U' L U' R' U L' U2 R", kind: "cmll" },
+    { id: "as_left_bar", alg: "U' R' U' R U' L U' R' U L' U2 R", kind: "cmll" },
     { id: "l_mirror", alg: "F R U' R' U' R U R' F'", kind: "cmll" },
     { id: "l_inverse", alg: "F R' F' R U R U' R'", kind: "cmll" },
     { id: "l_pure", alg: "R U2 R' U' R U R' U' R U R' U' R U' R'", kind: "cmll" },
@@ -72,65 +71,63 @@ const cmll_algs : AlgDesc[] = [
     { id: "l_back_commutator", alg: "U R' U2 R' D' R U2 R' D R2", kind: "cmll" }
 ]
 
-let triggerAlgs: AlgDesc[] = [
+let trigger_algs: AlgDesc[] = [
     { id: "RUR'_1", alg: "R U R'", kind:"trigger"},
     { id: "RUR'_2", alg: "r U r'", kind:"trigger"},
-    { id: "RU'R'-1", alg: "R U' R'", kind:"trigger"},
-    { id: "RU'R'-2", alg: "r U' r'", kind:"trigger"},
+    { id: "RU'R'_1", alg: "R U' R'", kind:"trigger"},
+    { id: "RU'R'_2", alg: "r U' r'", kind:"trigger"},
     { id: "R'U'R_1", alg: "R' U' R", kind:"trigger"},
     { id: "R'U'R_2", alg: "r' U' r", kind:"trigger"},
     { id: "R'UR_1", alg: "R' U R", kind:"trigger"},
     { id: "R'UR_2", alg: "r' U r", kind:"trigger"}
 ]
 
-let oriAlgs: AlgDesc[] =
-["WG", "WB", "WO", "WR",
-"YG", "YB", "YO", "YR",
-"BW", "BY", "BO", "BR",
-"GW", "GY", "GO", "GR",
-"OW", "OY", "OB", "OG",
-"RW", "RY", "RB", "RG"].map(s => ({id: s, alg: "", kind:"orientation" }))
+let u_auf_algs: AlgDesc[] = [
+    { id: "U", alg: "U", kind: "u_auf"},
+    { id: "U'", alg: "U'", kind: "u_auf"},
+    { id: "U2", alg: "U2", kind: "u_auf"},
+    { id: "None", alg: "", kind: "u_auf"},
+]
 
-let get_algset = (kind : string) => {
+let ori_algs: AlgDesc[] =
+    ["WG", "WB", "WO", "WR",
+    "YG", "YB", "YO", "YR",
+    "BW", "BY", "BO", "BR",
+    "GW", "GY", "GO", "GR",
+    "OW", "OY", "OB", "OG",
+    "RW", "RY", "RB", "RG"].map(s => ({id: s, alg: "", kind:"orientation" }))
+
+let lookup_algset = (kind : string) => {
     switch (kind) {
         case "cmll": return cmll_algs;
-        case "trigger": return triggerAlgs;
-        case "orientation": return oriAlgs;
+        case "trigger": return trigger_algs;
+        case "orientation": return ori_algs;
+        case "u_auf": return u_auf_algs;
         default: return []
     }
 }
 
 let alg_generator = (selector: Selector) => {
-    let algSet = get_algset(selector.kind)
+    let algSet = lookup_algset(selector.kind)
     let lookup = new Set(get_active_names(selector))
     let get_prefix = (id: string) => {
-        let s = ""
-        for (let i = 0, l = id.length; i < l; i++) {
-            if (id[i] === "_") break;
-            s += id[i]
-        }
-        return s
+        return id.split("_", 1)[0]
     }
     let algs : AlgDesc[] = (() => {
-        if (selector.flags.every(x => x)) {
-            return algSet
-        } else {
-            return algSet.filter(alg => {
-                let prefix = get_prefix(alg.id);
-                return lookup.has(prefix)
-            })
-        }
+        return algSet.filter(alg => {
+            let prefix = get_prefix(alg.id);
+            return lookup.has(prefix)
+        })
     })()
 
     let next = () => {
         if (algs.length === 0) {
             return empty_alg
         } else {
-            let idx = Math.floor( Math.random() * algs.length )
-            return algs[idx]
+            return rand_choice(algs)
         }
     }
     return next
 }
 
-export { alg_generator}
+export { alg_generator }

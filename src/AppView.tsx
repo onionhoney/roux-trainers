@@ -1,8 +1,8 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import CubeSim from './CubeSim'
-import { FaceletCube, CubieCube, Move, CubeUtil } from './CubeLib';
-import { CubieT, MoveT } from "./Defs";
-import { AppState, Selector, AppStateSetter, Config } from "./Types";
+import { FaceletCube, CubeUtil } from './CubeLib';
+import { AppState, Selector, Action, Config } from "./Types";
+import { getConfig, setConfig } from "./Config";
 
 import { Checkbox, AppBar, Typography, Toolbar } from '@material-ui/core';
 import Container from '@material-ui/core/Container';
@@ -57,40 +57,32 @@ function SelectorGroupPanel(props: { selector: Selector, handleChange: (x: strin
 }
 
 // TODO: Write getter and setter for config items, and also write handlers that map to setters
-function AppView(props: { state: AppState, setState: AppStateSetter } ) {
+function AppView(props: { state: AppState, dispatch: React.Dispatch<Action> } ) {
   //const [locations, setLocations] = React.useState([])
   let classes = useStyles()
-  let { state, setState } = props
-  let { cube, config } = state
+  let { state, dispatch } = props
+  let cube = state.cube.state
+  let config = state.config
   let facelet = FaceletCube.from_cubie(cube)
-  let cmll_solved = CubeUtil.is_cmll_solved(cube)
 
   const fixedHeightPaper = clsx(classes.paper, classes.fixedHeight);
 
-  const handleSelectorChange = (kind: string) => (name: string) => () => {
-    if (kind === "cmll") {
+  const handleSelectorChange = React.useCallback( (selectorSel: (x: Config) => Selector) => (name: string) => {
+    return function () {
+      let {names , flags} = selectorSel(config)
+      let new_flags = [...flags]
+      let idx = names.indexOf(name)
+      if (0 <= idx && idx < new_flags.length) {
+        new_flags[idx] = 1 - new_flags[idx]
+      }
+
+      let new_config = {...config}
+      let sel = selectorSel(new_config)
+      sel.flags = new_flags
+      //console.log("setting new config to ")
+      dispatch( { type: "config", content: new_config })
     }
-    let config_ = config as any
-    let {names, flags} = config_[kind]
-
-    let new_flags = [...flags]
-    //
-    let idx = names.indexOf(name)
-    if (0 <= idx && idx < new_flags.length) {
-      new_flags[idx] = 1 - new_flags[idx]
-    }
-
-    let new_config = {...config}
-    let new_config_unsafe = (new_config as any)
-    new_config_unsafe[kind].flags = new_flags;
-
-
-    //console.log("setting new config to ")
-
-    setState({
-      config: new_config
-    })
-  }
+  }, [ config, dispatch ] )
 
   return (
     <main>
@@ -116,7 +108,7 @@ function AppView(props: { state: AppState, setState: AppStateSetter } ) {
                     width={400}
                     height={400}
                     cube={facelet}
-                    colorScheme={CubeUtil.ori_to_color_scheme(props.state.ori)}
+                    colorScheme={CubeUtil.ori_to_color_scheme(props.state.cube.ori)}
                   />
                   </Box>
                 </Paper>
@@ -124,13 +116,16 @@ function AppView(props: { state: AppState, setState: AppStateSetter } ) {
         </Grid>
         <Grid container spacing={3} justify="center" alignItems="center">
           <Grid item xs={12} md={10} lg={8}>
-            <SelectorGroupPanel selector={ config.cmllSelector } handleChange= {handleSelectorChange("cmllSelector")} />
+            <SelectorGroupPanel selector={ config.cmllSelector } handleChange= {handleSelectorChange(d => d.cmllSelector)} />
           </Grid>
           <Grid item xs={12} md={10} lg={8}>
-            <SelectorGroupPanel selector={ config.triggerSelector } handleChange= {handleSelectorChange("triggerSelector")} />
+            <SelectorGroupPanel selector={ config.cmllAufSelector } handleChange= {handleSelectorChange(d => d.cmllAufSelector)} />
           </Grid>
           <Grid item xs={12} md={10} lg={8}>
-            <SelectorGroupPanel selector={ config.orientationSelector } handleChange= {handleSelectorChange("orientationSelector")} />
+            <SelectorGroupPanel selector={ config.triggerSelector } handleChange= {handleSelectorChange(d => d.triggerSelector)} />
+          </Grid>
+          <Grid item xs={12} md={10} lg={8}>
+            <SelectorGroupPanel selector={ config.orientationSelector } handleChange= {handleSelectorChange(d => d.orientationSelector)} />
           </Grid>
         </Grid>
 

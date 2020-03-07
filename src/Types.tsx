@@ -1,4 +1,4 @@
-import { CubieT, MoveT, defaultKeyMapping, Face } from "./Defs";
+import { CubieT, MoveT } from "./Defs";
 import { AlgDesc } from "./Algs";
 
 export type Selector = {
@@ -9,29 +9,35 @@ export type Selector = {
 
 export type Config = {
     cmllSelector: Selector,
+    cmllAufSelector: Selector,
     triggerSelector: Selector,
     orientationSelector: Selector
 }
 
 export type StateT = "solving" | "solved"
 
+type KeyAction = {
+    type: "key",
+    content: string
+}
+type ConfigAction = {
+    type: "config",
+    content: Partial<Config>
+}
+
+export type Action = KeyAction | ConfigAction
+
 export type InfoT = {cube: CubieT, desc: AlgDesc[]}
 export type AppState = {
-    config: Config,
-    stateName: StateT,
-    cube: CubieT,
-    ori: string,
-    moveHistory: MoveT[],
-    info: InfoT
+    name: StateT,
+    cube: {
+        state: CubieT,
+        ori: string,
+        history: MoveT[],
+    },
+    case: {
+        state: CubieT,
+        desc: AlgDesc[]
+    },
+    config: Config
 }
-
-export type AppStateOpt = {
-    config?: Config,
-    stateName?: StateT,
-    cube?: CubieT,
-    ori?: string,
-    moveHistory?: MoveT[],
-    info?: InfoT
-}
-
-export type AppStateSetter = (x: AppStateOpt | AppState) => void

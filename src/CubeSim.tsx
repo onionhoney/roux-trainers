@@ -1,9 +1,6 @@
 import React, { useEffect } from 'react'
 
-import {CubieCube, Move, FaceletCube} from "./CubeLib";
-import {CubieT, FaceletCubeT, Face} from "./Defs";
-import { deflateRaw } from 'zlib';
-import { Color } from 'csstype';
+import { FaceletCubeT } from "./Defs";
 import * as THREE from 'three';
 
 type Config = {cube: FaceletCubeT, width: number, height: number, colorScheme: Array<number>}
@@ -129,7 +126,7 @@ const setup = function(width: number, height: number, colorScheme?: Array<number
         //materials.forEach(m => m.dispose())
     }
 
-    let defaultColorScheme = [ 0x00ff00, 0x0000ff, 0xff0000,0xff8800,0xffff00, 0xffffff]
+    //let defaultColorScheme = [ 0x00ff00, 0x0000ff, 0xff0000,0xff8800,0xffff00, 0xffffff]
     updateWidthHeight(width, height)
     //updateColorScheme(defaultColorScheme)
     //updateCube(FaceletCube.from_cubie( CubieCube.id))
@@ -147,25 +144,8 @@ const setup = function(width: number, height: number, colorScheme?: Array<number
 
 const cubeSim = setup(370, 370)
 
-let previousProps : Config | null = null
-
 function CubeSim(props: Config) {
   const mount = React.useRef<HTMLDivElement | null>(null)
-
-  //let width = mount.current!.clientWidth
-  // we need to simulate update logic to our cubesim object
-  if (previousProps) {
-      console.log(props.colorScheme, previousProps.colorScheme)
-      if (props.colorScheme !== previousProps.colorScheme)
-        cubeSim.updateColorScheme(props.colorScheme)
-
-      // color scheme must precede cube
-      if (props.cube !== previousProps.cube)
-        cubeSim.updateCube(props.cube)
-
-      cubeSim.renderScene()
-      console.log("updated cube")
-  }
 
   useEffect( () => {
     let dom = cubeSim.domElement()
@@ -180,11 +160,7 @@ function CubeSim(props: Config) {
     return () => {
         current.removeChild( dom )
     }
-  }, [])
-
-  // we need a deep copy here, i suppose??
-  // no we don't not this problem
-  previousProps = props
+  } )
 
   return <div
       ref = {mount}
