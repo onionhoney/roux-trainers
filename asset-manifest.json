@@ -1,15 +1,15 @@
 {
   "files": {
     "main.css": "/cmll-trainer/static/css/main.34de6062.chunk.css",
-    "main.js": "/cmll-trainer/static/js/main.9ec1b457.chunk.js",
-    "main.js.map": "/cmll-trainer/static/js/main.9ec1b457.chunk.js.map",
+    "main.js": "/cmll-trainer/static/js/main.58b34a3c.chunk.js",
+    "main.js.map": "/cmll-trainer/static/js/main.58b34a3c.chunk.js.map",
     "runtime-main.js": "/cmll-trainer/static/js/runtime-main.6241c7a7.js",
     "runtime-main.js.map": "/cmll-trainer/static/js/runtime-main.6241c7a7.js.map",
     "static/css/2.cdf5760c.chunk.css": "/cmll-trainer/static/css/2.cdf5760c.chunk.css",
-    "static/js/2.4fdca857.chunk.js": "/cmll-trainer/static/js/2.4fdca857.chunk.js",
-    "static/js/2.4fdca857.chunk.js.map": "/cmll-trainer/static/js/2.4fdca857.chunk.js.map",
+    "static/js/2.8e0f708a.chunk.js": "/cmll-trainer/static/js/2.8e0f708a.chunk.js",
+    "static/js/2.8e0f708a.chunk.js.map": "/cmll-trainer/static/js/2.8e0f708a.chunk.js.map",
     "index.html": "/cmll-trainer/index.html",
-    "precache-manifest.b3f3019d49f695c027e4c95f72f7fde8.js": "/cmll-trainer/precache-manifest.b3f3019d49f695c027e4c95f72f7fde8.js",
+    "precache-manifest.00449f01189d1a27cb02315aa8f3ab21.js": "/cmll-trainer/precache-manifest.00449f01189d1a27cb02315aa8f3ab21.js",
     "service-worker.js": "/cmll-trainer/service-worker.js",
     "static/css/2.cdf5760c.chunk.css.map": "/cmll-trainer/static/css/2.cdf5760c.chunk.css.map",
     "static/css/main.34de6062.chunk.css.map": "/cmll-trainer/static/css/main.34de6062.chunk.css.map",
@@ -18,8 +18,8 @@
   "entrypoints": [
     "static/js/runtime-main.6241c7a7.js",
     "static/css/2.cdf5760c.chunk.css",
-    "static/js/2.4fdca857.chunk.js",
+    "static/js/2.8e0f708a.chunk.js",
     "static/css/main.34de6062.chunk.css",
-    "static/js/main.9ec1b457.chunk.js"
+    "static/js/main.58b34a3c.chunk.js"
   ]
 }
