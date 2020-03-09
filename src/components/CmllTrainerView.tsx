@@ -27,6 +27,12 @@ const useStyles = makeStyles(theme => ({
     fixedHeight: {
       height: 420,
     },
+    canvasPaper: {
+      padding: theme.spacing(0),
+      display: 'flex',
+      overflow: 'auto',
+      flexDirection: 'column',
+    },
     title : {
         flexGrow: 1,
     }
@@ -59,7 +65,7 @@ function CmllTrainerView(props: { state: AppState, dispatch: React.Dispatch<Acti
     let cube = state.cube.state
     let config = state.config
     let classes = useStyles()
-    const fixedHeightPaper = clsx(classes.paper, classes.fixedHeight);
+    const canvasPaper = clsx(classes.canvasPaper, classes.fixedHeight);
     let facelet = FaceletCube.from_cubie(cube)
 
 
@@ -84,7 +90,7 @@ function CmllTrainerView(props: { state: AppState, dispatch: React.Dispatch<Acti
     <Container maxWidth="lg" className={classes.container}>
     <Grid container spacing={3} justify="center" alignItems="center">
       <Grid item xs={12} md={10} lg={8} >
-            <Paper className={fixedHeightPaper}>
+            <Paper className={canvasPaper}>
               <Box margin="auto">
               <CubeSim
                 width={400}

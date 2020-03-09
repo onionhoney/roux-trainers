@@ -1,5 +1,5 @@
 export enum Face {
-    U = 0, D, F, B, L, R
+    U = 0, D, F, B, L, R, X
 }
 const U = Face.U;
 const D = Face.D;

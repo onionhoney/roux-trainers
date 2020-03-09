@@ -134,45 +134,74 @@ abstract class CmllStateM extends StateM {
 }
 
 class FbdrStateM extends StateM {
+    updateScramble() : AppState {
+        let state = this.state
+        let cube = CubeUtil.get_random_fs()
+        let solver = CachedSolver.get("fbdr")
+        let scramble = solver.solve(cube, 8, 10, 1)[0]
+        let setup = Move.to_string(Move.inv(scramble))
+        let solution = solver.solve(cube, 0, 10, 5)
+        let alg = Move.to_string(solution[0])
+        let alt_algs = solution.slice(1).map((s: MoveT[]) => Move.to_string(s))
+
+        let algdesc: AlgDesc = {
+            id: `fpdr-random`,
+            alg,
+            alt_algs,
+            setup,
+            kind: "fbdr"
+        }
+        // console.log("algdesc", algdesc)
+        return {
+            ...state,
+            name: "hiding",
+            cube: {
+                ...state.cube,
+                state: cube,
+            },
+            case: {
+                ...state.case,
+                desc: [algdesc]
+            }
+        }
+    }
     control(s: string): AppState {
         let state = this.state
         if (s === "#space") {
-            if (state.name === "revealed") {
-                let cube = CubeUtil.get_random_fs()
-                let solver = CachedSolver.get("fbdr")
-                let scramble = solver.solve(cube, 8, 10, 1)[0]
-                let setup = Move.to_string(Move.inv(scramble))
-                let solution = solver.solve(cube, 0, 10, 5)
-                let alg = Move.to_string(solution[0])
-                let alt_algs = solution.slice(1).map( (s: MoveT[]) => Move.to_string(s))
-
-                let algdesc : AlgDesc = {
-                    id: `fpdr-random`,
-                    alg,
-                    alt_algs,
-                    setup,
-                    kind: "fbdr"
-                }
-                console.log("algdesc", algdesc)
-                return {...state,
-                    name: "hiding",
-                    case: {
-                        ...state.case,
-                        desc: [algdesc]
-                    }
-                }
+            if (state.name === "revealed" || state.name === "revealed_all") {
+                return this.updateScramble()
             } else {
                 return {...state,
                     name: "revealed"
                 }
             }
         }
+        else if (s === "#enter") {
+            if (state.name === "revealed_all") {
+                return this.updateScramble()
+            } else if (state.name === "revealed" || state.name === "hiding" ) {
+                let newState = { ...state }
+                newState.name = "revealed_all"
+                return newState
+            } else {
+                return state
+            }
+        }
         else {
             return state
         }
     }
-    move(move: string): AppState {
-        return this.state
+    move(movestr: string): AppState {
+        let state = this.state
+        let move = Move.parse(movestr)[0]
+        let cube = CubieCube.apply(state.cube.state, move)
+        return {
+            ...state,
+            cube: {
+                ...state.cube,
+                state: cube
+            }
+        }
     }
 }
 

@@ -53,7 +53,7 @@ const setup = function(width: number, height: number, colorScheme?: Array<number
     function updateColorScheme(colorScheme: Array<number>) {
         let colorScheme_ = colorScheme
         //console.log("update color scheme ", colorScheme_)
-        let materials = Array(6).fill(0).map( (_, i) => new THREE.MeshBasicMaterial({ color: colorScheme_[i], side:THREE.DoubleSide}))
+        let materials = Array(7).fill(0).map( (_, i) => new THREE.MeshBasicMaterial({ color: colorScheme_[i], side:THREE.DoubleSide}))
         let materials_border = new THREE.MeshBasicMaterial({ color: 0x000000, side:THREE.DoubleSide })
         stickers_tmpl = materials.map( (mat) => {
             let mesh = new THREE.Mesh(geo, mat)
@@ -86,7 +86,7 @@ const setup = function(width: number, height: number, colorScheme?: Array<number
                     sticker.position.copy(new THREE.Vector3(x * 2, 3, z * 2))
                     stickerwrap.position.copy(new THREE.Vector3(x * 2, 3 - eps, z * 2))
 
-                    if (i === 4 /*|| i === 3 || i === 1 */ ||  (i === 5 && mode === "UF")) {
+                    if (i === 4 || i === 3 || i === 1 ||  (i === 5 && mode === "UF")) {
                         const stickerhint = curr_tmpl.clone()
                         stickerhint.position.copy(new THREE.Vector3(x * 2, 3 + 3 + 3, z * 2))
                         cubie.add(stickerhint)
@@ -142,20 +142,21 @@ const setup = function(width: number, height: number, colorScheme?: Array<number
     }
 }
 
-const cubeSim = setup(370, 370)
+let cubeSim = setup(370, 370)
 
 function CubeSim(props: Config) {
   const mount = React.useRef<HTMLDivElement | null>(null)
+  let { width, height } = props
 
   useEffect( () => {
     let dom = cubeSim.domElement()
     let current = mount.current!
-    current.appendChild(dom)
 
+    current.appendChild(dom)
+    cubeSim.updateWidthHeight( width, height)
     cubeSim.updateColorScheme(props.colorScheme)
     cubeSim.updateCube(props.cube)
     cubeSim.renderScene()
-    console.log("render scnee")
 
     return () => {
         current.removeChild( dom )

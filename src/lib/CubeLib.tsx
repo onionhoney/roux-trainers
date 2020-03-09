@@ -236,12 +236,13 @@ let FaceletCube = function () {
         }
         return face_new
     }
+    let color_of_c = (p: number, o1: number, o2: number) =>
+    corners_coord[p][(3 - o1 + o2) % 3];
+    let color_of_e = (p: number, o1: number, o2: number) =>
+        edges_coord[p][(2 - o1 + o2) % 2];
+    let color_of_t = (p: number) => [U, D, F, B, L, R][p]
+
     let from_cubie_partial = (cube: CubieT, facelet: FaceletT) => {
-        let color_of_c = (p: number, o1: number, o2: number) =>
-            corners_coord[p][(3 - o1 + o2) % 3];
-        let color_of_e = (p: number, o1: number, o2: number) =>
-            edges_coord[p][(2 - o1 + o2) % 2];
-        let color_of_t = (p: number) => [U, D, F, B, L, R][p];
         return facelet.map(([p, o, typ]) => {
             if (typ === C) {
                 return color_of_c(cube.cp[p], cube.co[p], o)
@@ -254,6 +255,29 @@ let FaceletCube = function () {
             }
         })
     }
+    let from_cubie_partial_masked = (cube: CubieT, facelet: FaceletT, mask: Mask) => {
+        return facelet.map(([p, o, typ]) => {
+            if (typ === C) {
+                if (mask.cp[cube.cp[p]] === 1)
+                    return color_of_c(cube.cp[p], cube.co[p], o)
+                else
+                    return Face.X
+            } else if (typ === E) {
+                if (mask.ep[cube.ep[p]] === 1)
+                    return color_of_e(cube.ep[p], cube.eo[p], o)
+                else
+                    return Face.X
+            } else if (typ === T) {
+                if (mask.tp && mask.tp[cube.tp[p]] === 0)
+                    return Face.X
+                else
+                    return color_of_t(cube.tp[p])
+            } else {
+                throw Error("unidentified type " + typ)
+            }
+        })
+    }
+
     let moves = Move.all
     let generate_base_facelets = () => {
         let d_face = mult_move(f_face, moves["x'"])
@@ -266,12 +290,13 @@ let FaceletCube = function () {
     }
     let { d_face, l_face, r_face, b_face } = generate_base_facelets()
 
-    let from_cubie = (cube: CubieT): FaceletCubeT => {
-
+    let from_cubie = (cube: CubieT, mask?: Mask): FaceletCubeT => {
         //console.log("converting from cube", cube)
         let faces = [u_face, d_face, f_face, b_face, l_face, r_face]
-        let colors = faces.map((facelet) => from_cubie_partial(cube, facelet))
-        return colors
+        if (mask)
+            return faces.map((facelet) => from_cubie_partial_masked(cube, facelet, mask))
+        else
+            return faces.map((facelet) => from_cubie_partial(cube, facelet))
     }
 
     let to_unfolded_cube_str = (faceletCube: FaceletCubeT): String => {
@@ -305,10 +330,24 @@ let FaceletCube = function () {
 type Mask = {
     co?: number[],
     eo?: number[],
+    tp?: number[],
     cp: number[],
     ep: number[],
 }
 
+const lse_mask: Mask = {
+    cp: [1, 1, 1, 1, 1, 1, 1, 1],
+    ep: [0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1],
+}
+const fs_back_mask: Mask = {
+    cp: [0, 0, 0, 0, 0, 1, 0, 0],
+    ep: [0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0]
+}
+const fbdr_mask: Mask = {
+    cp: [0, 0, 0, 0, 1, 1, 0, 0],
+    ep: [0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 0, 0],
+    tp: [0, 0, 0, 0, 1, 1]
+}
 
 let CubeUtil = (() => {
     let is_cube_solved = (cube: CubieT) => {
@@ -341,14 +380,7 @@ let CubeUtil = (() => {
         }
         return false;
     }
-    const lse_mask: Mask = {
-        cp: [1, 1, 1, 1, 1, 1, 1, 1],
-        ep: [0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1],
-    }
-    const fs_back_mask: Mask = {
-        cp: [0, 0, 0, 0, 0, 1, 0, 0],
-        ep: [0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0]
-    }
+
     const u_premove = [[], Move.all["U"], Move.all["U'"], Move.all["U2"]]
     const m_premove = [[], Move.all["M"], Move.all["M'"], Move.all["M2"]]
     const m2_premove = [[], Move.all["M2"]]
@@ -432,7 +464,8 @@ let CubeUtil = (() => {
             ["R", 0xff0000],
             ["O", 0xff8800],
             ["Y", 0xffff00],
-            ["W", 0xffffff]
+            ["W", 0xffffff],
+            ["X", 0xcccccc]
         ]
         const colorMap = new Map<string, number>(arr)
         // UDFBLR from UF
@@ -466,7 +499,11 @@ let CubeUtil = (() => {
             "ROBGWY",
         ]
         const valid_scheme_mapper: { [key: string]: number[] } = Object.create({})
-        valid_schemes.forEach(s => { valid_scheme_mapper[s[0] + s[2]] = s.split('').map(ch => colorMap.get(ch)!) })
+        valid_schemes.forEach(s => {
+            let arr = s.split('').map(ch => colorMap.get(ch)!)
+            arr.push(colorMap.get("X")!)
+            valid_scheme_mapper[s[0] + s[2]] = arr
+        })
 
         const mapper = (sel: string) => {
             return valid_scheme_mapper[sel]
@@ -480,8 +517,12 @@ let CubeUtil = (() => {
         get_random_lse,
         get_random_fs,
         ori_to_color_scheme,
-        is_cube_solved
+        is_cube_solved,
     }
 })()
 
-export { CubieCube, Move, FaceletCube, CubeUtil }
+let Mask = {
+    lse_mask, fs_back_mask, fbdr_mask
+}
+
+export { CubieCube, Move, FaceletCube, CubeUtil, Mask }

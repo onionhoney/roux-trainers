@@ -3,6 +3,11 @@ import { defaultKeyMapping } from "../lib/Defs";
 import AppView from "../components/AppView"
 import { reducer, getInitialState } from '../Reducer'
 
+window.addEventListener('keydown', function(e) {
+  if(e.keyCode === 32 && e.target === document.body) {
+    e.preventDefault();
+  }
+});
 
 function App(props: {}) {
   const [state, dispatch] = React.useReducer( reducer, getInitialState() )

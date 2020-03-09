@@ -86,7 +86,7 @@ let fbdrPrunerConfig : PrunerConfig = function() {
           }
       }
       const enc_e = e1 * (24 * 24 * 24) + e2 * (24 * 24) + e3 * 24 + e4
-      return enc_c + 24 * enc_e
+      return enc_c + 24 * 24 * enc_e
     }
 
     const moves = [[], Move.parse("L R'"), Move.parse("L' R"), Move.parse("L2 R2")]
@@ -94,7 +94,7 @@ let fbdrPrunerConfig : PrunerConfig = function() {
 
     const max_depth = 5
     const moveset : MoveT[] = ["U", "U2", "U'", "F", "F2", "F'", "R", "R2", "R'",
-    "r", "r2", "r'", "D", "D2", "D'"].map(s => Move.all[s])
+    "r", "r2", "r'", "D", "D2", "D'", "M", "M'", "M2"].map(s => Move.all[s])
 
     return {
         size,

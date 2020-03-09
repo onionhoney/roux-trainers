@@ -15,7 +15,7 @@ export type Config = {
     fbdrSelector: Selector
 }
 
-export type StateT = "solving" | "solved" | "hiding" | "revealed"
+export type StateT = "solving" | "solved" | "hiding" | "revealed" | "revealed_all"
 
 export type Mode = "cmll" | "fbdr"
 

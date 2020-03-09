@@ -1,9 +1,8 @@
 import { CubieCube, CubeUtil, Move } from './CubeLib';
 import { CubieT, MoveT } from './Defs';
-import { DepthModes, ShaderChunk } from 'three';
 import { arrayEqual } from './Math';
 
-import { Pruner, PrunerT, PrunerConfig, fbdrPrunerConfig } from './Pruner';
+import { Pruner, PrunerT, fbdrPrunerConfig } from './Pruner';
 
 
 type SolverConfig = {

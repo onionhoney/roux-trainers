@@ -33,7 +33,7 @@ const initialConfig : Config = (() => {
             kind: "orientation"
         },
         fbdrSelector: {
-            names: ["FP at front", "FP at back", "Both"],
+            names: ["FP at front", "FP at back(unavailable yet)", "Both"],
             flags: [1, 0, 0],
             kind: "fbdr"
         }
