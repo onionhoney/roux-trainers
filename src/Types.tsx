@@ -1,5 +1,5 @@
-import { CubieT, MoveT } from "./Defs";
-import { AlgDesc } from "./Algs";
+import { CubieT, MoveT } from "./lib/Defs";
+import { AlgDesc } from "./lib/Algs";
 
 export type Selector = {
     names: string[],
@@ -12,9 +12,12 @@ export type Config = {
     cmllAufSelector: Selector,
     triggerSelector: Selector,
     orientationSelector: Selector
+    fbdrSelector: Selector
 }
 
-export type StateT = "solving" | "solved"
+export type StateT = "solving" | "solved" | "hiding" | "revealed"
+
+export type Mode = "cmll" | "fbdr"
 
 type KeyAction = {
     type: "key",
@@ -24,12 +27,17 @@ type ConfigAction = {
     type: "config",
     content: Partial<Config>
 }
+type ModeChangeAction = {
+    type: "mode",
+    content: Mode
+}
 
-export type Action = KeyAction | ConfigAction
+export type Action = KeyAction | ConfigAction | ModeChangeAction
 
 export type InfoT = {cube: CubieT, desc: AlgDesc[]}
 export type AppState = {
     name: StateT,
+    mode: Mode,
     cube: {
         state: CubieT,
         ori: string,

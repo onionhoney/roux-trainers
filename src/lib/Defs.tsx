@@ -193,8 +193,8 @@ const defaultKeyMapping : { [key: string]: string } = {
     "C": "u'",
     ",": "u",
     "/": "d'",
-    "ENTER": "#scramble",
-    " ": "#redo",
+    "ENTER": "#enter",
+    " ": "#space",
   }
 
 export {defaultKeyMapping}

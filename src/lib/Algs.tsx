@@ -1,7 +1,7 @@
 // source: "https://sites.google.com/view/kianroux/cmll" and https://github.com/AshleyF/briefcubing/blob/master/algs.js
 
 //type oll_case = "o"|"h"|"pi"|"u"|"t"|"s"|"as"|"l"
-import { Selector } from "./Types";
+import { Selector } from "../Types";
 import { rand_choice } from "./Math";
 
 const get_active_names = (sel : Selector) => {
@@ -17,6 +17,8 @@ const get_active_names = (sel : Selector) => {
 export type AlgDesc = {
     id: string,
     alg: string,
+    alt_algs?: string[],
+    setup?: string,
     kind: string
 }
 

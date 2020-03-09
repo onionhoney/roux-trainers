@@ -35,4 +35,20 @@ let getParity = (perm: number[]) => {
     }
     return res
 }
-export {rand_int, rand_choice, rand_shuffle, getParity}
+
+let arrayEqual = function<T>(arr1: T[], arr2: T[]) {
+    if (arr1.length !== arr2.length) return false;
+    for (let i = 0; i < arr1.length; i++) {
+        if (arr1[i] !== arr2[i]) return false;
+    }
+    return true;
+}
+
+let encodeArr = function(base: number, rarr: number[]) {
+    let int = 0
+    for (let i = rarr.length - 1; i >= 0; i--)
+        int = rarr[i] + int * base
+    return int
+}
+
+export {rand_int, rand_choice, rand_shuffle, getParity, arrayEqual, encodeArr}

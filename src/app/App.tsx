@@ -1,11 +1,11 @@
 import React from 'react'
-import { defaultKeyMapping } from "./Defs";
-import AppView from "./AppView"
-import { reducer, initialState } from './Reducer'
+import { defaultKeyMapping } from "../lib/Defs";
+import AppView from "../components/AppView"
+import { reducer, getInitialState } from '../Reducer'
 
 
 function App(props: {}) {
-  const [state, dispatch] = React.useReducer( reducer, initialState )
+  const [state, dispatch] = React.useReducer( reducer, getInitialState() )
 
   // Add event listeners
   React.useEffect(() => {

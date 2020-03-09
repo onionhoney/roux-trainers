@@ -1,26 +1,39 @@
 
-import { AppState, StateT, Action, Config } from "./Types"
-import { alg_generator, AlgDesc } from "./Algs"
-import { MoveT } from "./Defs";
-import { CubieCube, Move, CubeUtil } from './CubeLib';
-import { setConfig, getConfig} from './Config';
+import { AppState, StateT, Action, Mode } from "./Types"
+import { alg_generator, AlgDesc } from "./lib/Algs"
+import { MoveT } from "./lib/Defs";
+import { CubieCube, Move, CubeUtil } from './lib/CubeLib';
+import { setConfig, getConfig} from './components/Config';
+import { FbdrSolver } from './lib/Solver';
+import { CachedSolver } from "./lib/CachedSolver";
 
-export const initialState : AppState = {
-    name: "solving",
-    cube: {
-        state: CubieCube.id,
-        ori: "WG",
-        history: [],
-    },
-    case: {
-        state: CubieCube.id,
-        desc: []
-    },
-    config: getConfig()
+export const getInitialState = (mode?: Mode) : AppState => {
+    mode = mode || "fbdr"
+    let initialStateName : StateT = function() {
+        switch (mode){
+            case "cmll": return "solved"
+            case "fbdr": return "revealed"
+        }
+    }()
+    return {
+        name: initialStateName,
+        mode,
+        cube: {
+            state: CubieCube.id,
+            ori: "WG",
+            history: [],
+        },
+        case: {
+            state: CubieCube.id,
+            desc: []
+        },
+        config: getConfig()
+    }
 }
 
 export function reducer(state: AppState, action: Action): AppState {
     // todo: cache values based on this
+    console.log("prev state", state)
     if (action.type === "key") {
         let newState = reduceKey(state, action.content)
         return newState
@@ -30,7 +43,11 @@ export function reducer(state: AppState, action: Action): AppState {
             ...state,
             config: getConfig()
         }
-    } else {
+    } else if (action.type === "mode") {
+        let mode = action.content
+        state = getInitialState(mode)
+        return state
+    } else{
         return state
     }
 }
@@ -45,16 +62,31 @@ abstract class StateM {
     }
     abstract move(s: string): AppState;
 
+    static create(state: AppState) {
+        if (state.mode === "fbdr") {
+            return new FbdrStateM(state)
+        }
+        else if (state.name === "solving") {
+            return new SolvingStateM(state)
+        } else {
+            return new SolvedStateM(state)
+        }
+    }
+}
+
+
+abstract class CmllStateM extends StateM {
     control(s: string): AppState {
         let state = this.state
-        let config = state.config
+        let { config, mode } = state
         let { cmllSelector, triggerSelector, cmllAufSelector, orientationSelector } = config
         let generator = alg_generator(cmllSelector)
         let trig_generator = alg_generator(triggerSelector)
         let u_auf_generator = alg_generator(cmllAufSelector)
         let ori_generator = alg_generator(orientationSelector)
 
-        if (s === "#scramble") {
+        if (s === "#enter") {
+            // SCRAMBLE
             // enter cleared solving state based on selection
             let trigger_alg: AlgDesc = trig_generator()
             let alg: AlgDesc = generator();
@@ -63,7 +95,7 @@ abstract class StateM {
             let moves: MoveT[] = Move.inv(Move.parse(alg_str));
 
             //console.log("moves", Move.to_string(moves))
-            let cube = CubeUtil.get_random_l10p()
+            let cube = CubeUtil.get_random_lse()
             cube = CubieCube.apply(cube, moves)
 
             // ori based on ...?
@@ -82,7 +114,8 @@ abstract class StateM {
                     desc: [trigger_alg, alg]
                 },
             })
-        } else if (s === "#redo") {
+        } else if (s === "#space") {
+            // REDO
             return ({...state,
                 name: "solving",
                 cube: {
@@ -98,16 +131,54 @@ abstract class StateM {
             throw new Error("Unrecognized control code")
         }
     }
-    static create(state: AppState) {
-        if (state.name === "solving") {
-            return new SolvingStateM(state)
-        } else {
-            return new SolvedStateM(state)
+}
+
+class FbdrStateM extends StateM {
+    control(s: string): AppState {
+        let state = this.state
+        if (s === "#space") {
+            if (state.name === "revealed") {
+                let cube = CubeUtil.get_random_fs()
+                let solver = CachedSolver.get("fbdr")
+                let scramble = solver.solve(cube, 8, 10, 1)[0]
+                let setup = Move.to_string(Move.inv(scramble))
+                let solution = solver.solve(cube, 0, 10, 5)
+                let alg = Move.to_string(solution[0])
+                let alt_algs = solution.slice(1).map( (s: MoveT[]) => Move.to_string(s))
+
+                let algdesc : AlgDesc = {
+                    id: `fpdr-random`,
+                    alg,
+                    alt_algs,
+                    setup,
+                    kind: "fbdr"
+                }
+                console.log("algdesc", algdesc)
+                return {...state,
+                    name: "hiding",
+                    case: {
+                        ...state.case,
+                        desc: [algdesc]
+                    }
+                }
+            } else {
+                return {...state,
+                    name: "revealed"
+                }
+            }
         }
+        else {
+            return state
+        }
+    }
+    move(move: string): AppState {
+        return this.state
     }
 }
 
-class SolvingStateM extends StateM {
+
+
+class SolvingStateM extends CmllStateM {
     move(move: string): AppState {
         let state = this.state
         let moves = Move.parse(move)
@@ -131,7 +202,7 @@ class SolvingStateM extends StateM {
     }
 }
 
-class SolvedStateM extends StateM {
+class SolvedStateM extends CmllStateM {
     move(move: string): AppState {
         return this.state
     }

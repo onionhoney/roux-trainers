@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 
-import { FaceletCubeT } from "./Defs";
+import { FaceletCubeT } from "../lib/Defs";
 import * as THREE from 'three';
 
 type Config = {cube: FaceletCubeT, width: number, height: number, colorScheme: Array<number>}
@@ -52,7 +52,7 @@ const setup = function(width: number, height: number, colorScheme?: Array<number
 
     function updateColorScheme(colorScheme: Array<number>) {
         let colorScheme_ = colorScheme
-        console.log("update color scheme ", colorScheme_)
+        //console.log("update color scheme ", colorScheme_)
         let materials = Array(6).fill(0).map( (_, i) => new THREE.MeshBasicMaterial({ color: colorScheme_[i], side:THREE.DoubleSide}))
         let materials_border = new THREE.MeshBasicMaterial({ color: 0x000000, side:THREE.DoubleSide })
         stickers_tmpl = materials.map( (mat) => {

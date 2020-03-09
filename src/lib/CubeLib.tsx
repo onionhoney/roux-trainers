@@ -2,7 +2,7 @@ import { MoveT, CubieT, OriChg, PermChg } from "./Defs";
 import { u, d, f, b, l, r, m, e } from "./Defs";
 import { FaceletT, FaceletCubeT, corners_coord, edges_coord, u_face, f_face, color_map } from "./Defs";
 import { Typ, Face, C, E, T, U, D, F, B, L, R } from "./Defs";
-import { rand_int, rand_shuffle, getParity, rand_choice } from "./Math";
+import { rand_int, rand_shuffle, getParity, rand_choice, arrayEqual } from "./Math";
 
 const C_MOD = 3;
 const E_MOD = 2;
@@ -199,7 +199,8 @@ let Move = function () {
         parse: parse,
         inv: inv,
         add_auf: add_auf,
-        to_string: to_string
+        to_string: to_string,
+        from_moves
     }
 }()
 
@@ -310,6 +311,13 @@ type Mask = {
 
 
 let CubeUtil = (() => {
+    let is_cube_solved = (cube: CubieT) => {
+        let id = CubieCube.id
+        return arrayEqual(cube.co, id.co) &&
+               arrayEqual(cube.eo, id.eo) &&
+               arrayEqual(cube.cp, id.cp) &&
+               arrayEqual(cube.ep, id.ep)
+    }
     let is_mask_solved = (cube: CubieT, { co, eo, cp, ep }: Mask, premove: (MoveT | MoveT[])[]) => {
         //let moves = [ [], Move.all["U"], Move.all["U'"], Move.all["U2"] ]
         co = co || cp
@@ -333,18 +341,22 @@ let CubeUtil = (() => {
         }
         return false;
     }
-    let cmll_mask: Mask = {
+    const lse_mask: Mask = {
         cp: [1, 1, 1, 1, 1, 1, 1, 1],
         ep: [0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1],
     }
-    let u_premove = [[], Move.all["U"], Move.all["U'"], Move.all["U2"]]
-    //let m_premove = [[], Move.all["M"], Move.all["M'"], Move.all["M2"]]
-    let m2_premove = [[], Move.all["M2"]]
+    const fs_back_mask: Mask = {
+        cp: [0, 0, 0, 0, 0, 1, 0, 0],
+        ep: [0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0]
+    }
+    const u_premove = [[], Move.all["U"], Move.all["U'"], Move.all["U2"]]
+    const m_premove = [[], Move.all["M"], Move.all["M'"], Move.all["M2"]]
+    const m2_premove = [[], Move.all["M2"]]
     //let m2u_premove = [[], Move.parse("U"), Move.parse("U'"), Move.parse("U2"),
     //Move.parse("M2"), Move.parse("M2U"), Move.parse("M2U'"), Move.parse("M2U2")]
 
     let is_cmll_solved = (cube: CubieT) => {
-        return is_mask_solved(cube, cmll_mask, u_premove)
+        return is_mask_solved(cube, lse_mask, u_premove)
     }
 
     let get_random_with_mask = ({ co, eo, cp, ep }: Mask): CubieT => {
@@ -400,12 +412,15 @@ let CubeUtil = (() => {
         }
     }
 
-    let get_random_l10p = (): CubieT => {
-        let cube = get_random_with_mask(cmll_mask)
+    let get_random_lse = (): CubieT => {
+        let cube = get_random_with_mask(lse_mask)
         return CubieCube.apply(cube, rand_choice(m2_premove))
     }
 
-
+    let get_random_fs = (): CubieT => {
+        let cube = get_random_with_mask(fs_back_mask)
+        return CubieCube.apply(cube, rand_choice(m_premove))
+    }
 
     const ori_to_color_scheme = (() => {
         // UDFBLR
@@ -462,8 +477,10 @@ let CubeUtil = (() => {
 
     return {
         is_cmll_solved,
-        get_random_l10p,
-        ori_to_color_scheme
+        get_random_lse,
+        get_random_fs,
+        ori_to_color_scheme,
+        is_cube_solved
     }
 })()
 

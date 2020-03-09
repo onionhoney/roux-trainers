@@ -1,4 +1,5 @@
-import { Config } from "./Types"
+import { Config } from "../Types"
+import { version } from "../Version"
 
 const initialConfig : Config = (() => {
     let arr_ori_flag = Array(24).fill(0)
@@ -30,12 +31,18 @@ const initialConfig : Config = (() => {
             ],
             flags: arr_ori_flag,
             kind: "orientation"
+        },
+        fbdrSelector: {
+            names: ["FP at front", "FP at back", "Both"],
+            flags: [1, 0, 0],
+            kind: "fbdr"
         }
     }
 })()
 
 let configManager = function() {
     const key = "config"
+    const versionKey = "version"
     let cache : Config | null = null
 
     let getConfig = () => {
@@ -43,6 +50,12 @@ let configManager = function() {
             return cache
         }
         const item = window.localStorage.getItem(key);
+        const vers = window.localStorage.getItem(versionKey)
+        if ( (vers === null) || (vers === undefined) || (vers !== version)) {
+            window.localStorage.setItem(versionKey, version)
+            window.localStorage.setItem(key, JSON.stringify(initialConfig));
+            return initialConfig
+        }
         const item1 : Config = item ? JSON.parse(item) : initialConfig
         if ( (item1 === null) || (item1 === undefined) || Object.keys(item1).length === 0) {
             window.localStorage.setItem(key, JSON.stringify(initialConfig));
