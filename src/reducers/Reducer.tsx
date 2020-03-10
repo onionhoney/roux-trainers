@@ -175,7 +175,7 @@ class FbdrStateM extends BlockTrainerStateM {
     }
 
     getRandom() : [CubieT, string] {
-        const fbOnly = getActiveName(this.state.config.fbOnlySelector) === "FB only"
+        const fbOnly = getActiveName(this.state.config.fbOnlySelector) === "FB Last Pair"
         const solverName = fbOnly ? "fb" : "fbdr"
         let active = getActiveNames(this.state.config.fbdrSelector)[0]
         //console.log("active", active)
