@@ -159,11 +159,43 @@ abstract class BlockTrainerStateM extends StateM {
 }
 
 const m_premove = [[], Move.all["M"], Move.all["M'"], Move.all["M2"]]
+const pairPos : [number, number, number, number][] = [
+    [0, 0, 8, 1], [0, 1, 1, 0], [ 0, 2 , 0, 1],
+    [1, 1, 2, 0], [1, 2, 1, 1],
+    [2, 0, 10, 1], [2, 1, 3, 0], [2, 2, 2, 1],
+    [3, 0, 11, 0], [3, 1, 0, 0], [3, 2, 3, 1],
+    [4, 0, 8, 0], [4, 1, 4, 0],
+    [6, 0, 10, 0], [6, 1, 6, 0], [6, 2, 7, 1],
+    [7, 0, 11, 1], [7, 1, 7, 0], [7, 2, 4, 1]
+]
+
 class FbdrStateM extends BlockTrainerStateM {
     solverL : number;
     solverR : number;
     solutionCap : number
 
+    get_pair_solved_front() {
+        let [cp, co, ep, eo] = rand_choice(pairPos)
+        //let mask = Mask.copy(Mask.fs_front_mask)
+        let cube = CubeUtil.get_random_with_mask(Mask.fs_back_mask)
+        for (let i = 0; i < 8; i++) {
+            if (cube.cp[i] === 4) {
+                cube.cp[i] = cube.cp[cp]
+                cube.co[i] = cube.co[cp]
+                cube.cp[cp] = 4
+                cube.co[cp] = co
+            }
+        }
+        for (let i = 0; i < 12; i++) {
+            if (cube.ep[i] === 8) {
+                cube.ep[i] = cube.ep[ep]
+                cube.eo[i] = cube.eo[ep]
+                cube.ep[ep] = 8
+                cube.eo[ep] = eo
+            }
+        }
+        return cube
+    }
     get_random_fs_back() {
         let cube = CubeUtil.get_random_with_mask(Mask.fs_back_mask)
         return CubieCube.apply(cube, rand_choice(m_premove))
@@ -176,12 +208,16 @@ class FbdrStateM extends BlockTrainerStateM {
 
     getRandom() : [CubieT, string] {
         const fbOnly = getActiveName(this.state.config.fbOnlySelector) === "FB Last Pair"
+        const pairSolved = getActiveName(this.state.config.fbPairSolvedSelector) !== "Random"
         const solverName = fbOnly ? "fb" : "fbdr"
         let active = getActiveNames(this.state.config.fbdrSelector)[0]
         //console.log("active", active)
         //["FP at front", "FP at back", "Both"],
         if (active === "FS at back") {
-            return [this.get_random_fs_back(), solverName]
+            if (pairSolved) {
+                return [this.get_pair_solved_front(), solverName]
+            } else
+                return [this.get_random_fs_back(), solverName]
         } else if (active === "FS at front") {
             return [this.get_random_fs_front(), solverName]
         } else return [rand_choice([this.get_random_fs_back, this.get_random_fs_front])(),

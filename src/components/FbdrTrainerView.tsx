@@ -206,6 +206,9 @@ function ConfigPanel(props: {state: AppState, dispatch: React.Dispatch<Action>, 
     }
     let new_config = {...config}
     select(state).flags = new_flags
+    if (new_config.fbPairSolvedSelector.flags[1] === 1) {
+      new_config.fbdrSelector.flags = [1, 0, 0]
+    }
     dispatch( { type: "config", content: new_config })
   }
 
@@ -253,10 +256,12 @@ function ConfigPanelGroup(props: {state: AppState, dispatch: React.Dispatch<Acti
   } else if (state.mode === "fbdr") {
     let select1 = (state: AppState) => { return state.config.fbdrSelector }
     let select2 = (state: AppState) => { return state.config.fbOnlySelector }
+    let select3 = (state: AppState) => { return state.config.fbPairSolvedSelector }
     return (
       <Fragment>
       <ConfigPanel {...{state, dispatch, select: select1}}> </ConfigPanel>
       <ConfigPanel {...{state, dispatch, select: select2}}> </ConfigPanel>
+      <ConfigPanel {...{state, dispatch, select: select3}}> </ConfigPanel>
       </Fragment>
     )
   } else return <Fragment/>

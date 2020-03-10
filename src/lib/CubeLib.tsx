@@ -378,6 +378,15 @@ type Mask = {
     cp: number[],
     ep: number[],
 }
+function mask_copy (m: Mask) {
+    return {
+        co: m.co && [...m.co],
+        eo: m.eo && [...m.eo],
+        tp: m.tp && [...m.tp],
+        cp: [...m.cp],
+        ep: [...m.ep]
+    }
+}
 
 const lse_mask: Mask = {
     cp: [1, 1, 1, 1, 1, 1, 1, 1],
@@ -589,7 +598,8 @@ let CubeUtil = (() => {
 })()
 
 let Mask = {
-    lse_mask, fs_back_mask, fs_front_mask, fbdr_mask, fb_mask, sb_mask, cmll_mask, ss_front_mask, ss_back_mask
+    lse_mask, fs_back_mask, fs_front_mask, fbdr_mask, fb_mask, sb_mask, cmll_mask, ss_front_mask, ss_back_mask,
+    copy: mask_copy
 }
 
 export { CubieCube, Move, FaceletCube, CubeUtil, Mask }

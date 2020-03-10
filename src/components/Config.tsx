@@ -58,10 +58,16 @@ const initialConfig : Config = (() => {
             kind: "fbdr"
         },
         fbOnlySelector: {
-            label: "Solve with or without DR",
+            label: "Solve w/wo DR",
             names: ["FB+DR", "FB Last Pair"],
             flags: [1, 0],
             kind: "fb-only"
+        },
+        fbPairSolvedSelector: {
+            label: "Last Pair",
+            names: ["Random", "Solved(FS at back only)"],
+            flags: [1, 0],
+            kind: "fb-pair-solved"
         },
         ssSelector: {
             label: "Position of square",
@@ -70,7 +76,7 @@ const initialConfig : Config = (() => {
             kind: "ss"
         },
         ssPairOnlySelector: {
-            label: "Solve with or without DR",
+            label: "Solve w/wo DR",
             names: ["SS", "SB First Pair"],
             flags: [1, 0],
             kind: "sb-pair-only"

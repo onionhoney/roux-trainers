@@ -20,7 +20,8 @@ export type Config = {
     fbdrSelector: Selector,
     ssSelector: Selector
     fbOnlySelector: Selector,
-    ssPairOnlySelector: Selector
+    ssPairOnlySelector: Selector,
+    fbPairSolvedSelector: Selector
     //fbdrSolutionCount: Slider
 }
 
