@@ -1,23 +1,23 @@
 self.__precacheManifest = (self.__precacheManifest || []).concat([
   {
-    "revision": "8e1aff9c6cc7c52832b2b2673d27b046",
+    "revision": "331834280c30ab5d78fa3c3de71e93a9",
     "url": "/cmll-trainer/index.html"
   },
   {
-    "revision": "107722612061105ddd83",
+    "revision": "f1c4b7a0a2ac19bb1efe",
     "url": "/cmll-trainer/static/css/2.cdf5760c.chunk.css"
   },
   {
-    "revision": "22f099162fac65fd08af",
+    "revision": "db0719a360ee0b3c1b30",
     "url": "/cmll-trainer/static/css/main.34de6062.chunk.css"
   },
   {
-    "revision": "107722612061105ddd83",
-    "url": "/cmll-trainer/static/js/2.8e0f708a.chunk.js"
+    "revision": "f1c4b7a0a2ac19bb1efe",
+    "url": "/cmll-trainer/static/js/2.2c33bfe4.chunk.js"
   },
   {
-    "revision": "22f099162fac65fd08af",
-    "url": "/cmll-trainer/static/js/main.58b34a3c.chunk.js"
+    "revision": "db0719a360ee0b3c1b30",
+    "url": "/cmll-trainer/static/js/main.0b919d9c.chunk.js"
   },
   {
     "revision": "c523be16d50bbef67ceb",

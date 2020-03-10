@@ -14,7 +14,7 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/4.3.1/workbox-sw.js");
 
 importScripts(
-  "/cmll-trainer/precache-manifest.00449f01189d1a27cb02315aa8f3ab21.js"
+  "/cmll-trainer/precache-manifest.12d7123b79d4812f8c1126888a7eeea5.js"
 );
 
 self.addEventListener('message', (event) => {
