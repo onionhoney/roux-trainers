@@ -1,11 +1,13 @@
-import { FbdrSolver, SolverT } from './Solver';
+import { FbdrSolver, SolverT, SsSolver } from './Solver';
 
 let CachedSolver = function() {
     let cache : Map<string, SolverT> = new Map()
     function get(s: string) {
         if (!cache.has(s)) {
             switch (s) {
-                case "fbdr": cache.set(s, FbdrSolver())
+                case "fbdr": cache.set(s, FbdrSolver()); break
+                case "ss-front": cache.set(s, SsSolver(true)); break
+                case "ss-back": cache.set(s, SsSolver(false)); break
             }
         }
         return cache.get(s) as SolverT

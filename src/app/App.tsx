@@ -1,9 +1,10 @@
 import React from 'react'
 import { defaultKeyMapping } from "../lib/Defs";
 import AppView from "../components/AppView"
-import { reducer, getInitialState } from '../Reducer'
+import { reducer, getInitialState } from '../reducers/Reducer'
 
-window.addEventListener('keydown', function(e) {
+window.addEventListener('keypress', function(e) {
+  console.log("keypress!", e)
   if(e.keyCode === 32 && e.target === document.body) {
     e.preventDefault();
   }

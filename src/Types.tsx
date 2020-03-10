@@ -17,12 +17,13 @@ export type Config = {
     triggerSelector: Selector,
     orientationSelector: Selector
     fbdrSelector: Selector,
+    ssSelector: Selector
     //fbdrSolutionCount: Slider
 }
 
 export type StateT = "solving" | "solved" | "hiding" | "revealed" | "revealed_all"
 
-export type Mode = "cmll" | "fbdr"
+export type Mode = "cmll" | "fbdr" | "ss"
 
 type KeyAction = {
     type: "key",

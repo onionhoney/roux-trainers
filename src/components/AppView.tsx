@@ -43,7 +43,7 @@ function AppView(props: { state: AppState, dispatch: React.Dispatch<Action> } ) 
 
   const handleChange = React.useCallback( (_:any, newValue:number) => {
     setValue(newValue)
-    let modes : Mode[] = ["cmll", "fbdr"]
+    let modes : Mode[] = ["cmll", "fbdr", "ss"]
     let mode = modes[newValue]
     dispatch({type: "mode", content: mode})
   }, [dispatch])
@@ -52,14 +52,18 @@ function AppView(props: { state: AppState, dispatch: React.Dispatch<Action> } ) 
     <main>
       <AppBar position="static">
         <Tabs value={value} onChange={handleChange} aria-label="simple tabs example">
-          <Tab label="CMLL Trainer" id='tab0'/>
-          <Tab label="FBDR Trainer" id='tab1' />
+          <Tab onFocus={e => e.target.blur() } label="CMLL Trainer" id='tab0'/>
+          <Tab onFocus={e => e.target.blur() } label="FBDR Trainer" id='tab1' />
+          <Tab onFocus={e => e.target.blur() } label="SSquare Trainer" id='tab2' />
         </Tabs>
       </AppBar>
       <TabPanel value={value} index={0} className={classes.page}>
         <CmllTrainerView {...{state, dispatch}} />
       </TabPanel>
       <TabPanel value={value} index={1} className={classes.page}>
+        <FbdrTrainerView {...{state, dispatch}} />
+      </TabPanel>
+      <TabPanel value={value} index={2} className={classes.page}>
         <FbdrTrainerView {...{state, dispatch}} />
       </TabPanel>
 

@@ -47,6 +47,11 @@ const initialConfig : Config = (() => {
             flags: [1, 0, 0],
             kind: "fbdr"
         },
+        ssSelector: {
+            names: ["SS at front", "SS at back", "Both"],
+            flags: [1, 0, 0],
+            kind: "ss"
+        }
     }
 })()
 

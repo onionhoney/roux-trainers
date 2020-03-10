@@ -391,9 +391,24 @@ const fs_front_mask: Mask = {
     cp: [0, 0, 0, 0, 1, 0, 0, 0],
     ep: [0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0]
 }
+const fb_mask: Mask = {
+    cp: [0, 0, 0, 0, 1, 1, 0, 0],
+    ep: [0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0],
+    tp: [0, 0, 0, 0, 1, 1]
+}
 const fbdr_mask: Mask = {
     cp: [0, 0, 0, 0, 1, 1, 0, 0],
     ep: [0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 0, 0],
+    tp: [0, 0, 0, 0, 1, 1]
+}
+const ss_front_mask: Mask = {
+    cp: [0, 0, 0, 0, 1, 1, 0, 1],
+    ep: [0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 0, 1],
+    tp: [0, 0, 0, 0, 1, 1]
+}
+const ss_back_mask: Mask = {
+    cp: [0, 0, 0, 0, 1, 1, 1, 0],
+    ep: [0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 0],
     tp: [0, 0, 0, 0, 1, 1]
 }
 const sb_mask : Mask = {
@@ -440,7 +455,6 @@ let CubeUtil = (() => {
     }
 
     const u_premove = [[], Move.all["U"], Move.all["U'"], Move.all["U2"]]
-    const m_premove = [[], Move.all["M"], Move.all["M'"], Move.all["M2"]]
     const m2_premove = [[], Move.all["M2"]]
     //let m2u_premove = [[], Move.parse("U"), Move.parse("U'"), Move.parse("U2"),
     //Move.parse("M2"), Move.parse("M2U"), Move.parse("M2U'"), Move.parse("M2U2")]
@@ -507,16 +521,6 @@ let CubeUtil = (() => {
         return CubieCube.apply(cube, rand_choice(m2_premove))
     }
 
-    let get_random_fs_back = (): CubieT => {
-        let cube = get_random_with_mask(fs_back_mask)
-        return CubieCube.apply(cube, rand_choice(m_premove))
-    }
-
-    let get_random_fs_front = (): CubieT => {
-        let cube = get_random_with_mask(fs_front_mask)
-        return CubieCube.apply(cube, rand_choice(m_premove))
-    }
-
     const ori_to_color_scheme = (() => {
         // UDFBLR
         // specify the colors for uf
@@ -578,15 +582,14 @@ let CubeUtil = (() => {
     return {
         is_cmll_solved,
         get_random_lse,
-        get_random_fs_front,
-        get_random_fs_back,
+        get_random_with_mask,
         ori_to_color_scheme,
         is_cube_solved,
     }
 })()
 
 let Mask = {
-    lse_mask, fs_back_mask, fbdr_mask, sb_mask, cmll_mask
+    lse_mask, fs_back_mask, fs_front_mask, fbdr_mask, fb_mask, sb_mask, cmll_mask, ss_front_mask, ss_back_mask
 }
 
 export { CubieCube, Move, FaceletCube, CubeUtil, Mask }

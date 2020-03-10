@@ -58,8 +58,17 @@ const useStyles = makeStyles(theme => ({
 
 
 function getMask(state: AppState) : Mask {
-    //if (state.mode === "fbdr")
-    return Mask.fbdr_mask
+    if (state.mode === "fbdr")
+      return Mask.fbdr_mask
+    else if (state.mode === "ss") {
+      if (state.case.desc.length === 0) return Mask.sb_mask
+      if (state.case.desc[0].kind === "ss-front")
+        return Mask.ss_front_mask
+      else
+        return Mask.ss_back_mask
+    }
+    else
+      return Mask.sb_mask
 }
 
 function FbdrTrainerView(props: { state: AppState, dispatch: React.Dispatch<Action> } ) {
@@ -157,7 +166,7 @@ function FbdrTrainerView(props: { state: AppState, dispatch: React.Dispatch<Acti
 
       <Grid container spacing={0}>
         <Grid item xs={6}>
-          <Button onFocus={(evt) => evt.target.blur() } className={classes.button} size="medium" variant="contained" color="primary" onClick={handleSpace}> { /* className={classes.margin}>  */ }
+          <Button  onFocus={(evt) => evt.target.blur() } className={classes.button} size="medium" variant="contained" color="primary" onClick={handleSpace}> { /* className={classes.margin}>  */ }
               {spaceButtonText}
           </Button>
         </Grid>
@@ -179,8 +188,11 @@ function FbdrTrainerView(props: { state: AppState, dispatch: React.Dispatch<Acti
 function ConfigPanel(props: {state: AppState, dispatch: React.Dispatch<Action>}) {
   let { state, dispatch } = props
   let { config } = state
+  let { mode } = state
+
+  let sel = ( mode === "fbdr") ? config.fbdrSelector : config.ssSelector
   const handleChange = (evt: { target: { value: string; }; }) => {
-    let { names } = state.config.fbdrSelector
+    let { names } = sel
     let n = names.length
     let new_flags = Array(n).fill(0)
 
@@ -189,10 +201,13 @@ function ConfigPanel(props: {state: AppState, dispatch: React.Dispatch<Action>})
         new_flags[i] = 1
       }
     }
-    let new_config = {...config, fbdrSelector: {...state.config.fbdrSelector, flags: new_flags}}
+    let new_config = (mode === "fbdr") ?
+      {...config, fbdrSelector: {...state.config.fbdrSelector, flags: new_flags}}
+    : {...config, ssSelector: {...state.config.ssSelector, flags: new_flags}}
+
     dispatch( { type: "config", content: new_config })
   }
-  let sel = state.config.fbdrSelector
+
   let radioValue = function() {
     let { names, flags } = sel
     for (let i = 0; i < flags.length; i++) {
@@ -200,9 +215,11 @@ function ConfigPanel(props: {state: AppState, dispatch: React.Dispatch<Action>})
     }
     return ""
   }()
+
+  let label = ( mode === "fbdr") ? "Position of square" : "Position of square"
   return (
     <FormControl component="fieldset">
-    <FormLabel component="legend">Position of last pair</FormLabel>
+    <FormLabel component="legend">{label}</FormLabel>
     <RadioGroup aria-label="position" name="position" value={radioValue} onChange={handleChange} row>
       {
         sel.names.map(name => (
