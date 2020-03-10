@@ -1,25 +1,25 @@
 {
   "files": {
-    "main.css": "/cmll-trainer/static/css/main.34de6062.chunk.css",
-    "main.js": "/cmll-trainer/static/js/main.e1672e9c.chunk.js",
-    "main.js.map": "/cmll-trainer/static/js/main.e1672e9c.chunk.js.map",
-    "runtime-main.js": "/cmll-trainer/static/js/runtime-main.6241c7a7.js",
-    "runtime-main.js.map": "/cmll-trainer/static/js/runtime-main.6241c7a7.js.map",
-    "static/css/2.cdf5760c.chunk.css": "/cmll-trainer/static/css/2.cdf5760c.chunk.css",
-    "static/js/2.9e768b42.chunk.js": "/cmll-trainer/static/js/2.9e768b42.chunk.js",
-    "static/js/2.9e768b42.chunk.js.map": "/cmll-trainer/static/js/2.9e768b42.chunk.js.map",
-    "index.html": "/cmll-trainer/index.html",
-    "precache-manifest.243a75ca0a89f81eddb4ba72e2bb1f47.js": "/cmll-trainer/precache-manifest.243a75ca0a89f81eddb4ba72e2bb1f47.js",
-    "service-worker.js": "/cmll-trainer/service-worker.js",
-    "static/css/2.cdf5760c.chunk.css.map": "/cmll-trainer/static/css/2.cdf5760c.chunk.css.map",
-    "static/css/main.34de6062.chunk.css.map": "/cmll-trainer/static/css/main.34de6062.chunk.css.map",
-    "static/media/index.css": "/cmll-trainer/static/media/roboto-latin-900italic.ebf6d164.woff2"
+    "main.css": "/roux-trainers/static/css/main.34de6062.chunk.css",
+    "main.js": "/roux-trainers/static/js/main.7c8a8fff.chunk.js",
+    "main.js.map": "/roux-trainers/static/js/main.7c8a8fff.chunk.js.map",
+    "runtime-main.js": "/roux-trainers/static/js/runtime-main.e11041da.js",
+    "runtime-main.js.map": "/roux-trainers/static/js/runtime-main.e11041da.js.map",
+    "static/css/2.4328bed2.chunk.css": "/roux-trainers/static/css/2.4328bed2.chunk.css",
+    "static/js/2.9e768b42.chunk.js": "/roux-trainers/static/js/2.9e768b42.chunk.js",
+    "static/js/2.9e768b42.chunk.js.map": "/roux-trainers/static/js/2.9e768b42.chunk.js.map",
+    "index.html": "/roux-trainers/index.html",
+    "precache-manifest.094ee27d4be1f08aee3318ff42624bca.js": "/roux-trainers/precache-manifest.094ee27d4be1f08aee3318ff42624bca.js",
+    "service-worker.js": "/roux-trainers/service-worker.js",
+    "static/css/2.4328bed2.chunk.css.map": "/roux-trainers/static/css/2.4328bed2.chunk.css.map",
+    "static/css/main.34de6062.chunk.css.map": "/roux-trainers/static/css/main.34de6062.chunk.css.map",
+    "static/media/index.css": "/roux-trainers/static/media/roboto-latin-900italic.ebf6d164.woff2"
   },
   "entrypoints": [
-    "static/js/runtime-main.6241c7a7.js",
-    "static/css/2.cdf5760c.chunk.css",
+    "static/js/runtime-main.e11041da.js",
+    "static/css/2.4328bed2.chunk.css",
     "static/js/2.9e768b42.chunk.js",
     "static/css/main.34de6062.chunk.css",
-    "static/js/main.e1672e9c.chunk.js"
+    "static/js/main.7c8a8fff.chunk.js"
   ]
 }
