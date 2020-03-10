@@ -94,7 +94,7 @@ const setup = function(width: number, height: number, colorScheme?: Array<number
 
                     if (facesToReveal.indexOf(i) > -1) { // (i === 5 && mode === "UF")) {
                         const stickerhint = curr_tmpl.clone()
-                        stickerhint.position.copy(new THREE.Vector3(x * 2, 3 + 3 + 3, z * 2))
+                        stickerhint.position.copy(new THREE.Vector3(x * 2, 3 + 7 + 3, z * 2))
                         cubie.add(stickerhint)
                     }
                     cubie.add(sticker)

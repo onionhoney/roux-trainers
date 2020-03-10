@@ -1,4 +1,4 @@
-import { FbdrSolver, SolverT, SsSolver } from './Solver';
+import { FbdrSolver, SolverT, SsSolver, FbSolver } from './Solver';
 
 let CachedSolver = function() {
     let cache : Map<string, SolverT> = new Map()
@@ -6,6 +6,7 @@ let CachedSolver = function() {
         if (!cache.has(s)) {
             switch (s) {
                 case "fbdr": cache.set(s, FbdrSolver()); break
+                case "fb": cache.set(s, FbSolver()); break
                 case "ss-front": cache.set(s, SsSolver(true)); break
                 case "ss-back": cache.set(s, SsSolver(false)); break
             }

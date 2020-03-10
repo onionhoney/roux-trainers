@@ -4,7 +4,8 @@ import { AlgDesc } from "./lib/Algs";
 export type Selector = {
     names: string[],
     flags: number[],
-    kind: string
+    kind: string,
+    label?: string
 }
 
 export type Slider = {
@@ -18,6 +19,8 @@ export type Config = {
     orientationSelector: Selector
     fbdrSelector: Selector,
     ssSelector: Selector
+    fbOnlySelector: Selector,
+    ssPairOnlySelector: Selector
     //fbdrSolutionCount: Slider
 }
 

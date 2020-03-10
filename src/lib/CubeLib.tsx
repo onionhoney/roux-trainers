@@ -231,7 +231,7 @@ let Move = function () {
 
     let to_string = (move: MoveT | MoveT[]): string => {
         if (Array.isArray(move)) {
-            return move.map(to_string).join(" ")
+            return move.map(to_string).join(" ") + " "
         } else {
             return move.name
         }

@@ -2,7 +2,7 @@ import { CubieCube } from './CubeLib';
 import { CubieT, MoveT } from './Defs';
 import { arrayEqual } from './Math';
 
-import { Pruner, PrunerT, fbdrPrunerConfig, ssPrunerConfig } from './Pruner';
+import { Pruner, PrunerT, fbdrPrunerConfig, ssPrunerConfig, fbPrunerConfig } from './Pruner';
 
 
 type SolverConfig = {
@@ -172,6 +172,25 @@ let FbdrSolver = function() {
     return solver
 }
 
+let FbSolver = function() {
+    let prunerConfig = fbPrunerConfig
+    let pruner = Pruner(prunerConfig)
+    pruner.init()
+    //let solvedEncodings = prunerConfig.solved_states.map(s => prunerConfig.encode(s))
+    function is_solved(cube: CubieT) {
+        return pruner.query(cube) === 0;
+    }
+
+    let config = {
+        is_solved,
+        moveset: prunerConfig.moveset,
+        pruners: [pruner],
+    }
+
+    let solver = Solver(config)
+    return solver
+}
+
 let SsSolver = function(is_front: boolean) {
     let prunerConfig = ssPrunerConfig(is_front)
     let pruner = Pruner(prunerConfig)
@@ -191,4 +210,4 @@ let SsSolver = function(is_front: boolean) {
     return solver
 }
 
-export { FbdrSolver, SsSolver }
+export { FbdrSolver, FbSolver, SsSolver }

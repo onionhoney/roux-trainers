@@ -3,7 +3,7 @@ import { AppState, StateT, Action, Mode } from "../Types"
 import { alg_generator, AlgDesc } from "../lib/Algs"
 import { MoveT, CubieT } from "../lib/Defs";
 import { CubieCube, Move, CubeUtil, Mask } from '../lib/CubeLib';
-import { setConfig, getConfig, getActiveNames} from '../components/Config';
+import { setConfig, getConfig, getActiveNames, getActiveName} from '../components/Config';
 import { CachedSolver } from "../lib/CachedSolver";
 import { rand_choice } from '../lib/Math';
 
@@ -97,7 +97,7 @@ abstract class BlockTrainerStateM extends StateM {
         const solver = CachedSolver.get(solverName)
         const scramble = solver.solve(cube, this.solverL, this.solverR, 1)[0]
 
-        console.log(cube, solverName, scramble, this.solverL, this.solverR)
+        //console.log(cube, solverName, scramble, this.solverL, this.solverR)
         const magnification = 2
 
         const setup = Move.to_string(Move.inv(scramble))
@@ -175,9 +175,10 @@ class FbdrStateM extends BlockTrainerStateM {
     }
 
     getRandom() : [CubieT, string] {
-        const solverName = "fbdr"
+        const fbOnly = getActiveName(this.state.config.fbOnlySelector) === "FB only"
+        const solverName = fbOnly ? "fb" : "fbdr"
         let active = getActiveNames(this.state.config.fbdrSelector)[0]
-        console.log("active", active)
+        //console.log("active", active)
         //["FP at front", "FP at back", "Both"],
         if (active === "FS at back") {
             return [this.get_random_fs_back(), solverName]
@@ -202,13 +203,14 @@ class SsStateM extends BlockTrainerStateM {
     solutionCap: number
 
     get_random_fb() {
-        let cube = CubeUtil.get_random_with_mask(Mask.fb_mask)
+        let active = getActiveName(this.state.config.ssPairOnlySelector)
+        let mask = (active === "SS")? Mask.fb_mask : Mask.fbdr_mask
+        let cube = CubeUtil.get_random_with_mask(mask)
         return cube
     }
 
     getRandom(): [CubieT, string] {
         let active = getActiveNames(this.state.config.ssSelector)[0]
-        console.log("active", active)
         //["FP at front", "FP at back", "Both"],
         let cube = this.get_random_fb()
         let solver;

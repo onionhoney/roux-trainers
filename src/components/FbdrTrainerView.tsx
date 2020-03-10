@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { Fragment } from 'react'
 
 import CubeSim from './CubeSim'
 import { FormControlLabel, Button, makeStyles, Divider, Typography, FormControl, FormLabel, RadioGroup } from '@material-ui/core';
@@ -9,10 +9,11 @@ import Paper from '@material-ui/core/Paper';
 import Box from '@material-ui/core/Box';
 import { FaceletCube, CubeUtil, Mask, Move } from '../lib/CubeLib';
 
-import { AppState,  Action} from "../Types";
+import { AppState,  Action, Selector} from "../Types";
 import 'typeface-roboto';
 import clsx from 'clsx';
 import { Face } from '../lib/Defs';
+import { getActiveName  } from './Config';
 
 
 const useStyles = makeStyles(theme => ({
@@ -58,8 +59,10 @@ const useStyles = makeStyles(theme => ({
 
 
 function getMask(state: AppState) : Mask {
-    if (state.mode === "fbdr")
-      return Mask.fbdr_mask
+    if (state.mode === "fbdr") {
+      const fbOnly = getActiveName(state.config.fbOnlySelector) === "FB Last Pair"
+      return fbOnly ? Mask.fb_mask : Mask.fbdr_mask
+    }
     else if (state.mode === "ss") {
       if (state.case.desc.length === 0) return Mask.sb_mask
       if (state.case.desc[0].kind === "ss-front")
@@ -178,19 +181,19 @@ function FbdrTrainerView(props: { state: AppState, dispatch: React.Dispatch<Acti
       <Divider/>
       <Box height={20}/>
 
-      <ConfigPanel {...{state, dispatch}}> </ConfigPanel>
+      <ConfigPanelGroup {...{state, dispatch} } />
       </Container>
 </Box>
 
     );
 }
 
-function ConfigPanel(props: {state: AppState, dispatch: React.Dispatch<Action>}) {
-  let { state, dispatch } = props
+function ConfigPanel(props: {state: AppState, dispatch: React.Dispatch<Action>, select: (s: AppState) => Selector}) {
+  let { state, dispatch, select } = props
   let { config } = state
   let { mode } = state
 
-  let sel = ( mode === "fbdr") ? config.fbdrSelector : config.ssSelector
+  let sel = select(state)
   const handleChange = (evt: { target: { value: string; }; }) => {
     let { names } = sel
     let n = names.length
@@ -201,10 +204,8 @@ function ConfigPanel(props: {state: AppState, dispatch: React.Dispatch<Action>})
         new_flags[i] = 1
       }
     }
-    let new_config = (mode === "fbdr") ?
-      {...config, fbdrSelector: {...state.config.fbdrSelector, flags: new_flags}}
-    : {...config, ssSelector: {...state.config.ssSelector, flags: new_flags}}
-
+    let new_config = {...config}
+    select(state).flags = new_flags
     dispatch( { type: "config", content: new_config })
   }
 
@@ -216,7 +217,7 @@ function ConfigPanel(props: {state: AppState, dispatch: React.Dispatch<Action>})
     return ""
   }()
 
-  let label = ( mode === "fbdr") ? "Position of square" : "Position of square"
+  let label = sel.label || ""
   return (
     <FormControl component="fieldset">
     <FormLabel component="legend">{label}</FormLabel>
@@ -235,6 +236,33 @@ function ConfigPanel(props: {state: AppState, dispatch: React.Dispatch<Action>})
     </RadioGroup>
   </FormControl>)
 }
+
+
+
+function ConfigPanelGroup(props: {state: AppState, dispatch: React.Dispatch<Action> }) {
+  let { state, dispatch } = props
+  if (state.mode === "ss") {
+    let select1 = (state: AppState) => { return state.config.ssSelector }
+    let select2 = (state: AppState) => { return state.config.ssPairOnlySelector }
+    return (
+      <Fragment>
+      <ConfigPanel {...{state, dispatch, select: select1}}> </ConfigPanel>
+      <ConfigPanel {...{state, dispatch, select: select2}}> </ConfigPanel>
+      </Fragment>
+    )
+  } else if (state.mode === "fbdr") {
+    let select1 = (state: AppState) => { return state.config.fbdrSelector }
+    let select2 = (state: AppState) => { return state.config.fbOnlySelector }
+    return (
+      <Fragment>
+      <ConfigPanel {...{state, dispatch, select: select1}}> </ConfigPanel>
+      <ConfigPanel {...{state, dispatch, select: select2}}> </ConfigPanel>
+      </Fragment>
+    )
+  } else return <Fragment/>
+}
+
+
 
 export default FbdrTrainerView
 

@@ -11,6 +11,15 @@ function getActiveNames(s : Selector) {
     return ans
 }
 
+function getActiveName(s : Selector) {
+    for (let i = 0; i < s.flags.length; i++) {
+        if (s.flags[i] === 1) {
+            return (s.names[i])
+        }
+    }
+    return null
+}
+
 const initialConfig : Config = (() => {
     let arr_ori_flag = Array(24).fill(0)
     arr_ori_flag[0] = 1
@@ -43,15 +52,29 @@ const initialConfig : Config = (() => {
             kind: "orientation"
         },
         fbdrSelector: {
+            label: "Position of square",
             names: ["FS at back", "FS at front", "Both"],
             flags: [1, 0, 0],
             kind: "fbdr"
         },
+        fbOnlySelector: {
+            label: "Solve with or without DR",
+            names: ["FB+DR", "FB Last Pair"],
+            flags: [1, 0],
+            kind: "fb-only"
+        },
         ssSelector: {
+            label: "Position of square",
             names: ["SS at front", "SS at back", "Both"],
             flags: [1, 0, 0],
             kind: "ss"
-        }
+        },
+        ssPairOnlySelector: {
+            label: "Solve with or without DR",
+            names: ["SS", "SB First Pair"],
+            flags: [1, 0],
+            kind: "sb-pair-only"
+        },
     }
 })()
 
@@ -95,5 +118,5 @@ let getConfig = configManager.getConfig
 let setConfig = configManager.setConfig
 
 export {
-    getConfig, setConfig, getActiveNames
+    getConfig, setConfig, getActiveNames, getActiveName
 }

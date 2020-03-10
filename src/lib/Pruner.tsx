@@ -105,6 +105,53 @@ let fbdrPrunerConfig : PrunerConfig = function() {
     }
 }()
 
+
+let fbPrunerConfig : PrunerConfig = function() {
+    const esize = Math.pow(24, 3)
+    const csize = Math.pow(24, 2)
+    const size = esize * csize
+
+    function encode(cube:CubieT) {
+      let c1 = 0, c2 = 0
+      for (let i = 0; i < 8; i++) {
+        if (cube.cp[i] === 4) {
+          c1 = i * 3 + cube.co[i]
+        } else if (cube.cp[i] === 5) {
+          c2 = i * 3 + cube.co[i];
+        }
+      }
+      const enc_c = c1 * 24 + c2
+      let e1 = 0, e2 = 0, e3 = 0
+      for (let i = 0; i < 12; i++) {
+          switch (cube.ep[i]) {
+              case 5 : e1 = i * 2 + cube.eo[i]; break;
+              case 8 : e2 = i * 2 + cube.eo[i]; break;
+              case 9 : e3 = i * 2 + cube.eo[i]; break;
+          }
+      }
+      const enc_e = e1 * (24 * 24 ) + e2 * (24 ) + e3
+      return enc_c + 24 * 24 * enc_e
+    }
+
+    const moves = [[]] //, Move.parse("L R'"), Move.parse("L' R"), Move.parse("L2 R2")]
+    const solved_states = moves.map( (move : MoveT[]) => CubieCube.apply(CubieCube.id, move))
+
+    const max_depth = 4
+    const moveset : MoveT[] = ["U", "U2", "U'", "F", "F2", "F'", "R", "R2", "R'",
+    "r", "r2", "r'", "D", "D2", "D'", "M", "M'", "M2", "B", "B'", "B2"].map(s => Move.all[s])
+
+    return {
+        size,
+        encode,
+        solved_states,
+        max_depth,
+        moveset
+    }
+}()
+
+
+
+
 let ssPrunerConfig = (is_front: boolean) => {
     const size = Math.pow(24, 3)
 
@@ -139,4 +186,4 @@ let ssPrunerConfig = (is_front: boolean) => {
     }
 }
 
-export { fbdrPrunerConfig, ssPrunerConfig }
+export { fbdrPrunerConfig, ssPrunerConfig, fbPrunerConfig }
