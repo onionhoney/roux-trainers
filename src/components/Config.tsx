@@ -1,5 +1,15 @@
-import { Config } from "../Types"
+import { Config, Selector } from "../Types"
 import { version } from "../Version"
+
+function getActiveNames(s : Selector) {
+    let ans = []
+    for (let i = 0; i < s.flags.length; i++) {
+        if (s.flags[i] === 1) {
+            ans.push(s.names[i])
+        }
+    }
+    return ans
+}
 
 const initialConfig : Config = (() => {
     let arr_ori_flag = Array(24).fill(0)
@@ -33,10 +43,10 @@ const initialConfig : Config = (() => {
             kind: "orientation"
         },
         fbdrSelector: {
-            names: ["FP at front", "FP at back(unavailable yet)", "Both"],
+            names: ["FS at back", "FS at front", "Both"],
             flags: [1, 0, 0],
             kind: "fbdr"
-        }
+        },
     }
 })()
 
@@ -80,5 +90,5 @@ let getConfig = configManager.getConfig
 let setConfig = configManager.setConfig
 
 export {
-    getConfig, setConfig
+    getConfig, setConfig, getActiveNames
 }

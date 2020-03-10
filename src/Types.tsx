@@ -7,12 +7,17 @@ export type Selector = {
     kind: string
 }
 
+export type Slider = {
+    l: number, r: number, step: number, value: number
+}
+
 export type Config = {
     cmllSelector: Selector,
     cmllAufSelector: Selector,
     triggerSelector: Selector,
     orientationSelector: Selector
-    fbdrSelector: Selector
+    fbdrSelector: Selector,
+    //fbdrSolutionCount: Slider
 }
 
 export type StateT = "solving" | "solved" | "hiding" | "revealed" | "revealed_all"

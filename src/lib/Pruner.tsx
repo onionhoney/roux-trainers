@@ -1,7 +1,5 @@
-import { CubieCube, CubeUtil, Move } from './CubeLib';
+import { CubieCube, Move } from './CubeLib';
 import { CubieT, MoveT } from './Defs';
-import { DepthModes, ShaderChunk } from 'three';
-import { arrayEqual } from './Math';
 export type PrunerConfig = {
     size: number,
     encode: (cube : CubieT) => number,
@@ -12,7 +10,8 @@ export type PrunerConfig = {
 export type PrunerT = {
     init: () => void,
     query: (c : CubieT) => number,
-    equal: (c1 : CubieT, c2: CubieT) => boolean
+    equal: (c1 : CubieT, c2: CubieT) => boolean,
+    encode: (c : CubieT) => number
 }
 
 export function Pruner(config: PrunerConfig) : PrunerT {
@@ -57,7 +56,8 @@ export function Pruner(config: PrunerConfig) : PrunerT {
     return  {
         init,
         query,
-        equal
+        equal,
+        encode
     }
 }
 
@@ -92,9 +92,9 @@ let fbdrPrunerConfig : PrunerConfig = function() {
     const moves = [[], Move.parse("L R'"), Move.parse("L' R"), Move.parse("L2 R2")]
     const solved_states = moves.map( (move : MoveT[]) => CubieCube.apply(CubieCube.id, move))
 
-    const max_depth = 5
+    const max_depth = 4
     const moveset : MoveT[] = ["U", "U2", "U'", "F", "F2", "F'", "R", "R2", "R'",
-    "r", "r2", "r'", "D", "D2", "D'", "M", "M'", "M2"].map(s => Move.all[s])
+    "r", "r2", "r'", "D", "D2", "D'", "M", "M'", "M2", "B", "B'", "B2"].map(s => Move.all[s])
 
     return {
         size,

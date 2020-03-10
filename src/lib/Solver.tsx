@@ -1,4 +1,4 @@
-import { CubieCube, CubeUtil, Move } from './CubeLib';
+import { CubieCube } from './CubeLib';
 import { CubieT, MoveT } from './Defs';
 import { arrayEqual } from './Math';
 
@@ -9,12 +9,6 @@ type SolverConfig = {
     is_solved: (cube : CubieT) => boolean,
     moveset: MoveT[],
     pruners: PrunerT[],
-}
-
-let defaultSolver = {
-    is_solved: CubeUtil.is_cube_solved,
-    moveset: Move.all,
-    pruner: [],
 }
 
 type Accumulator = {
@@ -50,13 +44,42 @@ function Solver(config: SolverConfig) : SolverT{
         return accum
     }
 
-    function expand(cube: CubieT, depth: number, solution: MoveT[]) : SState{
-        let last_move_face = solution.length > 0 ? solution[solution.length - 1].name[0] : ""
+    let moveTable = Object.create({})
+    function prepareNextMoveTable() {
+        function getAvailableMove(name : string) {
+            switch (name[0]) {
+                case "U": return moveset.filter(k => k.name[0] !== "U");
+                case "D": return moveset.filter(k => k.name[0] !== "U" && k.name[0] !== "D");
+                case "R": {
+                    let base = moveset.filter(k => k.name[0] !== "R" && k.name[0] !== "M");
+                    if (name === "R") return base.filter(k => k.name !== "r'")
+                    if (name === "R'") return base.filter(k => k.name !== "r")
+                    if (name === "R2") return base.filter(k => k.name !== "r2")
+                    return base
+                }
+                case "L": return moveset.filter(k => k.name[0] !== "R" && k.name[0] !== "M" && k.name[0] !== "L" && k.name[0] !== "r");
+                case "r": return moveset.filter(k => k.name[0] !== "R" && k.name[0] !== "M" && k.name[0] !== "L" && k.name[0] !== "r");
+                case "M": return moveset.filter(k => k.name[0] !== "R" && k.name[0] !== "M" && k.name[0] !== "L" && k.name[0] !== "r");
+                case "F": return moveset.filter(k => k.name[0] !== "F");
+                case "B": return moveset.filter(k => k.name[0] !== "F" && k.name[0] !== "B");
+            }
+        }
         for (let move of moveset) {
-            if (move.name[0] === last_move_face) continue;
+            moveTable[move.name] = getAvailableMove(move.name)
+        }
+    }
+    prepareNextMoveTable()
+
+    function expand(cube: CubieT, depth: number, solution: MoveT[]) : SState{
+        const availableMoves = solution.length > 0 ? moveTable[solution[solution.length - 1].name] : moveset
+        const seen_encodings = new Set()
+        seen_encodings.add(pruners[0].encode(cube))
+        for (let move of availableMoves) {
             let new_cube = CubieCube.apply(cube, move)
-            let redundant = pruners[0].equal(new_cube, cube)
+            let enc = pruners[0].encode(new_cube)
+            let redundant = seen_encodings.has(enc)
             if (!redundant) {
+                seen_encodings.add(enc)
                 solution.push(move);
                 let st : SState = search(new_cube, depth + 1, solution);
                 solution.pop();

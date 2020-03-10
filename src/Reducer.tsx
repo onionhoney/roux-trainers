@@ -1,11 +1,11 @@
 
 import { AppState, StateT, Action, Mode } from "./Types"
 import { alg_generator, AlgDesc } from "./lib/Algs"
-import { MoveT } from "./lib/Defs";
+import { MoveT, CubieT } from "./lib/Defs";
 import { CubieCube, Move, CubeUtil } from './lib/CubeLib';
-import { setConfig, getConfig} from './components/Config';
-import { FbdrSolver } from './lib/Solver';
+import { setConfig, getConfig, getActiveNames} from './components/Config';
 import { CachedSolver } from "./lib/CachedSolver";
+import { rand_choice } from './lib/Math';
 
 export const getInitialState = (mode?: Mode) : AppState => {
     mode = mode || "fbdr"
@@ -33,7 +33,7 @@ export const getInitialState = (mode?: Mode) : AppState => {
 
 export function reducer(state: AppState, action: Action): AppState {
     // todo: cache values based on this
-    console.log("prev state", state)
+    // console.log("prev state", state)
     if (action.type === "key") {
         let newState = reduceKey(state, action.content)
         return newState
@@ -63,14 +63,20 @@ abstract class StateM {
     abstract move(s: string): AppState;
 
     static create(state: AppState) {
-        if (state.mode === "fbdr") {
+        let mode : Mode = state.mode
+        if (mode === "fbdr") {
             return new FbdrStateM(state)
         }
-        else if (state.name === "solving") {
-            return new SolvingStateM(state)
-        } else {
-            return new SolvedStateM(state)
+        else if (mode === "cmll") {
+            if (state.name === "solving") {
+                return new SolvingStateM(state)
+            } else if (state.name === "solved"){
+                return new SolvedStateM(state)
+            } else
+                throw new Error("Impossible");
         }
+        else
+            throw new Error("Impossibe")
     }
 }
 
@@ -78,7 +84,7 @@ abstract class StateM {
 abstract class CmllStateM extends StateM {
     control(s: string): AppState {
         let state = this.state
-        let { config, mode } = state
+        let { config } = state
         let { cmllSelector, triggerSelector, cmllAufSelector, orientationSelector } = config
         let generator = alg_generator(cmllSelector)
         let trig_generator = alg_generator(triggerSelector)
@@ -133,19 +139,31 @@ abstract class CmllStateM extends StateM {
     }
 }
 
-class FbdrStateM extends StateM {
+
+abstract class BlockTrainerStateM extends StateM {
+    abstract solverName: string;
+    abstract solverL : number;
+    abstract solverR : number;
+    abstract solutionCap : number
+    abstract getRandom : () => CubieT;
+
     updateScramble() : AppState {
-        let state = this.state
-        let cube = CubeUtil.get_random_fs()
-        let solver = CachedSolver.get("fbdr")
-        let scramble = solver.solve(cube, 8, 10, 1)[0]
-        let setup = Move.to_string(Move.inv(scramble))
-        let solution = solver.solve(cube, 0, 10, 5)
-        let alg = Move.to_string(solution[0])
-        let alt_algs = solution.slice(1).map((s: MoveT[]) => Move.to_string(s))
+        const state = this.state
+        const cube = this.getRandom()
+        const solver = CachedSolver.get(this.solverName)
+        const scramble = solver.solve(cube, this.solverL, this.solverR, 1)[0]
+
+        const magnification = 2
+
+        const setup = Move.to_string(Move.inv(scramble))
+        let solution = solver.solve(cube, 0, this.solverR, this.solutionCap * magnification)
+        solution.sort( (a, b) => Move.evaluate(a) - Move.evaluate(b) )
+
+        const alg = Move.to_string(solution[0])
+        const alt_algs = solution.slice(1, this.solutionCap ).map((s: MoveT[]) => Move.to_string(s))
 
         let algdesc: AlgDesc = {
-            id: `fpdr-random`,
+            id: `${this.solverName}`,
             alg,
             alt_algs,
             setup,
@@ -168,23 +186,12 @@ class FbdrStateM extends StateM {
     control(s: string): AppState {
         let state = this.state
         if (s === "#space") {
-            if (state.name === "revealed" || state.name === "revealed_all") {
+            if (state.name === "revealed") {
                 return this.updateScramble()
             } else {
                 return {...state,
                     name: "revealed"
                 }
-            }
-        }
-        else if (s === "#enter") {
-            if (state.name === "revealed_all") {
-                return this.updateScramble()
-            } else if (state.name === "revealed" || state.name === "hiding" ) {
-                let newState = { ...state }
-                newState.name = "revealed_all"
-                return newState
-            } else {
-                return state
             }
         }
         else {
@@ -205,6 +212,30 @@ class FbdrStateM extends StateM {
     }
 }
 
+class FbdrStateM extends BlockTrainerStateM {
+    solverName : string;
+    solverL : number;
+    solverR : number;
+    solutionCap : number
+    getRandom : () => CubieT;
+    constructor(state: AppState) {
+        super(state)
+        this.solverName = "fbdr"
+        this.getRandom = () => {
+            let active = getActiveNames(this.state.config.fbdrSelector)[0]
+            console.log("active", active)
+            //["FP at front", "FP at back", "Both"],
+            if (active === "FS at back") {
+                return CubeUtil.get_random_fs_back()
+            } else if (active === "FS at front") {
+                return CubeUtil.get_random_fs_front()
+            } else return rand_choice([CubeUtil.get_random_fs_back, CubeUtil.get_random_fs_front])()
+        }
+        this.solverL = 8
+        this.solverR = 10
+        this.solutionCap = 5
+    }
+}
 
 
 class SolvingStateM extends CmllStateM {

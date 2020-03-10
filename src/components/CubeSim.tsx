@@ -1,9 +1,9 @@
 import React, { useEffect } from 'react'
 
-import { FaceletCubeT } from "../lib/Defs";
+import { FaceletCubeT, Face } from "../lib/Defs";
 import * as THREE from 'three';
 
-type Config = {cube: FaceletCubeT, width: number, height: number, colorScheme: Array<number>}
+type Config = {cube: FaceletCubeT, width: number, height: number, colorScheme: Array<number>, facesToReveal: Face[]}
 
 /*
 How to propagate control of keypress ..? maybe not here, in the app.
@@ -28,19 +28,22 @@ const axesInfo : [THREE.Vector3, THREE.Euler][] = [
     [new THREE.Vector3( 1,  0,  0), new THREE.Euler( 0,  TAU/4,  0)],
 ];
 
-const setup = function(width: number, height: number, colorScheme?: Array<number>, mode?: string) {
+const setup = function(width: number, height: number, colorScheme?: Array<number>, mode?: string,
+    faces?: Face[]) {
+    let facesToReveal = faces || [Face.L, Face.B, Face.D]
     const scene = new THREE.Scene()
     const camera = new THREE.PerspectiveCamera(70, width / height, 0.1, 1000)
     const renderer = new THREE.WebGLRenderer({ antialias: true })
     const geo = new THREE.PlaneGeometry(0.9 * 2, 0.9 * 2)
     const geo_border = new THREE.PlaneGeometry(1 * 2, 1 * 2)
+    renderer.setPixelRatio(window.devicePixelRatio)
 
     //let colorScheme_ = colorScheme || [0xffffff, 0xffff00,  0x00ff00, 0x0000ff, 0xff8800, 0xff0000]
 
     mode = mode || "FRU"
 
     if (mode === "FRU")
-        camera.position.copy(new THREE.Vector3(2.2 / 1.1, 3/1.1, 3/1.1))
+        camera.position.copy(new THREE.Vector3(2.6 / 1.1, 3/1.1, 3/1.1))
     else
         camera.position.copy(new THREE.Vector3(0 / 1.1, 3/1.1, 3/1.1))
 
@@ -50,6 +53,9 @@ const setup = function(width: number, height: number, colorScheme?: Array<number
 
     let stickers_tmpl: THREE.Mesh[] , stickerwrap_tmpl: THREE.Mesh
 
+    function updateFacesToReveal(faces: Face[]) {
+        facesToReveal = faces
+    }
     function updateColorScheme(colorScheme: Array<number>) {
         let colorScheme_ = colorScheme
         //console.log("update color scheme ", colorScheme_)
@@ -86,7 +92,7 @@ const setup = function(width: number, height: number, colorScheme?: Array<number
                     sticker.position.copy(new THREE.Vector3(x * 2, 3, z * 2))
                     stickerwrap.position.copy(new THREE.Vector3(x * 2, 3 - eps, z * 2))
 
-                    if (i === 4 || i === 3 || i === 1 ||  (i === 5 && mode === "UF")) {
+                    if (facesToReveal.indexOf(i) > -1) { // (i === 5 && mode === "UF")) {
                         const stickerhint = curr_tmpl.clone()
                         stickerhint.position.copy(new THREE.Vector3(x * 2, 3 + 3 + 3, z * 2))
                         cubie.add(stickerhint)
@@ -114,10 +120,15 @@ const setup = function(width: number, height: number, colorScheme?: Array<number
     }
 
     const updateWidthHeight = (width: number, height: number) => {
-        renderer.setSize(width, height, false);
-        renderer.setClearColor('#fafafa')
-        camera.aspect = width / height;
-        camera.updateProjectionMatrix();
+        const canvas = renderer.domElement;
+        const needResize = canvas.width !== width || canvas.height !== height;
+        if (needResize) {
+            renderer.setSize(width, height, true);
+            //renderer.setViewport( 0, 0, width * window.devicePixelRatio, height * window.devicePixelRatio);
+            renderer.setClearColor('#fafafa')
+            camera.aspect = width / height;
+            camera.updateProjectionMatrix();
+        }
     }
 
 
@@ -138,7 +149,8 @@ const setup = function(width: number, height: number, colorScheme?: Array<number
         renderScene,
         updateWidthHeight,
         cleanup,
-        updateColorScheme
+        updateColorScheme,
+        updateFacesToReveal
     }
 }
 
@@ -153,6 +165,7 @@ function CubeSim(props: Config) {
     let current = mount.current!
 
     current.appendChild(dom)
+    cubeSim.updateFacesToReveal( props.facesToReveal )
     cubeSim.updateWidthHeight( width, height)
     cubeSim.updateColorScheme(props.colorScheme)
     cubeSim.updateCube(props.cube)

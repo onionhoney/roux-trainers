@@ -11,6 +11,7 @@ import { FaceletCube, CubeUtil } from '../lib/CubeLib';
 import { AppState, Selector, Action, Config } from "../Types";
 import 'typeface-roboto';
 import clsx from 'clsx';
+import { Face } from '../lib/Defs';
 
 
 const useStyles = makeStyles(theme => ({
@@ -81,7 +82,6 @@ function CmllTrainerView(props: { state: AppState, dispatch: React.Dispatch<Acti
           let new_config = {...config}
           let sel = selectorSel(new_config)
           sel.flags = new_flags
-          //console.log("setting new config to ")
           dispatch( { type: "config", content: new_config })
         }
       }, [ config, dispatch ] )
@@ -97,6 +97,7 @@ function CmllTrainerView(props: { state: AppState, dispatch: React.Dispatch<Acti
                 height={400}
                 cube={facelet}
                 colorScheme={CubeUtil.ori_to_color_scheme(props.state.cube.ori)}
+                facesToReveal={[Face.L]}
               />
               </Box>
             </Paper>

@@ -155,10 +155,53 @@ let Move = function () {
         return moves_dict
     }
 
+    const moveCost = function() {
+        let pairs : [string, number][]= [
+            ["U", 1], ["U'", 1], ["U2", 1.4],
+            ["R", 1], ["R'", 1], ["R2", 1.4],
+            ["r", 1], ["r'", 1], ["r2", 1.5],
+            ["L", 1], ["L'", 1], ["L2", 1.4],
+            ["F", 1.4], ["F'", 1.4], ["F2", 1.8],
+            ["B", 1.5], ["B'", 1.5], ["B2", 2.0],
+            ["D", 1.4], ["D'", 1.4], ["D2", 1.7],
+            ["M", 1.5], ["M'", 1.2], ["M2", 1.8]
+        ]
+        let costMap = new Map(pairs)
+        return costMap
+    }()
+    function evaluate(moves : MoveT[]) {
+        let sum = 0
+        for (let m of moves) {
+            const value = (moveCost.get(m.name)) || 1.4
+            sum += value
+        }
+        return sum
+    }
+
     let all_moves = generate_base_moves()
     let parse = (str: string) => {
-        str = str.replace(/2'/g, "2").replace(/2/g, "2 ").replace(/'/g, "' ");
-        let tokens = str.split(/\s+/).filter(Boolean)
+        let tokens = []
+        let token = ""
+        for (let i = 0; i < str.length; i++) {
+            let ch = str[i]
+            if (ch === '2' || ch === '\'') {
+                token += str[i]; tokens.push(token)
+                token = "";
+            } else if (ch === ' ') {
+                if (token.length > 0) tokens.push(token); token = "";
+            } else {
+                const ord = ch.charCodeAt(0)
+                if ( (65 <= ord && ord < 65 + 26) || (97 <= ord && ord < 97 + 26)) {
+                    if (token.length > 0) {
+                        tokens.push(token)
+                        token = ""
+                    }
+                    token += str[i]
+                }
+            }
+        }
+        if (token.length > 0) tokens.push(token);
+
         let res: MoveT[] = []
         for (let token of tokens) {
             let move = all_moves[token]
@@ -200,7 +243,8 @@ let Move = function () {
         inv: inv,
         add_auf: add_auf,
         to_string: to_string,
-        from_moves
+        from_moves,
+        evaluate
     }
 }()
 
@@ -343,9 +387,23 @@ const fs_back_mask: Mask = {
     cp: [0, 0, 0, 0, 0, 1, 0, 0],
     ep: [0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0]
 }
+const fs_front_mask: Mask = {
+    cp: [0, 0, 0, 0, 1, 0, 0, 0],
+    ep: [0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0]
+}
 const fbdr_mask: Mask = {
     cp: [0, 0, 0, 0, 1, 1, 0, 0],
     ep: [0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 0, 0],
+    tp: [0, 0, 0, 0, 1, 1]
+}
+const sb_mask : Mask = {
+    cp: [0, 0, 0, 0, 1, 1, 1, 1],
+    ep: [0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1],
+    tp: [0, 0, 0, 0, 1, 1]
+}
+const cmll_mask : Mask = {
+    cp: [1, 1, 1, 1, 1, 1, 1, 1],
+    ep: [0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1],
     tp: [0, 0, 0, 0, 1, 1]
 }
 
@@ -449,8 +507,13 @@ let CubeUtil = (() => {
         return CubieCube.apply(cube, rand_choice(m2_premove))
     }
 
-    let get_random_fs = (): CubieT => {
+    let get_random_fs_back = (): CubieT => {
         let cube = get_random_with_mask(fs_back_mask)
+        return CubieCube.apply(cube, rand_choice(m_premove))
+    }
+
+    let get_random_fs_front = (): CubieT => {
+        let cube = get_random_with_mask(fs_front_mask)
         return CubieCube.apply(cube, rand_choice(m_premove))
     }
 
@@ -515,14 +578,15 @@ let CubeUtil = (() => {
     return {
         is_cmll_solved,
         get_random_lse,
-        get_random_fs,
+        get_random_fs_front,
+        get_random_fs_back,
         ori_to_color_scheme,
         is_cube_solved,
     }
 })()
 
 let Mask = {
-    lse_mask, fs_back_mask, fbdr_mask
+    lse_mask, fs_back_mask, fbdr_mask, sb_mask, cmll_mask
 }
 
 export { CubieCube, Move, FaceletCube, CubeUtil, Mask }
