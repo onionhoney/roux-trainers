@@ -142,7 +142,7 @@ abstract class BlockTrainerStateM extends StateM {
                 ori
             },
             case: {
-                ...state.case,
+                state: cube,
                 desc: [algdesc]
             }
         }
@@ -155,6 +155,15 @@ abstract class BlockTrainerStateM extends StateM {
             } else {
                 return {...state,
                     name: "revealed"
+                }
+            }
+        }
+        else if (s === "#enter") {
+            return {
+                ...state,
+                cube: {
+                    ...state.cube,
+                    state: state.case.state,
                 }
             }
         }
