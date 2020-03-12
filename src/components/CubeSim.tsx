@@ -125,7 +125,7 @@ const setup = function(width: number, height: number, colorScheme?: Array<number
         if (needResize) {
             renderer.setSize(width, height, true);
             //renderer.setViewport( 0, 0, width * window.devicePixelRatio, height * window.devicePixelRatio);
-            renderer.setClearColor('#fafafa')
+            renderer.setClearColor('#eeeeee')
             camera.aspect = width / height;
             camera.updateProjectionMatrix();
         }

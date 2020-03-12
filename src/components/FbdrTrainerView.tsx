@@ -1,7 +1,11 @@
 import React, { Fragment } from 'react'
 
 import CubeSim from './CubeSim'
-import { FormControlLabel, Button, makeStyles, Divider, Typography, FormControl, FormLabel, RadioGroup } from '@material-ui/core';
+import { FormControlLabel, FormGroup, Button, makeStyles, Divider, Typography,
+  FormControl, FormLabel, RadioGroup, Checkbox, Dialog, DialogTitle, DialogContent, DialogActions } from '@material-ui/core';
+
+import SettingsIcon from '@material-ui/icons/Settings';
+
 import Container from '@material-ui/core/Container';
 import Grid from '@material-ui/core/Grid';
 import Radio from '@material-ui/core/Radio';
@@ -9,7 +13,7 @@ import Paper from '@material-ui/core/Paper';
 import Box from '@material-ui/core/Box';
 import { FaceletCube, CubeUtil, Mask, Move } from '../lib/CubeLib';
 
-import { AppState,  Action, Selector} from "../Types";
+import { AppState,  Action, Selector, Config} from "../Types";
 import 'typeface-roboto';
 import clsx from 'clsx';
 import { Face } from '../lib/Defs';
@@ -188,12 +192,12 @@ function FbdrTrainerView(props: { state: AppState, dispatch: React.Dispatch<Acti
     );
 }
 
-function ConfigPanel(props: {state: AppState, dispatch: React.Dispatch<Action>, select: (s: AppState) => Selector}) {
+function SingleSelect(props: {state: AppState, dispatch: React.Dispatch<Action>,
+  select: (c: Config) => Selector}) {
   let { state, dispatch, select } = props
   let { config } = state
-  let { mode } = state
+  let sel = select(config)
 
-  let sel = select(state)
   const handleChange = (evt: { target: { value: string; }; }) => {
     let { names } = sel
     let n = names.length
@@ -204,8 +208,8 @@ function ConfigPanel(props: {state: AppState, dispatch: React.Dispatch<Action>, 
         new_flags[i] = 1
       }
     }
-    let new_config = {...config}
-    select(state).flags = new_flags
+    let new_config = JSON.parse(JSON.stringify(config))
+    select(new_config).flags = new_flags
     if (new_config.fbPairSolvedSelector.flags[1] === 1) {
       new_config.fbdrSelector.flags = [1, 0, 0]
     }
@@ -242,26 +246,101 @@ function ConfigPanel(props: {state: AppState, dispatch: React.Dispatch<Action>, 
 
 
 
+function MultiSelect(props: {state: AppState, dispatch: React.Dispatch<Action>, select: (c: Config) => Selector}) {
+  let { state, dispatch, select } = props
+  let { config } = state
+  let { mode } = state
+
+  let sel = select(config)
+  const handleChange = (evt: { target: { value: string; checked: boolean }; }) => {
+    console.log("clicked ", evt.target.value, evt.target.checked)
+    let { names, flags } = sel
+    let new_flags = [...flags]
+
+    for (let i = 0; i < names.length; i++) {
+      if (names[i] === evt.target.value) {
+        new_flags[i] = (evt.target.checked)? 1 : 0
+      }
+    }
+    let new_config = JSON.parse(JSON.stringify(config))
+    select(new_config).flags = new_flags
+    dispatch( { type: "config", content: new_config })
+  }
+
+  let makeBox = (name: string, checked: boolean) => {
+    return (
+    <FormControlLabel
+        control={
+        <Checkbox checked={checked} onChange={handleChange} />
+        }
+        label={name}
+        color="primary"
+        key={name}
+        value={name}
+    />)
+  }
+  const [open, setOpen] = React.useState(false);
+  const handleClickOpen = () => {
+    setOpen(true);
+  };
+  const handleClose = () => {
+    setOpen(false);
+  }
+  let label = sel.label || ""
+  return (
+  <div>
+    <FormLabel component="legend">{label}</FormLabel>
+    <Box height={8}/>
+    <Button color="primary" variant="outlined" style={{borderWidth: 2}} onClick={handleClickOpen}>
+    <SettingsIcon fontSize="small" color="primary" style={{marginLeft: -6, marginRight: 3}}></SettingsIcon>
+      SET
+    </Button>
+    <Dialog disableBackdropClick disableEscapeKeyDown open={open} onClose={handleClose}>
+      <DialogTitle>Color Scheme</DialogTitle>
+      <DialogContent>
+
+        <FormGroup row>
+        {sel.names.map( (name, i) => makeBox(name, !!sel.flags[i]))}
+        </FormGroup>
+      </DialogContent>
+      <DialogActions>
+          <Button onClick={handleClose} color="primary">
+            Ok
+          </Button>
+      </DialogActions>
+    </Dialog>
+  </div>
+  )
+}
+
 function ConfigPanelGroup(props: {state: AppState, dispatch: React.Dispatch<Action> }) {
   let { state, dispatch } = props
   if (state.mode === "ss") {
-    let select1 = (state: AppState) => { return state.config.ssSelector }
-    let select2 = (state: AppState) => { return state.config.ssPairOnlySelector }
+    let select1 = (config: Config) => { return config.ssSelector }
+    let select2 = (config: Config) => { return config.ssPairOnlySelector }
+    let select3 = (config: Config) => { return config.solutionNumSelector }
+    let select4 = (config: Config) => { return config.orientationSelector }
     return (
       <Fragment>
-      <ConfigPanel {...{state, dispatch, select: select1}}> </ConfigPanel>
-      <ConfigPanel {...{state, dispatch, select: select2}}> </ConfigPanel>
+      <SingleSelect {...{state, dispatch, select: select1}}> </SingleSelect>
+      <SingleSelect {...{state, dispatch, select: select2}}> </SingleSelect>
+      <SingleSelect {...{state, dispatch, select: select3}}> </SingleSelect>
+      <MultiSelect {...{state, dispatch, select: select4}}> </MultiSelect>
       </Fragment>
     )
   } else if (state.mode === "fbdr") {
-    let select1 = (state: AppState) => { return state.config.fbdrSelector }
-    let select2 = (state: AppState) => { return state.config.fbOnlySelector }
-    let select3 = (state: AppState) => { return state.config.fbPairSolvedSelector }
+    let select1 = (config: Config) => { return config.fbdrSelector }
+    let select2 = (config: Config) => { return config.fbOnlySelector }
+    let select3 = (config: Config) => { return config.fbPairSolvedSelector }
+    let select4 = (config: Config) => { return config.solutionNumSelector }
+    let select5 = (config: Config) => { return config.orientationSelector }
     return (
       <Fragment>
-      <ConfigPanel {...{state, dispatch, select: select1}}> </ConfigPanel>
-      <ConfigPanel {...{state, dispatch, select: select2}}> </ConfigPanel>
-      <ConfigPanel {...{state, dispatch, select: select3}}> </ConfigPanel>
+      <SingleSelect {...{state, dispatch, select: select1}}> </SingleSelect>
+      <SingleSelect {...{state, dispatch, select: select2}}> </SingleSelect>
+      <SingleSelect {...{state, dispatch, select: select3}}> </SingleSelect>
+      <SingleSelect {...{state, dispatch, select: select4}}> </SingleSelect>
+      <MultiSelect {...{state, dispatch, select: select5}}> </MultiSelect>
       </Fragment>
     )
   } else return <Fragment/>

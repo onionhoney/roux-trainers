@@ -22,6 +22,7 @@ export type Config = {
     fbOnlySelector: Selector,
     ssPairOnlySelector: Selector,
     fbPairSolvedSelector: Selector
+    solutionNumSelector: Selector
     //fbdrSolutionCount: Slider
 }
 

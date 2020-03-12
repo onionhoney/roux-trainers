@@ -22,7 +22,7 @@ function getActiveName(s : Selector) {
 
 const initialConfig : Config = (() => {
     let arr_ori_flag = Array(24).fill(0)
-    arr_ori_flag[0] = 1
+    arr_ori_flag[7] = 1 // YR
     return {
         cmllSelector: {
             names: ["o", "s", "as", "t", "l", "u", "pi", "h"],
@@ -40,6 +40,7 @@ const initialConfig : Config = (() => {
             kind: "trigger"
         },
         orientationSelector: {
+            label: "Color Scheme (U-F)",
             names: [
                 "WG", "WB", "WO", "WR",
                 "YG", "YB", "YO", "YR",
@@ -81,6 +82,12 @@ const initialConfig : Config = (() => {
             flags: [1, 0],
             kind: "sb-pair-only"
         },
+        solutionNumSelector: {
+            label: "Number of solutions",
+            names: ["5", "10", "25"],
+            flags: [1, 0, 0],
+            kind: "solution-num"
+        }
     }
 })()
 

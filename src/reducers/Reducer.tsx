@@ -1,11 +1,11 @@
 
-import { AppState, StateT, Action, Mode } from "../Types"
+import { AppState, StateT, Action, Mode, Config } from "../Types"
 import { alg_generator, AlgDesc } from "../lib/Algs"
 import { MoveT, CubieT } from "../lib/Defs";
 import { CubieCube, Move, CubeUtil, Mask } from '../lib/CubeLib';
 import { setConfig, getConfig, getActiveNames, getActiveName} from '../components/Config';
 import { CachedSolver } from "../lib/CachedSolver";
-import { rand_choice } from '../lib/Math';
+import { rand_choice, arrayEqual } from '../lib/Math';
 
 export const getInitialState = (mode?: Mode) : AppState => {
     mode = mode || "fbdr"
@@ -17,12 +17,13 @@ export const getInitialState = (mode?: Mode) : AppState => {
                 return "revealed"
         }
     }()
+    let ori = getActiveName(getConfig().orientationSelector) || "YR"
     return {
         name: initialStateName,
         mode,
         cube: {
             state: CubieCube.id,
-            ori: "WG",
+            ori,
             history: [],
         },
         case: {
@@ -40,10 +41,13 @@ export function reducer(state: AppState, action: Action): AppState {
         let newState = reduceKey(state, action.content)
         return newState
     } else if (action.type === "config") {
-        setConfig(action.content)
+        // LESSON: Object.assign is dangerous
+        let newConfig = {...state.config, ...action.content}
+        let newState = reactToConfig(state, newConfig)
+        setConfig(newConfig)
         return {
-            ...state,
-            config: getConfig()
+            ...newState,
+            config: newConfig
         }
     } else if (action.type === "mode") {
         let mode = action.content
@@ -81,6 +85,11 @@ abstract class StateM  {
             }
         }
     }
+    abstract reactToConfig(conf : Config): AppState;
+
+    updateScramble(updateCube?: boolean, nextStateName?: StateT) : AppState {
+        return this.state
+    }
 }
 
 
@@ -91,21 +100,30 @@ abstract class BlockTrainerStateM extends StateM {
     abstract solutionCap : number
     abstract getRandom() : [ CubieT,  string];
 
-    updateScramble() : AppState {
+    updateScramble(updateCube?: boolean, nextStateName?: StateT) : AppState {
+        let update = (updateCube === undefined) ? true : (updateCube || false)
+
         const state = this.state
-        const [cube, solverName] = this.getRandom()
+        const [cube, solverName] = (update || state.case.desc.length === 0) ? this.getRandom() :
+            [state.cube.state, state.case.desc[0]!.kind]
         const solver = CachedSolver.get(solverName)
         const scramble = solver.solve(cube, this.solverL, this.solverR, 1)[0]
 
         //console.log(cube, solverName, scramble, this.solverL, this.solverR)
-        const magnification = 2
+        const magnification = 4
+
+        const solutionCap = +(getActiveName(state.config.solutionNumSelector) || 5)
+        // not using solutionCap for now
 
         const setup = Move.to_string(Move.inv(scramble))
-        let solution = solver.solve(cube, 0, this.solverR, this.solutionCap * magnification)
+        let solution = solver.solve(cube, 0, this.solverR, solutionCap * magnification)
         solution.sort( (a, b) => Move.evaluate(a) - Move.evaluate(b) )
 
         const alg = Move.to_string(solution[0])
-        const alt_algs = solution.slice(1, this.solutionCap ).map((s: MoveT[]) => Move.to_string(s))
+        const alt_algs = solution.slice(1, solutionCap ).map((s: MoveT[]) => Move.to_string(s))
+
+        let oriSel = state.config.orientationSelector
+        let ori = alg_generator(oriSel)().id
 
         let algdesc: AlgDesc = {
             id: `${solverName}`,
@@ -117,10 +135,11 @@ abstract class BlockTrainerStateM extends StateM {
         // console.log("algdesc", algdesc)
         return {
             ...state,
-            name: "hiding",
+            name: nextStateName || "hiding",
             cube: {
                 ...state.cube,
                 state: cube,
+                ori
             },
             case: {
                 ...state.case,
@@ -153,6 +172,15 @@ abstract class BlockTrainerStateM extends StateM {
                 ...state.cube,
                 state: cube
             }
+        }
+    }
+    reactToConfig(conf : Config): AppState {
+        // see if solution cap changed
+        let changed = !arrayEqual(this.state.config.solutionNumSelector.flags, conf.solutionNumSelector.flags)
+        if (changed) {
+            return StateM.create({...this.state, config: conf}).updateScramble(false, this.state.name)
+        } else {
+            return this.state
         }
     }
 
@@ -324,6 +352,9 @@ abstract class CmllStateM extends StateM {
             throw new Error("Unrecognized control code")
         }
     }
+    reactToConfig(conf : Config) : AppState {
+        return this.state
+    }
 }
 
 class SolvingStateM extends CmllStateM {
@@ -366,4 +397,9 @@ function reduceKey(state: AppState, code: string): AppState {
     } else {
         return stateM.move(code)
     }
+}
+function reactToConfig(state: AppState, conf: Config): AppState {
+    const stateM = StateM.create(state)
+    // case match on kind of operation
+    return stateM.reactToConfig(conf)
 }

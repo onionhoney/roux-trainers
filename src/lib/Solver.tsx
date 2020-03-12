@@ -51,10 +51,10 @@ function Solver(config: SolverConfig) : SolverT{
                 case "U": return moveset.filter(k => k.name[0] !== "U");
                 case "D": return moveset.filter(k => k.name[0] !== "U" && k.name[0] !== "D");
                 case "R": {
-                    let base = moveset.filter(k => k.name[0] !== "R" && k.name[0] !== "M");
-                    if (name === "R") return base.filter(k => k.name !== "r'")
-                    if (name === "R'") return base.filter(k => k.name !== "r")
-                    if (name === "R2") return base.filter(k => k.name !== "r2")
+                    let base = moveset.filter(k => k.name[0] !== "R" && k.name[0] !== "r");
+                    if (name === "R") return base.filter(k => k.name !== "M'")
+                    if (name === "R'") return base.filter(k => k.name !== "M")
+                    if (name === "R2") return base.filter(k => k.name !== "M2")
                     return base
                 }
                 case "L": return moveset.filter(k => k.name[0] !== "R" && k.name[0] !== "M" && k.name[0] !== "L" && k.name[0] !== "r");
