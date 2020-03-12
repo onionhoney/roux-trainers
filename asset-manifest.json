@@ -1,15 +1,15 @@
 {
   "files": {
     "main.css": "/roux-trainers/static/css/main.34de6062.chunk.css",
-    "main.js": "/roux-trainers/static/js/main.e578644d.chunk.js",
-    "main.js.map": "/roux-trainers/static/js/main.e578644d.chunk.js.map",
+    "main.js": "/roux-trainers/static/js/main.e1695495.chunk.js",
+    "main.js.map": "/roux-trainers/static/js/main.e1695495.chunk.js.map",
     "runtime-main.js": "/roux-trainers/static/js/runtime-main.e11041da.js",
     "runtime-main.js.map": "/roux-trainers/static/js/runtime-main.e11041da.js.map",
     "static/css/2.4328bed2.chunk.css": "/roux-trainers/static/css/2.4328bed2.chunk.css",
-    "static/js/2.7218e99c.chunk.js": "/roux-trainers/static/js/2.7218e99c.chunk.js",
-    "static/js/2.7218e99c.chunk.js.map": "/roux-trainers/static/js/2.7218e99c.chunk.js.map",
+    "static/js/2.47605130.chunk.js": "/roux-trainers/static/js/2.47605130.chunk.js",
+    "static/js/2.47605130.chunk.js.map": "/roux-trainers/static/js/2.47605130.chunk.js.map",
     "index.html": "/roux-trainers/index.html",
-    "precache-manifest.eb2a503ce66b65203e53eebdb96614be.js": "/roux-trainers/precache-manifest.eb2a503ce66b65203e53eebdb96614be.js",
+    "precache-manifest.58e6f677f152166a4e33bf18c3656e08.js": "/roux-trainers/precache-manifest.58e6f677f152166a4e33bf18c3656e08.js",
     "service-worker.js": "/roux-trainers/service-worker.js",
     "static/css/2.4328bed2.chunk.css.map": "/roux-trainers/static/css/2.4328bed2.chunk.css.map",
     "static/css/main.34de6062.chunk.css.map": "/roux-trainers/static/css/main.34de6062.chunk.css.map",
@@ -18,8 +18,8 @@
   "entrypoints": [
     "static/js/runtime-main.e11041da.js",
     "static/css/2.4328bed2.chunk.css",
-    "static/js/2.7218e99c.chunk.js",
+    "static/js/2.47605130.chunk.js",
     "static/css/main.34de6062.chunk.css",
-    "static/js/main.e578644d.chunk.js"
+    "static/js/main.e1695495.chunk.js"
   ]
 }
