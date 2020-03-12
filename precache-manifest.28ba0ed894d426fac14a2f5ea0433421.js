@@ -1,6 +1,6 @@
 self.__precacheManifest = (self.__precacheManifest || []).concat([
   {
-    "revision": "e0de44edd12925546b15592a26206547",
+    "revision": "80243b08d93f60be46350865388f2b8f",
     "url": "/roux-trainers/index.html"
   },
   {
@@ -8,7 +8,7 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/roux-trainers/static/css/2.4328bed2.chunk.css"
   },
   {
-    "revision": "071d59ef442da5eed8e0",
+    "revision": "e21635858f9c4f221061",
     "url": "/roux-trainers/static/css/main.34de6062.chunk.css"
   },
   {
@@ -16,8 +16,8 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/roux-trainers/static/js/2.47605130.chunk.js"
   },
   {
-    "revision": "071d59ef442da5eed8e0",
-    "url": "/roux-trainers/static/js/main.e1695495.chunk.js"
+    "revision": "e21635858f9c4f221061",
+    "url": "/roux-trainers/static/js/main.35676e56.chunk.js"
   },
   {
     "revision": "bebedbd5d6c96c6c6fbe",
