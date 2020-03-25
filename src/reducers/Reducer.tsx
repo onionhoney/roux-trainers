@@ -1,8 +1,8 @@
 
 import { AppState, StateT, Action, Mode, Config } from "../Types"
 import { alg_generator, AlgDesc } from "../lib/Algs"
-import { MoveT, CubieT } from "../lib/Defs";
-import { CubieCube, Move, CubeUtil, Mask } from '../lib/CubeLib';
+import { MoveT, CubieT, Face, Typ } from "../lib/Defs";
+import { CubieCube, Move, CubeUtil, Mask, FaceletCube } from '../lib/CubeLib';
 import { setConfig, getConfig, getActiveNames, getActiveName} from '../components/Config';
 import { CachedSolver } from "../lib/CachedSolver";
 import { rand_choice, arrayEqual } from '../lib/Math';
@@ -14,6 +14,7 @@ export const getInitialState = (mode?: Mode) : AppState => {
             case "cmll": return "solved"
             case "fbdr":
             case "ss":
+            case "fb":
                 return "revealed"
         }
     }()
@@ -76,6 +77,8 @@ abstract class StateM  {
                 return new FbdrStateM(state)
             case "ss":
                 return new SsStateM(state)
+            case "fb":
+                return new FbStateM(state)
             case "cmll": {
                 switch (state.name) {
                     case "solving": return new SolvingStateM(state)
@@ -97,7 +100,6 @@ abstract class StateM  {
 abstract class BlockTrainerStateM extends StateM {
     abstract solverL : number;
     abstract solverR : number;
-    abstract solutionCap : number
     abstract getRandom() : [ CubieT,  string];
 
     updateScramble(updateCube?: boolean, nextStateName?: StateT) : AppState {
@@ -209,7 +211,6 @@ const pairPos : [number, number, number, number][] = [
 class FbdrStateM extends BlockTrainerStateM {
     solverL : number;
     solverR : number;
-    solutionCap : number
 
     get_pair_solved_front() {
         let [cp, co, ep, eo] = rand_choice(pairPos)
@@ -265,7 +266,6 @@ class FbdrStateM extends BlockTrainerStateM {
         super(state)
         this.solverL = 8
         this.solverR = 10
-        this.solutionCap = 5
     }
 }
 
@@ -273,7 +273,6 @@ class FbdrStateM extends BlockTrainerStateM {
 class SsStateM extends BlockTrainerStateM {
     solverL: number;
     solverR: number;
-    solutionCap: number
 
     get_random_fb() {
         let active = getActiveName(this.state.config.ssPairOnlySelector)
@@ -301,9 +300,55 @@ class SsStateM extends BlockTrainerStateM {
         super(state)
         this.solverL = 9
         this.solverR = 10
-        this.solutionCap = 5
     }
 }
+
+class FbStateM extends BlockTrainerStateM {
+    solverL: number;
+    solverR: number;
+
+    find_center_connected_edges(cube: CubieT) {
+        let centers = [Face.L] // [Face.F, Face.B, Face.L, Face.R]
+        let edges = CubeUtil.stickers.filter(c => c[2] === Typ.E && centers.includes(c[3])
+        && FaceletCube.color_of_sticker(cube, [ c[0], c[1], c[2]]) === c[3] )
+        return edges
+    }
+    get_random() {
+        let active = getActiveName(this.state.config.fbPieceSolvedSelector)
+        let mask
+        if (active === "Random") mask = Mask.empty_mask
+        else if (active === "DL Solved") mask = Mask.dl_solved_mask
+        else if (active === "DB Solved") mask = Mask.db_solved_mask
+        else mask = Mask.empty_mask
+
+        let cube = CubeUtil.get_random_with_mask(mask)
+        if (active !== "HARD") return cube
+        let n = 0
+        while (true) {
+            let pairs = CubeUtil.find_pairs(cube)
+            let cc_edges = this.find_center_connected_edges(cube)
+            n++
+            if (pairs.length === 0 && cc_edges.length === 0) {
+                console.log("Successful after " + n + " tries ");
+                return cube
+            }
+            cube = CubeUtil.get_random_with_mask(Mask.empty_mask)
+        }
+    }
+
+    getRandom(): [CubieT, string] {
+        let active = getActiveNames(this.state.config.ssSelector)[0]
+        let cube = this.get_random()
+        return [cube, "fb"]
+    }
+
+    constructor(state: AppState) {
+        super(state)
+        this.solverL = 9
+        this.solverR = 11
+    }
+}
+
 
 abstract class CmllStateM extends StateM {
     control(s: string): AppState {

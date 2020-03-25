@@ -62,6 +62,9 @@ function Solver(config: SolverConfig) : SolverT{
                 case "M": return moveset.filter(k => k.name[0] !== "R" && k.name[0] !== "M" && k.name[0] !== "L" && k.name[0] !== "r");
                 case "F": return moveset.filter(k => k.name[0] !== "F");
                 case "B": return moveset.filter(k => k.name[0] !== "F" && k.name[0] !== "B");
+
+                case "E": return moveset.filter(k => k.name[0] !== "U" && k.name[0] !== "D" && k.name[0] !== "E");
+                case "S": return moveset.filter(k => k.name[0] !== "F" && k.name[0] !== "B" && k.name[0] !== "S");
             }
         }
         for (let move of moveset) {

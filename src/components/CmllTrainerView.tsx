@@ -26,7 +26,7 @@ const useStyles = makeStyles(theme => ({
       flexDirection: 'column',
     },
     fixedHeight: {
-      height: 420,
+      height: 320,
     },
     canvasPaper: {
       padding: theme.spacing(0),
@@ -93,8 +93,8 @@ function CmllTrainerView(props: { state: AppState, dispatch: React.Dispatch<Acti
             <Paper className={canvasPaper}>
               <Box margin="auto">
               <CubeSim
-                width={400}
-                height={400}
+                width={300}
+                height={300}
                 cube={facelet}
                 colorScheme={CubeUtil.ori_to_color_scheme(props.state.cube.ori)}
                 facesToReveal={[Face.L]}

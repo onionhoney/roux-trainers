@@ -109,7 +109,7 @@ let fbdrPrunerConfig : PrunerConfig = function() {
 let fbPrunerConfig : PrunerConfig = function() {
     const esize = Math.pow(24, 3)
     const csize = Math.pow(24, 2)
-    const size = esize * csize
+    const size = esize * csize * 6
 
     function encode(cube:CubieT) {
       let c1 = 0, c2 = 0
@@ -130,7 +130,14 @@ let fbPrunerConfig : PrunerConfig = function() {
           }
       }
       const enc_e = e1 * (24 * 24 ) + e2 * (24 ) + e3
-      return enc_c + 24 * 24 * enc_e
+      const enc_ce = enc_c + 24 * 24 * enc_e
+
+      let t1 = 0
+      for (let i = 0; i < 5; i++) {
+          if (cube.tp[i] === 4) { t1 = i }
+      }
+      const enc = enc_ce * 6 + t1
+      return enc
     }
 
     const moves = [[]] //, Move.parse("L R'"), Move.parse("L' R"), Move.parse("L2 R2")]
@@ -138,7 +145,8 @@ let fbPrunerConfig : PrunerConfig = function() {
 
     const max_depth = 4
     const moveset : MoveT[] = ["U", "U2", "U'", "F", "F2", "F'", "R", "R2", "R'",
-    "r", "r2", "r'", "D", "D2", "D'", "M", "M'", "M2", "B", "B'", "B2"].map(s => Move.all[s])
+    "r", "r2", "r'", "D", "D2", "D'", "M", "M'", "M2", "B", "B'", "B2"] /* "E", "E'", "E2", "S", "S'", "S2" ]*/
+    .map(s => Move.all[s])
 
     return {
         size,

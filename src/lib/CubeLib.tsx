@@ -1,5 +1,5 @@
-import { MoveT, CubieT, OriChg, PermChg } from "./Defs";
-import { u, d, f, b, l, r, m, e } from "./Defs";
+import { MoveT, CubieT, OriChg, PermChg, StickerT, StickerExtT } from "./Defs";
+import { u, d, f, b, l, r, m, e, s} from "./Defs";
 import { FaceletT, FaceletCubeT, corners_coord, edges_coord, u_face, f_face, color_map } from "./Defs";
 import { Typ, Face, C, E, T, U, D, F, B, L, R } from "./Defs";
 import { rand_int, rand_shuffle, getParity, rand_choice, arrayEqual } from "./Math";
@@ -131,6 +131,7 @@ let Move = function () {
         let bs = make_rot_set(b)
         let ms = make_rot_set(m)
         let es = make_rot_set(e);
+        let ss = make_rot_set(s);
 
         let rw = from_moves([r, ms[2]], "r")
         let rws = make_rot_set(rw)
@@ -146,7 +147,7 @@ let Move = function () {
         let z = from_moves([x, y, x, x, x], "z")
         let zs = make_rot_set(z)
         let moves = [
-            us, fs, rs, ls, ds, bs, ms, es,
+            us, fs, rs, ls, ds, bs, ms, es, ss,
             xs, ys, zs,
             rws, lws, uws
         ].flat()
@@ -162,9 +163,11 @@ let Move = function () {
             ["r", 1], ["r'", 1], ["r2", 1.5],
             ["L", 1], ["L'", 1], ["L2", 1.4],
             ["F", 1.4], ["F'", 1.4], ["F2", 1.8],
-            ["B", 1.5], ["B'", 1.5], ["B2", 2.0],
+            ["B", 1.6], ["B'", 1.6], ["B2", 2.2],
             ["D", 1.4], ["D'", 1.4], ["D2", 1.7],
-            ["M", 1.5], ["M'", 1.2], ["M2", 1.8]
+            ["M", 1.5], ["M'", 1.2], ["M2", 1.8],
+            ["S", 1.7], ["S'", 1.7], ["S2", 3.0],
+            ["E", 1.5], ["E'", 1.5], ["E2", 2.4],
         ]
         let costMap = new Map(pairs)
         return costMap
@@ -286,18 +289,21 @@ let FaceletCube = function () {
         edges_coord[p][(2 - o1 + o2) % 2];
     let color_of_t = (p: number) => [U, D, F, B, L, R][p]
 
+    let color_of_sticker = (cube: CubieT, sticker: StickerT) => {
+        let [p, o, typ] = sticker
+        if (typ === C) {
+            return color_of_c(cube.cp[p], cube.co[p], o)
+        } else if (typ === E) {
+            return color_of_e(cube.ep[p], cube.eo[p], o)
+        } else if (typ === T) {
+            return color_of_t(cube.tp[p])
+        } else {
+            throw Error("unidentified type " + typ)
+        }
+    }
+
     let from_cubie_partial = (cube: CubieT, facelet: FaceletT) => {
-        return facelet.map(([p, o, typ]) => {
-            if (typ === C) {
-                return color_of_c(cube.cp[p], cube.co[p], o)
-            } else if (typ === E) {
-                return color_of_e(cube.ep[p], cube.eo[p], o)
-            } else if (typ === T) {
-                return color_of_t(cube.tp[p])
-            } else {
-                throw Error("unidentified type " + typ)
-            }
-        })
+        return facelet.map(s => color_of_sticker(cube, s))
     }
     let from_cubie_partial_masked = (cube: CubieT, facelet: FaceletT, mask: Mask) => {
         return facelet.map(([p, o, typ]) => {
@@ -367,7 +373,11 @@ let FaceletCube = function () {
 
     return {
         from_cubie,
-        to_unfolded_cube_str
+        to_unfolded_cube_str,
+        color_of_sticker,
+        faces: {
+            u_face, d_face, l_face, r_face, f_face, b_face
+        }
     }
 }()
 
@@ -391,6 +401,23 @@ function mask_copy (m: Mask) {
 const lse_mask: Mask = {
     cp: [1, 1, 1, 1, 1, 1, 1, 1],
     ep: [0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1],
+}
+
+const solved_mask : Mask = {
+    cp: [1, 1, 1, 1,  1, 1, 1, 1],
+    ep:[1, 1, 1, 1,  1, 1, 1, 1, 1, 1, 1, 1],
+}
+const empty_mask : Mask = {
+    cp: [0, 0, 0, 0, 0, 0, 0, 0],
+    ep: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+}
+const dl_solved_mask : Mask = {
+    cp: [0, 0, 0, 0, 0, 0, 0, 0],
+    ep: [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0]
+}
+const db_solved_mask : Mask = {
+    cp: [0, 0, 0, 0, 0, 0, 0, 0],
+    ep: [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0]
 }
 const fs_back_mask: Mask = {
     cp: [0, 0, 0, 0, 0, 1, 0, 0],
@@ -439,6 +466,70 @@ let CubeUtil = (() => {
                arrayEqual(cube.cp, id.cp) &&
                arrayEqual(cube.ep, id.ep)
     }
+
+    function ext(stickers: StickerT[], f: Face) : StickerExtT[] {
+        return stickers.map(x => {
+            let [a, b, c] = x;
+            return [a,b,c,f]
+        })
+    }
+
+    let { u_face, d_face, l_face, r_face, f_face, b_face } = FaceletCube.faces
+    let stickers = [ ...ext(u_face, U), ...ext(d_face, D),
+        ...ext(l_face, L), ...ext(r_face, R), ...ext(f_face,F),  ...ext(b_face, B)]
+
+    let find_pairs = function() {
+        // enumerate each sticker
+        let edge_stickers = stickers.filter(s => s[2] === Typ.E)
+        let corner_stickers = stickers.filter(s => s[2] === Typ.C)
+
+        let ep_stickers : StickerExtT[][] = Array(12).fill(0).map(_ => Array(0))
+        edge_stickers.map(s => ep_stickers[s[0]].push(s) )
+
+        let cp_stickers : StickerExtT[][] = Array(8).fill(0).map(_ => Array(0))
+        corner_stickers.map(s => cp_stickers[s[0]].push(s))
+
+        const epcp_pairs : [number, number][] = []
+        for (let e = 0; e < 12; e++) {
+            for (let c = 0; c < 8; c++) {
+                let efs = ep_stickers[e]
+                let cfs = cp_stickers[c]
+
+                let match = 0;
+                efs.forEach( (e) => {
+                    cfs.forEach( (c) => { if (e[3] === c[3]) match++ })
+                })
+                if (match === 2) {
+                    epcp_pairs.push( [e, c] )
+                }
+            }
+        }
+
+
+        let get_color = (cube: CubieT, s: StickerExtT) => {
+            return FaceletCube.color_of_sticker(cube, [s[0], s[1], s[2]] )
+        }
+        let func = (cube: CubieT) => {
+            // now we process the cube
+            let connected_pairs : [number, number][]= []
+            //console.log("All neighboring pairs ", epcp_pairs)
+            for (let [ep, cp] of epcp_pairs) {
+                let efs = ep_stickers[ep]
+                let cfs = cp_stickers[cp]
+                let cnt = 0;
+                efs.forEach( (e) => {
+                    const c = cfs.filter( (c) => e[3] === c[3])[0]
+                    if (get_color(cube, e) === get_color(cube, c)) cnt++;
+                })
+                if (cnt === 2) {
+                    connected_pairs.push([ep, cp])
+                }
+            }
+            return connected_pairs
+        }
+        return func
+    }()
+
     let is_mask_solved = (cube: CubieT, { co, eo, cp, ep }: Mask, premove: (MoveT | MoveT[])[]) => {
         //let moves = [ [], Move.all["U"], Move.all["U'"], Move.all["U2"] ]
         co = co || cp
@@ -594,11 +685,14 @@ let CubeUtil = (() => {
         get_random_with_mask,
         ori_to_color_scheme,
         is_cube_solved,
+        find_pairs,
+        stickers
     }
 })()
 
 let Mask = {
     lse_mask, fs_back_mask, fs_front_mask, fbdr_mask, fb_mask, sb_mask, cmll_mask, ss_front_mask, ss_back_mask,
+    empty_mask, dl_solved_mask, db_solved_mask, solved_mask,
     copy: mask_copy
 }
 

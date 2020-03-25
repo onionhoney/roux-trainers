@@ -125,9 +125,20 @@ let e : MoveT = {
     name: "E",
 }
 
-export {u, d, f, b, l, r, m, e}
+let s : MoveT = {
+    cpc: [],
+    coc: [],
+    epc: [[1, 3], [3, 7], [7, 5], [5, 1]],
+    eoc: [1, 1, 1, 1],
+    tpc: [[0, 5], [5, 1], [1, 4], [4, 0] ],
+    name: "S",
+}
 
-export type FaceletT = Array<[number, number, Typ]>
+export {u, d, f, b, l, r, m, e, s}
+
+export type StickerT = [number, number, Typ]
+export type StickerExtT = [number, number, Typ, Face]
+export type FaceletT = Array<StickerT>
 
 let u_face : FaceletT = [
     [1, 0, C], [2, 0, E], [2, 0, C],

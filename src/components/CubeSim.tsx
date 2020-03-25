@@ -2,8 +2,11 @@ import React, { useEffect } from 'react'
 
 import { FaceletCubeT, Face } from "../lib/Defs";
 import * as THREE from 'three';
+import { useTheme } from '@material-ui/core';
+import { getConfig } from './Config';
 
-type Config = {cube: FaceletCubeT, width: number, height: number, colorScheme: Array<number>, facesToReveal: Face[]}
+type Config = {cube: FaceletCubeT, width: number, height: number, colorScheme: Array<number>, facesToReveal: Face[],
+    bgColor?: string}
 
 /*
 How to propagate control of keypress ..? maybe not here, in the app.
@@ -34,8 +37,12 @@ const setup = function(width: number, height: number, colorScheme?: Array<number
     const scene = new THREE.Scene()
     const camera = new THREE.PerspectiveCamera(70, width / height, 0.1, 1000)
     const renderer = new THREE.WebGLRenderer({ antialias: true })
-    const geo = new THREE.PlaneGeometry(0.9 * 2, 0.9 * 2)
-    const geo_border = new THREE.PlaneGeometry(1 * 2, 1 * 2)
+    const mag = 1.0
+    const alpha = 0.5
+    const enableBorder = true
+    const geo = new THREE.PlaneGeometry(0.89 * mag * 2, 0.89 * mag * 2)
+    const geo_border = new THREE.PlaneGeometry(1.0 * mag * 2, 1.0 * mag * 2)
+    //const geo_border = new THREE.EdgesGeometry(geo_border_0)
     renderer.setPixelRatio(window.devicePixelRatio)
 
     //let colorScheme_ = colorScheme || [0xffffff, 0xffff00,  0x00ff00, 0x0000ff, 0xff8800, 0xff0000]
@@ -59,13 +66,19 @@ const setup = function(width: number, height: number, colorScheme?: Array<number
     function updateColorScheme(colorScheme: Array<number>) {
         let colorScheme_ = colorScheme
         //console.log("update color scheme ", colorScheme_)
-        let materials = Array(7).fill(0).map( (_, i) => new THREE.MeshBasicMaterial({ color: colorScheme_[i], side:THREE.DoubleSide}))
-        let materials_border = new THREE.MeshBasicMaterial({ color: 0x000000, side:THREE.DoubleSide })
+        let materials = Array(7).fill(0).map( (_, i) => {
+            let mat = new THREE.MeshBasicMaterial({ color: colorScheme_[i], side:THREE.DoubleSide});
+            mat.alphaTest = alpha;
+            return mat
+         })
+
         stickers_tmpl = materials.map( (mat) => {
             let mesh = new THREE.Mesh(geo, mat)
             mesh.setRotationFromEuler(axesInfo[0][1])
             return mesh
         })
+
+        let materials_border = new THREE.MeshBasicMaterial({ color: 0x000000, side:THREE.FrontSide })
         stickerwrap_tmpl = (() => {
             let mesh = new THREE.Mesh(geo_border, materials_border)
             mesh.setRotationFromEuler(axesInfo[0][1])
@@ -88,7 +101,7 @@ const setup = function(width: number, height: number, colorScheme?: Array<number
                     const sticker = curr_tmpl.clone()
                     const stickerwrap = stickerwrap_tmpl.clone()
 
-                    const eps = 0.04
+                    const eps = 0.05
                     sticker.position.copy(new THREE.Vector3(x * 2, 3, z * 2))
                     stickerwrap.position.copy(new THREE.Vector3(x * 2, 3 - eps, z * 2))
 
@@ -96,10 +109,14 @@ const setup = function(width: number, height: number, colorScheme?: Array<number
                         const stickerhint = curr_tmpl.clone()
                         stickerhint.position.copy(new THREE.Vector3(x * 2, 3 + 7 + 3, z * 2))
                         cubie.add(stickerhint)
+
                     }
+                    if (enableBorder)
+                        cubie.add(stickerwrap)
+
                     cubie.add(sticker)
-                    cubie.add(stickerwrap)
                 }
+
             }
             cube.add(cubie)
         }
@@ -119,13 +136,14 @@ const setup = function(width: number, height: number, colorScheme?: Array<number
         renderer.render(scene, camera)
     }
 
-    const updateWidthHeight = (width: number, height: number) => {
+    const updateWidthHeight = (width: number, height: number, clearColor?: string) => {
         const canvas = renderer.domElement;
         const needResize = canvas.width !== width || canvas.height !== height;
         if (needResize) {
             renderer.setSize(width, height, true);
+            clearColor = clearColor || '#eeeeef';
             //renderer.setViewport( 0, 0, width * window.devicePixelRatio, height * window.devicePixelRatio);
-            renderer.setClearColor('#eeeeee')
+            renderer.setClearColor(clearColor) // #70788a') //#5a606e') // '#373B43') // '#eeeeee')
             camera.aspect = width / height;
             camera.updateProjectionMatrix();
         }
@@ -166,7 +184,7 @@ function CubeSim(props: Config) {
 
     current.appendChild(dom)
     cubeSim.updateFacesToReveal( props.facesToReveal )
-    cubeSim.updateWidthHeight( width, height)
+    cubeSim.updateWidthHeight( width, height, props.bgColor || "#eeeeef" )
     cubeSim.updateColorScheme(props.colorScheme)
     cubeSim.updateCube(props.cube)
     cubeSim.renderScene()

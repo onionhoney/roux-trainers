@@ -1,32 +1,30 @@
 import React, { Fragment } from 'react'
 
 import CubeSim from './CubeSim'
-import { FormControlLabel, FormGroup, Button, makeStyles, Divider, Typography,
-  FormControl, FormLabel, RadioGroup, Checkbox, Dialog, DialogTitle, DialogContent, DialogActions } from '@material-ui/core';
-
-import SettingsIcon from '@material-ui/icons/Settings';
+import { Button, makeStyles, Divider, Typography, useTheme } from '@material-ui/core';
 
 import Container from '@material-ui/core/Container';
 import Grid from '@material-ui/core/Grid';
-import Radio from '@material-ui/core/Radio';
 import Paper from '@material-ui/core/Paper';
 import Box from '@material-ui/core/Box';
 import { FaceletCube, CubeUtil, Mask, Move } from '../lib/CubeLib';
 
-import { AppState,  Action, Selector, Config} from "../Types";
-import 'typeface-roboto';
+import { AppState,  Action, Config} from "../Types";
+import 'typeface-roboto-mono';
 import clsx from 'clsx';
 import { Face } from '../lib/Defs';
 import { getActiveName  } from './Config';
 
+import { SingleSelect, MultiSelect } from './Select';
 
 const useStyles = makeStyles(theme => ({
     container: {
       paddingTop: theme.spacing(0),
       paddingBottom: theme.spacing(2),
+      backgroundColor: theme.palette.background.default
     },
     button: {
-      margin: theme.spacing(0),
+      width: "100%",
     },
     paper: {
       padding: theme.spacing(3),
@@ -41,13 +39,13 @@ const useStyles = makeStyles(theme => ({
       flexDirection: 'column',
     },
     infoColumn: {
-      color: "gray" //theme.palette.background.paper
+      color: theme.palette.background.paper
     },
     scrambleColumn: {
       paddingLeft: theme.spacing(3)
     },
     textColumn: {
-      color: "black",
+      // color: "black",
       [theme.breakpoints.up('sm')]: {
         minHeight: 138
       },
@@ -56,9 +54,10 @@ const useStyles = makeStyles(theme => ({
       height: 250,
     },
     title : {
-        flexGrow: 1,
+        color: theme.palette.text.hint,
+        fontWeight: 500,
+        borderBottom: "3px solid",
     },
-
   }))
 
 
@@ -74,11 +73,13 @@ function getMask(state: AppState) : Mask {
       else
         return Mask.ss_back_mask
     }
-    else
-      return Mask.sb_mask
+    else if (state.mode === "fb") {
+      return Mask.fb_mask
+    }
+    else return Mask.sb_mask
 }
 
-function FbdrTrainerView(props: { state: AppState, dispatch: React.Dispatch<Action> } ) {
+function BlockTrainerView(props: { state: AppState, dispatch: React.Dispatch<Action> } ) {
     let { state, dispatch } = props
     let cube = state.cube.state
     let classes = useStyles()
@@ -102,6 +103,9 @@ function FbdrTrainerView(props: { state: AppState, dispatch: React.Dispatch<Acti
       dispatch({type: "key", content: "#space"})
     }
 
+    const theme = useTheme()
+    const simBackground = getActiveName(state.config.theme) === "bright" ? "#eeeeef" : theme.palette.background.paper
+
     return (
     <Box className={classes.container}>
       <Container maxWidth="sm" className={classes.container}>
@@ -115,6 +119,7 @@ function FbdrTrainerView(props: { state: AppState, dispatch: React.Dispatch<Acti
               height={250}
               cube={facelet}
               colorScheme={CubeUtil.ori_to_color_scheme(props.state.cube.ori)}
+              bgColor={simBackground}
               facesToReveal={ [Face.L, Face.B, Face.D]  }
             />
           </Box>
@@ -128,16 +133,15 @@ function FbdrTrainerView(props: { state: AppState, dispatch: React.Dispatch<Acti
         <Grid container spacing={2} justify="center" alignItems="center">
           <Grid item xs={12} className={classes.infoColumn} >
             <Box display="flex">
-              <Box fontWeight={500} border={3} borderTop={0} borderLeft={0} borderRight={0}
-                   color="primary.main" borderColor="primary.main">
+              <Box className={classes.title} >
                 Scramble
               </Box>
             </Box>
           </Grid>
 
           <Grid item xs={12}  >
-            <Box paddingBottom={1} lineHeight={1} fontSize={20} fontWeight={400} className={classes.textColumn}>
-            <Typography style={{whiteSpace: 'pre-line', fontSize: 20, fontWeight: 400}} >
+            <Box paddingBottom={1} lineHeight={1} className={classes.textColumn}>
+            <Typography style={{whiteSpace: 'pre-line', fontSize: 20, fontWeight: 400}}>
                 {setup}
               </Typography>
             </Box>
@@ -151,15 +155,14 @@ function FbdrTrainerView(props: { state: AppState, dispatch: React.Dispatch<Acti
         <Grid container spacing={2} justify="center" alignItems="center">
           <Grid item xs={12}className={classes.infoColumn} >
             <Box display="flex" >
-                <Box fontWeight={500} border={3} borderTop={0} borderLeft={0} borderRight={0}
-                    color="primary.main" borderColor="primary.main">
+                <Box className={classes.title} >
                   Solution
                 </Box>
             </Box>
           </Grid>
 
           <Grid item xs={12} className={classes.textColumn} >
-            <Box paddingBottom={2} lineHeight={1} fontSize={10} fontWeight={400}>
+            <Box paddingBottom={2} lineHeight={1}>
               <Typography style={{whiteSpace: 'pre-line', fontSize: 16}} >
                 {algText}
               </Typography>
@@ -172,8 +175,8 @@ function FbdrTrainerView(props: { state: AppState, dispatch: React.Dispatch<Acti
       </Grid>
 
       <Grid container spacing={0}>
-        <Grid item xs={6}>
-          <Button  onFocus={(evt) => evt.target.blur() } className={classes.button} size="medium" variant="contained" color="primary" onClick={handleSpace}> { /* className={classes.margin}>  */ }
+        <Grid item xs={4} sm={4} md={3}>
+          <Button onFocus={(evt) => evt.target.blur() } className={classes.button} size="medium" variant="contained" color="primary" onClick={handleSpace}> { /* className={classes.margin}>  */ }
               {spaceButtonText}
           </Button>
         </Grid>
@@ -192,126 +195,7 @@ function FbdrTrainerView(props: { state: AppState, dispatch: React.Dispatch<Acti
     );
 }
 
-function SingleSelect(props: {state: AppState, dispatch: React.Dispatch<Action>,
-  select: (c: Config) => Selector}) {
-  let { state, dispatch, select } = props
-  let { config } = state
-  let sel = select(config)
 
-  const handleChange = (evt: { target: { value: string; }; }) => {
-    let { names } = sel
-    let n = names.length
-    let new_flags = Array(n).fill(0)
-
-    for (let i = 0; i < names.length; i++) {
-      if (names[i] === evt.target.value) {
-        new_flags[i] = 1
-      }
-    }
-    let new_config = JSON.parse(JSON.stringify(config))
-    select(new_config).flags = new_flags
-    if (new_config.fbPairSolvedSelector.flags[1] === 1) {
-      new_config.fbdrSelector.flags = [1, 0, 0]
-    }
-    dispatch( { type: "config", content: new_config })
-  }
-
-  let radioValue = function() {
-    let { names, flags } = sel
-    for (let i = 0; i < flags.length; i++) {
-      if (flags[i] === 1) return names[i]
-    }
-    return ""
-  }()
-
-  let label = sel.label || ""
-  return (
-    <FormControl component="fieldset">
-    <FormLabel component="legend">{label}</FormLabel>
-    <RadioGroup aria-label="position" name="position" value={radioValue} onChange={handleChange} row>
-      {
-        sel.names.map(name => (
-          <FormControlLabel
-            key={name}
-            value={name}
-            control={<Radio color="primary" />}
-            label={name}
-            labelPlacement="end"
-          />
-        ))
-      }
-    </RadioGroup>
-  </FormControl>)
-}
-
-
-
-function MultiSelect(props: {state: AppState, dispatch: React.Dispatch<Action>, select: (c: Config) => Selector}) {
-  let { state, dispatch, select } = props
-  let { config } = state
-  let { mode } = state
-
-  let sel = select(config)
-  const handleChange = (evt: { target: { value: string; checked: boolean }; }) => {
-    console.log("clicked ", evt.target.value, evt.target.checked)
-    let { names, flags } = sel
-    let new_flags = [...flags]
-
-    for (let i = 0; i < names.length; i++) {
-      if (names[i] === evt.target.value) {
-        new_flags[i] = (evt.target.checked)? 1 : 0
-      }
-    }
-    let new_config = JSON.parse(JSON.stringify(config))
-    select(new_config).flags = new_flags
-    dispatch( { type: "config", content: new_config })
-  }
-
-  let makeBox = (name: string, checked: boolean) => {
-    return (
-    <FormControlLabel
-        control={
-        <Checkbox checked={checked} onChange={handleChange} />
-        }
-        label={name}
-        color="primary"
-        key={name}
-        value={name}
-    />)
-  }
-  const [open, setOpen] = React.useState(false);
-  const handleClickOpen = () => {
-    setOpen(true);
-  };
-  const handleClose = () => {
-    setOpen(false);
-  }
-  let label = sel.label || ""
-  return (
-  <div>
-    <FormLabel component="legend">{label}</FormLabel>
-    <Box height={8}/>
-    <Button color="primary" variant="outlined" style={{borderWidth: 2}} onClick={handleClickOpen}>
-    <SettingsIcon fontSize="small" color="primary" style={{marginLeft: -6, marginRight: 3}}></SettingsIcon>
-      SET
-    </Button>
-    <Dialog disableBackdropClick disableEscapeKeyDown open={open} onClose={handleClose}>
-      <DialogTitle>Color Scheme</DialogTitle>
-      <DialogContent>
-
-        <FormGroup row>
-        {sel.names.map( (name, i) => makeBox(name, !!sel.flags[i]))}
-        </FormGroup>
-      </DialogContent>
-      <DialogActions>
-          <Button onClick={handleClose} color="primary">
-            Ok
-          </Button>
-      </DialogActions>
-    </Dialog>
-  </div>
-  )
-}
 
 function ConfigPanelGroup(props: {state: AppState, dispatch: React.Dispatch<Action> }) {
   let { state, dispatch } = props
@@ -343,11 +227,23 @@ function ConfigPanelGroup(props: {state: AppState, dispatch: React.Dispatch<Acti
       <MultiSelect {...{state, dispatch, select: select5}}> </MultiSelect>
       </Fragment>
     )
-  } else return <Fragment/>
+  } else if (state.mode === "fb") {
+    let select3 = (config: Config) => { return config.fbPieceSolvedSelector }
+    let select4 = (config: Config) => { return config.solutionNumSelector }
+    let select5 = (config: Config) => { return config.orientationSelector }
+
+    return (
+      <Fragment>
+        <SingleSelect {...{ state, dispatch, select: select3 }}> </SingleSelect>
+        <SingleSelect {...{ state, dispatch, select: select4 }}> </SingleSelect>
+        <MultiSelect {...{ state, dispatch, select: select5 }}> </MultiSelect>
+      </Fragment>
+    )
+   } else return <Fragment/>
 }
 
 
 
-export default FbdrTrainerView
+export default BlockTrainerView
 
 

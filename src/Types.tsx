@@ -13,6 +13,7 @@ export type Slider = {
 }
 
 export type Config = {
+    theme: Selector,
     cmllSelector: Selector,
     cmllAufSelector: Selector,
     triggerSelector: Selector,
@@ -23,12 +24,13 @@ export type Config = {
     ssPairOnlySelector: Selector,
     fbPairSolvedSelector: Selector
     solutionNumSelector: Selector
+    fbPieceSolvedSelector: Selector
     //fbdrSolutionCount: Slider
 }
 
 export type StateT = "solving" | "solved" | "hiding" | "revealed" | "revealed_all"
 
-export type Mode = "cmll" | "fbdr" | "ss"
+export type Mode = "cmll" | "fbdr" | "ss" | "fb"
 
 type KeyAction = {
     type: "key",

@@ -24,6 +24,11 @@ const initialConfig : Config = (() => {
     let arr_ori_flag = Array(24).fill(0)
     arr_ori_flag[7] = 1 // YR
     return {
+        theme: {
+            names: ["bright", "dark"],
+            flags: [1,0],
+            kind: "theme"
+        },
         cmllSelector: {
             names: ["o", "s", "as", "t", "l", "u", "pi", "h"],
             flags: [1, 1, 1, 1, 1, 1, 1, 1],
@@ -87,6 +92,12 @@ const initialConfig : Config = (() => {
             names: ["5", "10", "25"],
             flags: [1, 0, 0],
             kind: "solution-num"
+        },
+        fbPieceSolvedSelector: {
+            label: "Difficulty",
+            names: ["HARD", "DL Solved", "DB Solved", "Random"],
+            flags: [1, 0, 0, 0],
+            kind: "fb-piece-solved"
         }
     }
 })()
@@ -107,12 +118,18 @@ let configManager = function() {
             window.localStorage.setItem(key, JSON.stringify(initialConfig));
             return initialConfig
         }
-        const item1 : Config = item ? JSON.parse(item) : initialConfig
+        const item1 : Partial<Config> = item ? JSON.parse(item) : initialConfig
         if ( (item1 === null) || (item1 === undefined) || Object.keys(item1).length === 0) {
             window.localStorage.setItem(key, JSON.stringify(initialConfig));
             return initialConfig
         }
-        return item1
+        // we will also add in unseen fields
+        if (Object.keys(item1).length < Object.keys(initialConfig).length) {
+            const item2 = {...initialConfig, ...item1}
+            window.localStorage.setItem(key, JSON.stringify(item2));
+            return item2
+        }
+        return item1 as Config
     }
 
     let setConfig = (partial: Partial<Config>) => {
