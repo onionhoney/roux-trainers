@@ -1,17 +1,19 @@
 import React from 'react'
 
 import CubeSim from './CubeSim'
-import { Checkbox, FormControlLabel, FormGroup, makeStyles } from '@material-ui/core';
+import { Checkbox, FormControlLabel, FormGroup, makeStyles, useTheme } from '@material-ui/core';
 import Container from '@material-ui/core/Container';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
 import Box from '@material-ui/core/Box';
 import { FaceletCube, CubeUtil } from '../lib/CubeLib';
 
-import { AppState, Selector, Action, Config } from "../Types";
+import { AppState, Action, Config } from "../Types";
+import { Selector } from "../lib/Selector";
 import 'typeface-roboto';
 import clsx from 'clsx';
 import { Face } from '../lib/Defs';
+import { getActiveName } from '../lib/Selector';
 
 
 const useStyles = makeStyles(theme => ({
@@ -69,6 +71,8 @@ function CmllTrainerView(props: { state: AppState, dispatch: React.Dispatch<Acti
     const canvasPaper = clsx(classes.canvasPaper, classes.fixedHeight);
     let facelet = FaceletCube.from_cubie(cube)
 
+    const theme = useTheme()
+    const simBackground = getActiveName(state.config.theme) === "bright" ? "#eeeeef" : theme.palette.background.paper
 
     const handleSelectorChange = React.useCallback( (selectorSel: (x: Config) => Selector) => (name: string) => {
         return function () {
@@ -97,6 +101,7 @@ function CmllTrainerView(props: { state: AppState, dispatch: React.Dispatch<Acti
                 height={300}
                 cube={facelet}
                 colorScheme={CubeUtil.ori_to_color_scheme(props.state.cube.ori)}
+                bgColor={simBackground}
                 facesToReveal={[Face.L]}
               />
               </Box>

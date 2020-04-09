@@ -1,11 +1,13 @@
 
-import { AppState, StateT, Action, Mode, Config } from "../Types"
+import { AppState, StateT, Action, Mode, Config, FavCase } from "../Types"
 import { alg_generator, AlgDesc } from "../lib/Algs"
-import { MoveT, CubieT, Face, Typ } from "../lib/Defs";
+import { MoveT, CubieT, Face, Typ, FBpairPos } from "../lib/Defs";
 import { CubieCube, Move, CubeUtil, Mask, FaceletCube } from '../lib/CubeLib';
-import { setConfig, getConfig, getActiveNames, getActiveName} from '../components/Config';
+import { setConfig, getConfig, getFavList, setFavList} from '../lib/Local';
+import { getActiveName, getActiveNames } from '../lib/Selector';
 import { CachedSolver } from "../lib/CachedSolver";
 import { rand_choice, arrayEqual } from '../lib/Math';
+import { SolverT } from "../lib/Solver";
 
 export const getInitialState = (mode?: Mode) : AppState => {
     mode = mode || "fbdr"
@@ -22,6 +24,7 @@ export const getInitialState = (mode?: Mode) : AppState => {
     return {
         name: initialStateName,
         mode,
+        scrSource: "random",
         cube: {
             state: CubieCube.id,
             ori,
@@ -31,7 +34,8 @@ export const getInitialState = (mode?: Mode) : AppState => {
             state: CubieCube.id,
             desc: []
         },
-        config: getConfig()
+        config: getConfig(),
+        favList: getFavList()
     }
 }
 
@@ -54,9 +58,34 @@ export function reducer(state: AppState, action: Action): AppState {
         let mode = action.content
         state = getInitialState(mode)
         return state
-    } else{
-        return state
+    } else if (action.type === "scrSource") {
+        return {
+            ...state,
+            scrSource: action.content
+        }
+    } else if (action.type === "favList") {
+        let newFavList = state.favList;
+        if (action.action === "add") {
+            newFavList = [...action.content, ...state.favList]
+            setFavList(newFavList)
+        } else if (action.action === "remove") {
+            // only remove one at a time for now
+            const rem = action.content[0]
+            newFavList = state.favList.filter( (value) => {
+                return !(value.mode === rem.mode && value.setup === rem.setup && value.solver === rem.solver)
+            })
+            setFavList(newFavList)
+        } else {
+            // play it..? how?
+            return StateM.create(state).replay(action.content[0])
+        }
+        // console.log("new state ", { ...state, favList: newFavList})
+        return {
+            ...state,
+            favList: newFavList
+        }
     }
+    else return state
 }
 
 
@@ -90,7 +119,7 @@ abstract class StateM  {
     }
     abstract reactToConfig(conf : Config): AppState;
 
-    updateScramble(updateCube?: boolean, nextStateName?: StateT) : AppState {
+    replay(case_ : FavCase) : AppState{
         return this.state
     }
 }
@@ -102,15 +131,10 @@ abstract class BlockTrainerStateM extends StateM {
     abstract solverR : number;
     abstract getRandom() : [ CubieT,  string];
 
-    updateScramble(updateCube?: boolean, nextStateName?: StateT) : AppState {
-        let update = (updateCube === undefined) ? true : (updateCube || false)
-
-        const state = this.state
-        const [cube, solverName] = (update || state.case.desc.length === 0) ? this.getRandom() :
-            [state.cube.state, state.case.desc[0]!.kind]
+    _solve(cube: CubieT, solverName: string, nextStateName?: StateT) {
         const solver = CachedSolver.get(solverName)
+        const state = this.state
         const scramble = solver.solve(cube, this.solverL, this.solverR, 1)[0]
-
         //console.log(cube, solverName, scramble, this.solverL, this.solverR)
         const magnification = 4
 
@@ -149,11 +173,34 @@ abstract class BlockTrainerStateM extends StateM {
             }
         }
     }
+
+    updateCase(): AppState {
+        const state = this.state
+        const [cube, solverName] = this.getRandom()
+        return this._solve(cube, solverName)
+    }
+
+    updateCap(): AppState {
+        const state = this.state
+        const [cube, solverName ] = [state.cube.state, state.case.desc[0]!.kind]
+        return this._solve(cube, solverName)
+    }
+
+    replay(case_: FavCase): AppState {
+        const cube = CubieCube.from_move(Move.parse(case_.setup))
+        const solverName = case_.solver
+        const state1 = this._solve(cube, solverName)
+        return {
+            ...state1,
+            mode: case_.mode
+        }
+    }
+
     control(s: string): AppState {
         let state = this.state
         if (s === "#space") {
             if (state.name === "revealed") {
-                return this.updateScramble()
+                return this.updateCase()
             } else {
                 return {...state,
                     name: "revealed"
@@ -189,7 +236,7 @@ abstract class BlockTrainerStateM extends StateM {
         // see if solution cap changed
         let changed = !arrayEqual(this.state.config.solutionNumSelector.flags, conf.solutionNumSelector.flags)
         if (changed) {
-            return StateM.create({...this.state, config: conf}).updateScramble(false, this.state.name)
+            return (StateM.create({...this.state, config: conf}) as BlockTrainerStateM).updateCap()
         } else {
             return this.state
         }
@@ -198,22 +245,14 @@ abstract class BlockTrainerStateM extends StateM {
 }
 
 const m_premove = [[], Move.all["M"], Move.all["M'"], Move.all["M2"]]
-const pairPos : [number, number, number, number][] = [
-    [0, 0, 8, 1], [0, 1, 1, 0], [ 0, 2 , 0, 1],
-    [1, 1, 2, 0], [1, 2, 1, 1],
-    [2, 0, 10, 1], [2, 1, 3, 0], [2, 2, 2, 1],
-    [3, 0, 11, 0], [3, 1, 0, 0], [3, 2, 3, 1],
-    [4, 0, 8, 0], [4, 1, 4, 0],
-    [6, 0, 10, 0], [6, 1, 6, 0], [6, 2, 7, 1],
-    [7, 0, 11, 1], [7, 1, 7, 0], [7, 2, 4, 1]
-]
+
 
 class FbdrStateM extends BlockTrainerStateM {
     solverL : number;
     solverR : number;
 
     get_pair_solved_front() {
-        let [cp, co, ep, eo] = rand_choice(pairPos)
+        let [cp, co, ep, eo] = rand_choice(FBpairPos)
         //let mask = Mask.copy(Mask.fs_front_mask)
         let cube = CubeUtil.get_random_with_mask(Mask.fs_back_mask)
         for (let i = 0; i < 8; i++) {

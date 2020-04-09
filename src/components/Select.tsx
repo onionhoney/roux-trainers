@@ -9,7 +9,9 @@ import SettingsIcon from '@material-ui/icons/Settings';
 
 import Radio from '@material-ui/core/Radio';
 
-import { AppState, Selector, Config, Action } from '../Types';
+import { AppState, Config, Action } from '../Types';
+import { Selector } from '../lib/Selector';
+
 
 const useStyles = makeStyles(theme => ({
     container: {
@@ -120,7 +122,6 @@ function SingleSelect(props: {state: AppState, dispatch: React.Dispatch<Action>,
 
     let sel = select(config)
     const handleChange = (evt: { target: { value: string; checked: boolean }; }) => {
-      console.log("clicked ", evt.target.value, evt.target.checked)
       let { names, flags } = sel
       let new_flags = [...flags]
 

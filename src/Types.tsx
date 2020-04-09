@@ -1,12 +1,6 @@
 import { CubieT, MoveT } from "./lib/Defs";
 import { AlgDesc } from "./lib/Algs";
-
-export type Selector = {
-    names: string[],
-    flags: number[],
-    kind: string,
-    label?: string
-}
+import { Selector } from "./lib/Selector";
 
 export type Slider = {
     l: number, r: number, step: number, value: number
@@ -44,10 +38,23 @@ type ModeChangeAction = {
     type: "mode",
     content: Mode
 }
+type ScrSourceChangeAction = {
+    type: "scrSource",
+    content: ScrambleSource
+}
+type FavListAction = {
+    type: "favList",
+    content: FavCase[],
+    action: "add" | "remove" | "replay"
+}
 
-export type Action = KeyAction | ConfigAction | ModeChangeAction
+export type Action = KeyAction | ConfigAction | ModeChangeAction | ScrSourceChangeAction | FavListAction
+export type ScrambleSource = "random" | "input"
 
 export type InfoT = {cube: CubieT, desc: AlgDesc[]}
+
+export type FavCase = {mode: Mode, setup: string, solver: string}
+
 export type AppState = {
     name: StateT,
     mode: Mode,
@@ -60,5 +67,7 @@ export type AppState = {
         state: CubieT,
         desc: AlgDesc[]
     },
-    config: Config
+    scrSource: ScrambleSource
+    config: Config,
+    favList: FavCase[]
 }

@@ -1,25 +1,8 @@
-import { Config, Selector } from "../Types"
+import { Config, FavCase } from "../Types"
 import { version } from "../Version"
+import { Selector } from "./Selector";
 
-function getActiveNames(s : Selector) {
-    let ans = []
-    for (let i = 0; i < s.flags.length; i++) {
-        if (s.flags[i] === 1) {
-            ans.push(s.names[i])
-        }
-    }
-    return ans
-}
-
-function getActiveName(s : Selector) {
-    for (let i = 0; i < s.flags.length; i++) {
-        if (s.flags[i] === 1) {
-            return (s.names[i])
-        }
-    }
-    return null
-}
-
+const initialFavList : FavCase[] = []
 const initialConfig : Config = (() => {
     let arr_ori_flag = Array(24).fill(0)
     arr_ori_flag[7] = 1 // YR
@@ -102,6 +85,25 @@ const initialConfig : Config = (() => {
     }
 })()
 
+let favListManager = function() {
+    const key = "fav"
+    let cache : FavCase[] | null = null
+    let getFavList = () => {
+        if (cache) return cache
+        const item = window.localStorage.getItem(key)
+        const item1 : FavCase[] = item ? JSON.parse(item) : initialFavList
+        return item1
+    }
+    let setFavList = (item : FavCase[]) => {
+        window.localStorage.setItem(key, JSON.stringify(item));
+        cache = item
+    }
+    return {
+        getFavList,
+        setFavList
+    }
+}()
+
 let configManager = function() {
     const key = "config"
     const versionKey = "version"
@@ -118,6 +120,7 @@ let configManager = function() {
             window.localStorage.setItem(key, JSON.stringify(initialConfig));
             return initialConfig
         }
+        // In rare cases we want to update but maintain previous version
         const item1 : Partial<Config> = item ? JSON.parse(item) : initialConfig
         if ( (item1 === null) || (item1 === undefined) || Object.keys(item1).length === 0) {
             window.localStorage.setItem(key, JSON.stringify(initialConfig));
@@ -146,7 +149,9 @@ let configManager = function() {
 
 let getConfig = configManager.getConfig
 let setConfig = configManager.setConfig
+let getFavList = favListManager.getFavList
+let setFavList = favListManager.setFavList
 
 export {
-    getConfig, setConfig, getActiveNames, getActiveName
+    getConfig, setConfig, getFavList, setFavList
 }

@@ -3,10 +3,12 @@ import React, { useEffect } from 'react'
 import { FaceletCubeT, Face } from "../lib/Defs";
 import * as THREE from 'three';
 import { useTheme } from '@material-ui/core';
-import { getConfig } from './Config';
+import { getConfig } from '../lib/Local';
 
-type Config = {cube: FaceletCubeT, width: number, height: number, colorScheme: Array<number>, facesToReveal: Face[],
-    bgColor?: string}
+type Config = {
+    cube: FaceletCubeT, width: number, height: number, colorScheme: Array<number>, facesToReveal: Face[],
+    bgColor?: string
+}
 
 /*
 How to propagate control of keypress ..? maybe not here, in the app.
@@ -22,16 +24,16 @@ to be passed to the App, which then decides whether to trigger state change or l
 
 type AxesInfo = [THREE.Vector3, THREE.Euler]
 const TAU = Math.PI * 2;
-const axesInfo : [THREE.Vector3, THREE.Euler][] = [
-    [new THREE.Vector3( 0,  1,  0), new THREE.Euler(-TAU/4,  0,  0)],
-    [new THREE.Vector3( 0, -1,  0), new THREE.Euler( TAU/4,  0,  0)],
-    [new THREE.Vector3( 0,  0,  1), new THREE.Euler( 0,  0,      0)],
-    [new THREE.Vector3( 0,  0, -1), new THREE.Euler( 0,  TAU/2,  0)],
-    [new THREE.Vector3(-1,  0,  0), new THREE.Euler( 0, -TAU/4,  0)],
-    [new THREE.Vector3( 1,  0,  0), new THREE.Euler( 0,  TAU/4,  0)],
+const axesInfo: [THREE.Vector3, THREE.Euler][] = [
+    [new THREE.Vector3(0, 1, 0), new THREE.Euler(-TAU / 4, 0, 0)],
+    [new THREE.Vector3(0, -1, 0), new THREE.Euler(TAU / 4, 0, 0)],
+    [new THREE.Vector3(0, 0, 1), new THREE.Euler(0, 0, 0)],
+    [new THREE.Vector3(0, 0, -1), new THREE.Euler(0, TAU / 2, 0)],
+    [new THREE.Vector3(-1, 0, 0), new THREE.Euler(0, -TAU / 4, 0)],
+    [new THREE.Vector3(1, 0, 0), new THREE.Euler(0, TAU / 4, 0)],
 ];
 
-const setup = function(width: number, height: number, colorScheme?: Array<number>, mode?: string,
+const setup = function (width: number, height: number, colorScheme?: Array<number>, mode?: string,
     faces?: Face[]) {
     let facesToReveal = faces || [Face.L, Face.B, Face.D]
     const scene = new THREE.Scene()
@@ -50,15 +52,15 @@ const setup = function(width: number, height: number, colorScheme?: Array<number
     mode = mode || "FRU"
 
     if (mode === "FRU")
-        camera.position.copy(new THREE.Vector3(2.6 / 1.1, 3/1.1, 3/1.1))
+        camera.position.copy(new THREE.Vector3(2.6 / 1.1, 3 / 1.1, 3 / 1.1))
     else
-        camera.position.copy(new THREE.Vector3(0 / 1.1, 3/1.1, 3/1.1))
+        camera.position.copy(new THREE.Vector3(0 / 1.1, 3 / 1.1, 3 / 1.1))
 
     //camera.position.copy(new THREE.Vector3(2.5, 5, 5))
     camera.lookAt(new THREE.Vector3(0, 0, 0))
 
 
-    let stickers_tmpl: THREE.Mesh[] , stickerwrap_tmpl: THREE.Mesh
+    let stickers_tmpl: THREE.Mesh[], stickerwrap_tmpl: THREE.Mesh
 
     function updateFacesToReveal(faces: Face[]) {
         facesToReveal = faces
@@ -66,19 +68,19 @@ const setup = function(width: number, height: number, colorScheme?: Array<number
     function updateColorScheme(colorScheme: Array<number>) {
         let colorScheme_ = colorScheme
         //console.log("update color scheme ", colorScheme_)
-        let materials = Array(7).fill(0).map( (_, i) => {
-            let mat = new THREE.MeshBasicMaterial({ color: colorScheme_[i], side:THREE.DoubleSide});
+        let materials = Array(7).fill(0).map((_, i) => {
+            let mat = new THREE.MeshBasicMaterial({ color: colorScheme_[i], side: THREE.DoubleSide });
             mat.alphaTest = alpha;
             return mat
-         })
+        })
 
-        stickers_tmpl = materials.map( (mat) => {
+        stickers_tmpl = materials.map((mat) => {
             let mesh = new THREE.Mesh(geo, mat)
             mesh.setRotationFromEuler(axesInfo[0][1])
             return mesh
         })
 
-        let materials_border = new THREE.MeshBasicMaterial({ color: 0x000000, side:THREE.FrontSide })
+        let materials_border = new THREE.MeshBasicMaterial({ color: 0x000000, side: THREE.FrontSide })
         stickerwrap_tmpl = (() => {
             let mesh = new THREE.Mesh(geo_border, materials_border)
             mesh.setRotationFromEuler(axesInfo[0][1])
@@ -86,7 +88,7 @@ const setup = function(width: number, height: number, colorScheme?: Array<number
         })()
     }
 
-    function drawCube(faces: FaceletCubeT) : THREE.Group {
+    function drawCube(faces: FaceletCubeT): THREE.Group {
         const cube = new THREE.Group();
         for (let i = 0; i < 6; i++) {
             const cubie = new THREE.Group();
@@ -120,7 +122,7 @@ const setup = function(width: number, height: number, colorScheme?: Array<number
             }
             cube.add(cubie)
         }
-        cube.scale.set(1/3, 1/3, 1/3)
+        cube.scale.set(1 / 3, 1 / 3, 1 / 3)
         return cube
     }
 
@@ -162,7 +164,7 @@ const setup = function(width: number, height: number, colorScheme?: Array<number
 
 
     return {
-        domElement: () => {return renderer.domElement},
+        domElement: () => { return renderer.domElement },
         updateCube,
         renderScene,
         updateWidthHeight,
@@ -175,29 +177,29 @@ const setup = function(width: number, height: number, colorScheme?: Array<number
 let cubeSim = setup(370, 370)
 
 function CubeSim(props: Config) {
-  const mount = React.useRef<HTMLDivElement | null>(null)
-  let { width, height } = props
+    const mount = React.useRef<HTMLDivElement | null>(null)
+    let { width, height } = props
 
-  useEffect( () => {
-    let dom = cubeSim.domElement()
-    let current = mount.current!
+    useEffect(() => {
+        let dom = cubeSim.domElement()
+        let current = mount.current!
 
-    current.appendChild(dom)
-    cubeSim.updateFacesToReveal( props.facesToReveal )
-    cubeSim.updateWidthHeight( width, height, props.bgColor || "#eeeeef" )
-    cubeSim.updateColorScheme(props.colorScheme)
-    cubeSim.updateCube(props.cube)
-    cubeSim.renderScene()
+        current.appendChild(dom)
+        cubeSim.updateFacesToReveal(props.facesToReveal)
+        cubeSim.updateWidthHeight(width, height, props.bgColor || "#eeeeef")
+        cubeSim.updateColorScheme(props.colorScheme)
+        cubeSim.updateCube(props.cube)
+        cubeSim.renderScene()
 
-    return () => {
-        current.removeChild( dom )
-    }
-  } )
+        return () => {
+            current.removeChild(dom)
+        }
+    })
 
-  return <div
-      ref = {mount}
-      style = {{width : props.width, height : props.height}}
-  />;
+    return <div
+        ref={mount}
+        style={{ width: props.width, height: props.height }}
+    />;
 }
 
 export default CubeSim

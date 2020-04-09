@@ -7,13 +7,22 @@ import Container from '@material-ui/core/Container';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
 import Box from '@material-ui/core/Box';
+import Checkbox from '@material-ui/core/Checkbox';
+import Fab from '@material-ui/core/Fab';
+
+import IconButton from '@material-ui/core/IconButton';
+
+import BookmarkIcon from '@material-ui/icons/Bookmark';
+import CreateIcon from '@material-ui/icons/Create';
+import FavoriteIcon from '@material-ui/icons/Favorite';
+
 import { FaceletCube, CubeUtil, Mask, Move } from '../lib/CubeLib';
 
-import { AppState,  Action, Config} from "../Types";
+import { AppState,  Action, Config, FavCase} from "../Types";
 import 'typeface-roboto-mono';
 import clsx from 'clsx';
 import { Face } from '../lib/Defs';
-import { getActiveName  } from './Config';
+import { getActiveName } from '../lib/Selector';
 
 import { SingleSelect, MultiSelect } from './Select';
 
@@ -21,7 +30,7 @@ const useStyles = makeStyles(theme => ({
     container: {
       paddingTop: theme.spacing(0),
       paddingBottom: theme.spacing(2),
-      backgroundColor: theme.palette.background.default
+      backgroundColor: theme.palette.background.default,
     },
     button: {
       width: "100%",
@@ -58,12 +67,26 @@ const useStyles = makeStyles(theme => ({
         fontWeight: 500,
         borderBottom: "3px solid",
     },
+    sourceIcon : {
+        color: theme.palette.text.hint,
+        fontSize: 18,
+        padding: 0
+    },
+    sourceIconWrap : {
+        height: 32,
+    },
+    fab: {
+      position: 'absolute',
+      top: theme.spacing(7),
+      left: theme.spacing(2),
+    },
   }))
 
 
 function getMask(state: AppState) : Mask {
     if (state.mode === "fbdr") {
-      const fbOnly = getActiveName(state.config.fbOnlySelector) === "FB Last Pair"
+      const fbOnly = (state.case.desc.length === 0 || state.case.desc[0].kind === "fb")
+      //   getActiveName(state.config.fbOnlySelector) === "FB Last Pair"
       return fbOnly ? Mask.fb_mask : Mask.fbdr_mask
     }
     else if (state.mode === "ss") {
@@ -101,14 +124,41 @@ function BlockTrainerView(props: { state: AppState, dispatch: React.Dispatch<Act
 
     const handleSpace = () => {
       dispatch({type: "key", content: "#space"})
+      if (spaceButtonText === "Next") {
+        setFav(false)
+      }
     }
 
     const theme = useTheme()
     const simBackground = getActiveName(state.config.theme) === "bright" ? "#eeeeef" : theme.palette.background.paper
 
+    // source
+    const sourceSelected = state.scrSource === "input"
+    const handleSource = (evt: any) => {
+      if (sourceSelected)
+        dispatch({type: "scrSource", content: "random"})
+      else
+        dispatch({type: "scrSource", content: "input"})
+    }
+    const [favSelected, setFav] = React.useState(false)
+    const handleFav = () => {
+      if (state.case.desc.length === 0) return
+      const case_ : FavCase = {
+        mode: state.mode,
+        solver: state.case.desc[0].kind,
+        setup: state.case.desc[0].setup!
+      }
+      if (!favSelected){
+        setFav(true)
+        dispatch({type: "favList", content: [ case_ ], action: "add"})
+      } else {
+        setFav(false)
+        dispatch({type: "favList", content: [ case_ ], action: "remove" })
+      }
+    }
+
     return (
     <Box className={classes.container}>
-      <Container maxWidth="sm" className={classes.container}>
 
       <Grid container>
         <Grid item xs={12}>
@@ -133,10 +183,30 @@ function BlockTrainerView(props: { state: AppState, dispatch: React.Dispatch<Act
         <Grid container spacing={2} justify="center" alignItems="center">
           <Grid item xs={12} className={classes.infoColumn} >
             <Box display="flex">
+              <Box>
               <Box className={classes.title} >
                 Scramble
-              </Box>
+              </Box> </Box>
+            <Box flexGrow={0.2}></Box>
+            <Box >
+            {/* <Checkbox  className={classes.sourceIconWrap}
+              icon={<CreateIcon />}
+              checked={sourceSelected}
+              onChange = {handleSource}
+              checkedIcon={<CreateIcon color="primary" />}
+              name="source" /> */}
+
+            <Checkbox  className={classes.sourceIconWrap}
+              icon={<FavoriteIcon />}
+              checked={favSelected}
+              onChange = {handleFav}
+              checkedIcon={<FavoriteIcon color="primary" />}
+              name="fav" />
+
             </Box>
+
+            </Box>
+
           </Grid>
 
           <Grid item xs={12}  >
@@ -144,6 +214,7 @@ function BlockTrainerView(props: { state: AppState, dispatch: React.Dispatch<Act
             <Typography style={{whiteSpace: 'pre-line', fontSize: 20, fontWeight: 400}}>
                 {setup}
               </Typography>
+
             </Box>
           </Grid>
 
@@ -189,9 +260,7 @@ function BlockTrainerView(props: { state: AppState, dispatch: React.Dispatch<Act
       <Box height={20}/>
 
       <ConfigPanelGroup {...{state, dispatch} } />
-      </Container>
-</Box>
-
+    </Box>
     );
 }
 

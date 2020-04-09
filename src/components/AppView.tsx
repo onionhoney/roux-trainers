@@ -3,6 +3,7 @@ import { AppState, Mode, Action } from "../Types";
 
 import { Box, AppBar, Typography,Button,  Tabs, Tab, makeStyles } from '@material-ui/core';
 import { Dialog, DialogTitle, DialogContent, DialogActions } from '@material-ui/core';
+import { Grid, Container } from '@material-ui/core';
 
 import CmllTrainerView from './CmllTrainerView';
 import BlockTrainerView from './BlockTrainerView';
@@ -10,7 +11,9 @@ import BlockTrainerView from './BlockTrainerView';
 import IconButton from '@material-ui/core/IconButton';
 import Brightness6Icon from '@material-ui/icons/Brightness6';
 import InfoIcon from '@material-ui/icons/Info';
+import BookmarkIcon from '@material-ui/icons/Bookmark';
 
+import FavListView from './FavListView';
 
 interface TabPanelProps {
   value: number,
@@ -30,7 +33,7 @@ function TabPanel(props: TabPanelProps ) {
       aria-labelledby={`simple-tab-${index}`}
       {...other}
     >
-      {value === index && <Box p={3}>{children}</Box>}
+      {value === index && <Box p={0}>{children}</Box>}
     </Typography>
   );
 }
@@ -38,8 +41,14 @@ const useStyles = makeStyles(theme => ({
   page: {
     backgroundColor: theme.palette.background.default
   },
+  container: {
+    display: "flex"
+  },
   icon: {
     minWidth: 0
+  },
+  root: {
+    display: "flex"
   }
 }))
 
@@ -74,6 +83,11 @@ function AppView(props: { state: AppState, dispatch: React.Dispatch<Action> } ) 
         flags: theme_flag
     }}})
   }
+  const toggleFav = () => {
+    setFav(!showFav)
+  }
+
+  const [ showFav, setFav ] = React.useState(true)
 
   return (
     <main>
@@ -125,23 +139,39 @@ function AppView(props: { state: AppState, dispatch: React.Dispatch<Action> } ) 
           <Tab onFocus={e => e.target.blur() } label="CMLL Trainer" id='tab3'/>
           <div style={{ flexGrow: 1 }}/>
 
-          <Tab id='icon0' onClick={toggleBright} icon={ <Brightness6Icon /> } className={classes.icon} />
-          <Tab id='icon1' onClick={handleInfoOpen} icon={ <InfoIcon /> } className={classes.icon} />
+
+          <Tab onFocus={e => e.target.blur() } id='icon2' onClick={toggleFav} icon={ <BookmarkIcon /> } className={classes.icon} />
+          <Tab onFocus={e => e.target.blur() } id='icon0' onClick={toggleBright} icon={ <Brightness6Icon /> } className={classes.icon} />
+          <Tab onFocus={e => e.target.blur() } id='icon1' onClick={handleInfoOpen} icon={ <InfoIcon /> } className={classes.icon} />
 
         </Tabs>
       </AppBar>
-      <TabPanel value={value} index={0} className={classes.page}>
-        <BlockTrainerView {...{state, dispatch}} />
-      </TabPanel>
-      <TabPanel value={value} index={1} className={classes.page}>
-        <BlockTrainerView {...{state, dispatch}} />
-      </TabPanel>
-      <TabPanel value={value} index={2} className={classes.page}>
-        <BlockTrainerView {...{state, dispatch}} />
-      </TabPanel>
-      <TabPanel value={value} index={3} className={classes.page}>
-        <CmllTrainerView {...{state, dispatch}} />
-      </TabPanel>
+
+      <Box paddingY={2}>
+      <Container maxWidth={showFav ? "md" : "sm" }>
+      <Grid container className={classes.container} spacing={3}>
+        <Grid item hidden={!showFav} md={4} sm={4} xs={12} >
+        <FavListView {...{state, dispatch}} />
+        </Grid>
+
+        <Grid item md={showFav ? 8 : 12} sm={showFav ? 8 : 12} xs={12}>
+        <TabPanel value={value} index={0} className={classes.page}>
+          <BlockTrainerView {...{state, dispatch}} />
+        </TabPanel>
+        <TabPanel value={value} index={1} className={classes.page}>
+          <BlockTrainerView {...{state, dispatch}} />
+        </TabPanel>
+        <TabPanel value={value} index={2} className={classes.page}>
+          <BlockTrainerView {...{state, dispatch}} />
+        </TabPanel>
+        <TabPanel value={value} index={3} className={classes.page}>
+          <CmllTrainerView {...{state, dispatch}} />
+        </TabPanel>
+        </Grid>
+      </Grid>
+      </Container></Box>
+
+
 
     </main>
   )

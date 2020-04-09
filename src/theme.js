@@ -30,22 +30,22 @@ const themeDark = createMuiTheme({
   name: "dark",
   palette: {
     primary: {
-      main: '#757575',
+      main: '#9FA4C2', // '#757575',
     },
     secondary: {
-      main: '#f55057',
+      main: '#ffffff', //f55057',
     },
     error: {
       main: red.A400,
     },
     background: {
-      default: '#303030',
-      paper: '#424242'
+      default: '#121212',
+      paper: '#252525' //#424242'
     },
     text: {
       primary: '#fff',
       secondary: '#ddd',
-      hint: '#ddd'
+      hint: '#eee'
     }
   },
 

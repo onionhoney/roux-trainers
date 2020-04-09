@@ -2,7 +2,6 @@ import { FbdrSolver } from './Solver'
 import { CubeUtil, CubieCube, FaceletCube, Move } from './CubeLib'
 
 it('solves fbdr case', () => {
-    console.log("here")
     //let cube = CubeUtil.get_random_fs()
     let cube = CubieCube.apply(CubieCube.id, Move.parse("F"))
     let solver = FbdrSolver()
