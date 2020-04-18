@@ -62,7 +62,7 @@ const useStyles = makeStyles(theme => ({
 }))
 
 function SingleSelect(props: {state: AppState, dispatch: React.Dispatch<Action>,
-    select: (c: Config) => Selector}) {
+    select: (c: Config) => Selector, label?: string}) {
     let { state, dispatch, select } = props
     let { config } = state
     let sel = select(config)
@@ -94,7 +94,7 @@ function SingleSelect(props: {state: AppState, dispatch: React.Dispatch<Action>,
       return ""
     }()
 
-    let label = sel.label || ""
+    let label = sel.label || props.label || ""
     return (
       <FormControl component="fieldset" className={classes.select}>
       <FormLabel component="legend"className={classes.selectLabel} >{label}</FormLabel>
@@ -116,10 +116,11 @@ function SingleSelect(props: {state: AppState, dispatch: React.Dispatch<Action>,
 
 
 
-  function MultiSelect(props: {state: AppState, dispatch: React.Dispatch<Action>, select: (c: Config) => Selector}) {
+  function MultiSelect(props: {state: AppState, dispatch: React.Dispatch<Action>, select: (c: Config) => Selector, label?: string, noDialog?: boolean }) {
     let { state, dispatch, select } = props
     let { config } = state
 
+    let classes = useStyles()
     let sel = select(config)
     const handleChange = (evt: { target: { value: string; checked: boolean }; }) => {
       let { names, flags } = sel
@@ -139,10 +140,9 @@ function SingleSelect(props: {state: AppState, dispatch: React.Dispatch<Action>,
       return (
       <FormControlLabel
           control={
-          <Checkbox checked={checked} onChange={handleChange} />
+          <Checkbox color="primary" checked={checked} onChange={handleChange} />
           }
           label={name}
-          color="primary"
           key={name}
           value={name}
       />)
@@ -154,7 +154,21 @@ function SingleSelect(props: {state: AppState, dispatch: React.Dispatch<Action>,
     const handleClose = () => {
       setOpen(false);
     }
-    let label = sel.label || ""
+    let label = sel.label || props.label || ""
+    const content = (
+      <FormGroup row>
+      {sel.names.map( (name, i) => makeBox(name, !!sel.flags[i]))}
+      </FormGroup>
+    )
+
+    if (props.noDialog)
+    return (
+      <FormControl component="fieldset" className={classes.select}>
+        <FormLabel component="legend"className={classes.selectLabel} >{label}</FormLabel>
+        {content}
+      </FormControl>
+    )
+
     return (
     <div>
       <FormLabel component="legend">{label}</FormLabel>
@@ -166,10 +180,7 @@ function SingleSelect(props: {state: AppState, dispatch: React.Dispatch<Action>,
       <Dialog disableBackdropClick disableEscapeKeyDown open={open} onClose={handleClose}>
         <DialogTitle>Color Scheme</DialogTitle>
         <DialogContent>
-
-          <FormGroup row>
-          {sel.names.map( (name, i) => makeBox(name, !!sel.flags[i]))}
-          </FormGroup>
+          {content}
         </DialogContent>
         <DialogActions>
             <Button onClick={handleClose} color="primary">

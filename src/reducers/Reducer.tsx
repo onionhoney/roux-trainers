@@ -7,7 +7,6 @@ import { setConfig, getConfig, getFavList, setFavList} from '../lib/Local';
 import { getActiveName, getActiveNames } from '../lib/Selector';
 import { CachedSolver } from "../lib/CachedSolver";
 import { rand_choice, arrayEqual } from '../lib/Math';
-import { SolverT } from "../lib/Solver";
 
 export const getInitialState = (mode?: Mode) : AppState => {
     mode = mode || "fbdr"
@@ -131,7 +130,7 @@ abstract class BlockTrainerStateM extends StateM {
     abstract solverR : number;
     abstract getRandom() : [ CubieT,  string];
 
-    _solve(cube: CubieT, solverName: string, nextStateName?: StateT) {
+    _solve(cube: CubieT, solverName: string, updateSolutionOnly?: boolean) {
         const solver = CachedSolver.get(solverName)
         const state = this.state
         const scramble = solver.solve(cube, this.solverL, this.solverR, 1)[0]
@@ -148,8 +147,7 @@ abstract class BlockTrainerStateM extends StateM {
         const alg = Move.to_string(solution[0])
         const alt_algs = solution.slice(1, solutionCap ).map((s: MoveT[]) => Move.to_string(s))
 
-        let oriSel = state.config.orientationSelector
-        let ori = alg_generator(oriSel)().id
+        const ori = (updateSolutionOnly)? this.state.cube.ori : alg_generator(state.config.orientationSelector)().id
 
         let algdesc: AlgDesc = {
             id: `${solverName}`,
@@ -158,10 +156,12 @@ abstract class BlockTrainerStateM extends StateM {
             setup,
             kind: `${solverName}`
         }
+
+        const name = updateSolutionOnly ? this.state.name : "hiding"
         // console.log("algdesc", algdesc)
         return {
             ...state,
-            name: nextStateName || "hiding",
+            name: name,
             cube: {
                 ...state.cube,
                 state: cube,
@@ -182,8 +182,11 @@ abstract class BlockTrainerStateM extends StateM {
 
     updateCap(): AppState {
         const state = this.state
+        if (state.case.desc.length === 0) {
+            return state
+        }
         const [cube, solverName ] = [state.cube.state, state.case.desc[0]!.kind]
-        return this._solve(cube, solverName)
+        return this._solve(cube, solverName, true )
     }
 
     replay(case_: FavCase): AppState {
@@ -376,7 +379,6 @@ class FbStateM extends BlockTrainerStateM {
     }
 
     getRandom(): [CubieT, string] {
-        let active = getActiveNames(this.state.config.ssSelector)[0]
         let cube = this.get_random()
         return [cube, "fb"]
     }
@@ -399,13 +401,14 @@ abstract class CmllStateM extends StateM {
         let u_auf_generator = alg_generator(cmllAufSelector)
         let ori_generator = alg_generator(orientationSelector)
 
-        if (s === "#enter") {
+        if (s === "#space") {
             // SCRAMBLE
             // enter cleared solving state based on selection
             let trigger_alg: AlgDesc = trig_generator()
             let alg: AlgDesc = generator();
             let u_auf_alg: AlgDesc = u_auf_generator()
             let alg_str = trigger_alg.alg + " " + u_auf_alg.alg + " " + alg.alg
+
             let moves: MoveT[] = Move.inv(Move.parse(alg_str));
 
             //console.log("moves", Move.to_string(moves))
@@ -425,10 +428,10 @@ abstract class CmllStateM extends StateM {
                 },
                 case: {
                     state: cube,
-                    desc: [trigger_alg, alg]
+                    desc: [trigger_alg, u_auf_alg, alg]
                 },
             })
-        } else if (s === "#space") {
+        } else if (s === "#enter") {
             // REDO
             return ({...state,
                 name: "solving",

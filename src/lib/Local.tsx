@@ -1,6 +1,5 @@
 import { Config, FavCase } from "../Types"
 import { version } from "../Version"
-import { Selector } from "./Selector";
 
 const initialFavList : FavCase[] = []
 const initialConfig : Config = (() => {
@@ -24,7 +23,7 @@ const initialConfig : Config = (() => {
         },
         triggerSelector: {
             names: ["RUR'", "RU'R'", "R'U'R", "R'UR"],
-            flags: [1,1,1,1],
+            flags: [0, 0, 0, 0],
             kind: "trigger"
         },
         orientationSelector: {
@@ -78,7 +77,7 @@ const initialConfig : Config = (() => {
         },
         fbPieceSolvedSelector: {
             label: "Difficulty",
-            names: ["HARD", "DL Solved", "DB Solved", "Random"],
+            names: ["HARD", "DL Solved", "BL Solved", "Random"],
             flags: [1, 0, 0, 0],
             kind: "fb-piece-solved"
         }
@@ -115,13 +114,23 @@ let configManager = function() {
         }
         const item = window.localStorage.getItem(key);
         const vers = window.localStorage.getItem(versionKey)
-        if ( (vers === null) || (vers === undefined) || (vers !== version)) {
-            window.localStorage.setItem(versionKey, version)
-            window.localStorage.setItem(key, JSON.stringify(initialConfig));
-            return initialConfig
-        }
-        // In rare cases we want to update but maintain previous version
+
         const item1 : Partial<Config> = item ? JSON.parse(item) : initialConfig
+
+        if ( vers !== version) {
+            // version out of date
+            // let's preserve orientation
+            let config = initialConfig
+            if (item1.orientationSelector) {
+                config = {...initialConfig, orientationSelector: item1.orientationSelector}
+            }
+            window.localStorage.setItem(key, JSON.stringify(config));
+            window.localStorage.setItem(versionKey, version)
+
+            return config
+        }
+
+        // In rare cases we want to update new attributes but maintain previous version
         if ( (item1 === null) || (item1 === undefined) || Object.keys(item1).length === 0) {
             window.localStorage.setItem(key, JSON.stringify(initialConfig));
             return initialConfig

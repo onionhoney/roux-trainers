@@ -13,6 +13,8 @@ import Brightness6Icon from '@material-ui/icons/Brightness6';
 import InfoIcon from '@material-ui/icons/Info';
 import BookmarkIcon from '@material-ui/icons/Bookmark';
 
+import 'typeface-roboto';
+
 import FavListView from './FavListView';
 
 interface TabPanelProps {

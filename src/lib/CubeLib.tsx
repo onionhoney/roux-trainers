@@ -188,10 +188,15 @@ let Move = function () {
         for (let i = 0; i < str.length; i++) {
             let ch = str[i]
             if (ch === '2' || ch === '\'') {
-                token += str[i]; tokens.push(token)
-                token = "";
+                if (token.length === 1) {
+                    token += str[i];
+                    tokens.push(token)
+                    token = ""
+                }
             } else if (ch === ' ') {
-                if (token.length > 0) tokens.push(token); token = "";
+                if (token.length > 0) {
+                    tokens.push(token); token = "";
+                }
             } else {
                 const ord = ch.charCodeAt(0)
                 if ( (65 <= ord && ord < 65 + 26) || (97 <= ord && ord < 97 + 26)) {
@@ -218,6 +223,37 @@ let Move = function () {
         return res
     }
 
+    let combine = (move1: MoveT, move2: MoveT) : MoveT[] => {
+        const getCnt = (name : string) => {
+            if (name.length === 1) return 1
+            return name[1] === "2" ? 2 : 3
+        }
+        const getStr = (cnt : number) => {
+            return (cnt === 1) ? "" : (cnt === 2 ? "2" : "'")
+        }
+        if (move1.name[0] === move2.name[0]) {
+            let cnt = (getCnt(move1.name) + getCnt(move2.name)) % 4
+            if (cnt === 0) return []
+            else return [ all_moves[move1.name[0] + getStr(cnt)] ]
+        } else {
+            return [move1, move2]
+        }
+    }
+    let collapse = (moves: MoveT[]) : MoveT[] => {
+        let newMoves : MoveT[] = []
+        while (moves.length > 0) {
+            const nextMove = moves.shift()!
+            if (newMoves.length === 0) {
+                newMoves.push(nextMove)
+            } else {
+                const move = newMoves.pop()!
+                const combined = combine(move, nextMove)
+                for (let m of combined)
+                    newMoves.push(m)
+            }
+        }
+        return newMoves;
+    }
     let inv = (move: MoveT | MoveT[]): MoveT[] => {
         if (Array.isArray(move)) {
             return move.slice(0).reverse().map(inv).flat()
@@ -247,7 +283,8 @@ let Move = function () {
         add_auf: add_auf,
         to_string: to_string,
         from_moves,
-        evaluate
+        evaluate,
+        collapse
     }
 }()
 
@@ -658,12 +695,12 @@ let CubeUtil = (() => {
 
             "ORWYGB",
             "ORYWBG",
-            "ORGBWY",
-            "ORBGYW",
+            "ORGBYW",
+            "ORBGWY",
             "ROWYBG",
             "ROYWGB",
-            "ROGBYW",
-            "ROBGWY",
+            "ROGBWY",
+            "ROBGYW",
         ]
         const valid_scheme_mapper: { [key: string]: number[] } = Object.create({})
         valid_schemes.forEach(s => {
