@@ -87,6 +87,7 @@ export function reducer(state: AppState, action: Action): AppState {
         };
         case "mode": {
             let mode = action.content
+            window.location.hash = mode
             state = getInitialState(mode)
             return state
         };

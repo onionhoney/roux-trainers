@@ -57,6 +57,24 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
+
+const modes : Mode[] = ["fbdr", "ss", "fb", "cmll", "experimental"]
+
+function _getInitialHashLocation() {
+  if (window.location.hash) {
+    let idx = (modes as string[]).indexOf(window.location.hash.slice(1))
+    if (idx === -1) {
+      window.location.hash = "";
+      return 0;
+    } else {
+      return idx;
+    }
+  } else {
+    return 0
+  }
+}
+
+
 // TODO: Write getter and setter for config items, and also write handlers that map to setters
 function AppView(props: { state: AppState, dispatch: React.Dispatch<Action> } ) {
   //const [locations, setLocations] = React.useState([])
@@ -64,7 +82,6 @@ function AppView(props: { state: AppState, dispatch: React.Dispatch<Action> } ) 
   let classes = useStyles()
 
   const handleChange = React.useCallback( (_:any, newValue:number) => {
-    const modes : Mode[] = ["fbdr", "ss", "fb", "cmll", "experimental"]
     if (newValue < modes.length) {
       setValue(newValue)
       let mode = modes[newValue]
@@ -73,7 +90,7 @@ function AppView(props: { state: AppState, dispatch: React.Dispatch<Action> } ) 
   }, [dispatch])
 
   const [ open, setOpen ] = React.useState(false)
-  const [value, setValue] = React.useState(0);
+  const [value, setValue] = React.useState(_getInitialHashLocation());
 
   const handleInfoOpen = () => { setOpen(true) }
   const handleInfoClose = () => { setOpen(false) }
