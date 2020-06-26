@@ -82,6 +82,11 @@ function CmllTrainerView(props: { state: AppState, dispatch: React.Dispatch<Acti
     const handleClick = () => {
       setReveal(true)
     }
+    const handleNext = () => {
+      dispatch({type: "key", content: "#space"})
+    }
+
+
     let alg = ""
     let setup = ""
     if (state.case.desc.length === 4) {
@@ -151,7 +156,7 @@ function CmllTrainerView(props: { state: AppState, dispatch: React.Dispatch<Acti
       { (!reveal) ?
       <Grid item xs={3}>
       <Button onFocus={(evt) => evt.target.blur() } className={classes.button}
-      size="medium" variant="contained" color="primary" onClick={handleClick}> { /* className={classes.margin}>  */ }
+      size="medium" variant="outlined" color="primary" onClick={handleClick}> { /* className={classes.margin}>  */ }
           Show
       </Button>
       </Grid>
@@ -165,7 +170,16 @@ function CmllTrainerView(props: { state: AppState, dispatch: React.Dispatch<Acti
 
       </Grid>
       }
+    </Grid>
+    <Box height={30}/>
 
+    <Grid container spacing={0}>
+        <Grid item xs={4} sm={4} md={3}>
+          <Button onFocus={(evt) => evt.target.blur() } className={classes.button}
+          size="medium" variant="contained" color="primary" onClick={handleNext}>
+              Next
+          </Button>
+        </Grid>
     </Grid>
     </Paper>
 
