@@ -5,13 +5,13 @@ import { Divider, makeStyles, useTheme, FormControl, FormLabel, Typography, Butt
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
 import Box from '@material-ui/core/Box';
-import { FaceletCube, CubeUtil, Move } from '../lib/CubeLib';
+import { FaceletCube, CubeUtil, Move, Mask } from '../lib/CubeLib';
 
 import { AppState, Action, Config } from "../Types";
 import clsx from 'clsx';
 import { Face } from '../lib/Defs';
 import { getActiveName } from '../lib/Selector';
-import { MultiSelect } from './Select';
+import { MultiSelect, SingleSelect } from './Select';
 
 
 const useStyles = makeStyles(theme => ({
@@ -51,23 +51,36 @@ const useStyles = makeStyles(theme => ({
   }))
 
 
+
+function _getMask(name: string) {
+  switch (name) {
+    case "Show": return Mask.solved_mask;
+    case "Hide": return Mask.empty_mask;
+    case "Hide LSE": return Mask.lse_mask;
+    default: return Mask.solved_mask
+  }
+}
 function CmllTrainerView(props: { state: AppState, dispatch: React.Dispatch<Action> } ) {
     let { state, dispatch } = props
     let cube = state.cube.state
     let classes = useStyles()
     const canvasPaper = clsx(classes.canvasPaper, classes.fixedHeight);
-    let facelet = FaceletCube.from_cubie(cube)
+    let facelet = FaceletCube.from_cubie(cube,
+      _getMask(getActiveName( state.config.cmllCubeMaskSelector) || "Show"))
 
     const theme = useTheme()
     const simBackground = getActiveName(state.config.theme) === "bright" ? "#eeeeef" : theme.palette.background.paper
 
     const cmll = (c: Config) => c.cmllSelector;
+    const cmllcubemask = (c : Config) => c.cmllCubeMaskSelector;
     const cmllauf = (c: Config) => c.cmllAufSelector;
     const trigger = (c: Config) => c.triggerSelector;
     const ori = (c: Config) => c.orientationSelector;
+    
 
     const panel = (
       <Fragment>
+        <SingleSelect {...{state, dispatch, select: cmllcubemask, label: "Virtual Cube"}} />
         <MultiSelect {...{state, dispatch, select: cmll, label: "CMLL Case", noDialog: true}} />
         <MultiSelect {...{state, dispatch, select: cmllauf, label: "CMLL Auf", noDialog: true}} />
         <MultiSelect {...{state, dispatch, select: trigger, label: "SB Last Pair Trigger (Uncheck all for pure CMLL)", noDialog: true}} />

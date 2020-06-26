@@ -20,6 +20,11 @@ export const initialConfig : Config = (() => {
             flags: [1, 1, 1, 1],
             kind: "u_auf"
         },
+        cmllCubeMaskSelector: {
+            names: ["Show", "Hide", "Hide LSE"],
+            flags: [1, 0, 0],
+            kind: "cube_mask"
+        },
         triggerSelector: {
             names: ["RUR'", "RU'R'", "R'U'R", "R'UR"],
             flags: [0, 0, 0, 0],

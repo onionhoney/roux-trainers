@@ -10,6 +10,7 @@ export type Config = {
     theme: Selector,
     cmllSelector: Selector,
     cmllAufSelector: Selector,
+    cmllCubeMaskSelector: Selector,
     triggerSelector: Selector,
     orientationSelector: Selector
     fbdrSelector: Selector,
