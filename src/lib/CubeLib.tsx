@@ -1,4 +1,4 @@
-import { MoveT, CubieT, OriChg, PermChg, StickerT, StickerExtT } from "./Defs";
+import { MoveT, CubieT, OriChg, PermChg, StickerT, StickerExtT, CornerCoord, EdgeCoord, cstimer_corners_coord, cstimer_edges_coord } from "./Defs";
 import { u, d, f, b, l, r, m, e, s} from "./Defs";
 import { FaceletT, FaceletCubeT, corners_coord, edges_coord, u_face, f_face, color_map } from "./Defs";
 import { Typ, Face, C, E, T, U, D, F, B, L, R } from "./Defs";
@@ -62,15 +62,135 @@ let CubieCube = (function () {
         }
     }
 
+    let apply_str = (cube: CubieT, str: string) => {
+        return apply(cube, Move.parse(str))
+    }
+
     let from_move = (move: MoveT | Array<MoveT>) => {
         return apply(id, move)
     }
 
+    let from_string = (str: string) => {
+        return from_move(Move.parse(str))
+    }
+
+    let clone = (cube: CubieT) => {
+        return {
+            co: [...cube.co],
+            cp: [...cube.cp],
+            eo: [...cube.eo],
+            ep: [...cube.ep],
+            tp: [...cube.tp]
+        }
+    }
+
+    let _rotate_coord = (fs: Face[]) => {
+        let faces = [...fs] as Face[]
+        let last_face = faces[faces.length - 1];
+        for (let i = faces.length - 1; i > 0; i--) {
+            faces[i] = faces[i - 1];
+        }
+        faces[0] = last_face
+        return faces
+    }
+    let _backward_rotate_coord = (fs: Face[]) => {
+        let faces = [...fs] as Face[]
+        let first_face = faces[0]
+        for (let i = 0; i < faces.length - 1; i++) {
+            faces[i] = faces[i + 1];
+        }
+        faces[faces.length - 1] = first_face
+        return faces
+    }
+
+    let to_facelet_mapping = (cube: CubieT,corners_coord: CornerCoord[], edges_coord: EdgeCoord[]) => {
+        let facelet_mapping : [Face[], Face[]][]= []
+
+        for (let i = 0; i < 8; i++) {
+            let pos = corners_coord[i] as Face[]
+            let piece = corners_coord[cube.cp[i]] as Face[]
+
+            for (let j = 0; j < cube.co[i];j++) {
+                piece = _rotate_coord(piece)
+            }
+            facelet_mapping.push([pos, piece])
+        }
+        for (let i = 0; i < 12; i++) {
+            let pos = edges_coord[i] as Face[]
+            let piece = edges_coord[cube.ep[i]] as Face[]
+            for (let j = 0; j < cube.eo[i];j++) {
+                piece = _rotate_coord(piece)
+            }
+            facelet_mapping.push([pos, piece])
+        }
+        return facelet_mapping
+    }
+
+    let from_facelet_mapping = (fm: [Face[], Face[]][], custom_corners_coord: CornerCoord[], custom_edges_coord: EdgeCoord[]) : CubieT => {
+        let cube = CubieCube.clone(CubieCube.id)
+        let idxOf = (a_: CornerCoord[] | EdgeCoord[], target: Face[]) => {
+            let a = a_ as Face[][]
+            for (let i = 0; i < a.length; i++) {
+                if (arrayEqual(a[i], target)) return i;
+            }
+            return -1;
+        }
+        let getOriPerm =(a_: CornerCoord[] | EdgeCoord[], target: Face[]): [number, number]  => {
+            let ori = 0;
+            let perm = idxOf(a_, target)
+
+            while (perm === -1) {
+                ori++;
+                target = _backward_rotate_coord(target) as any
+                perm = idxOf(a_, target)
+
+                if (ori > 3) break;
+            }
+            return [ori, perm]
+        }
+
+        for (let coord_pair of fm) {
+            let pos = coord_pair[0], piece = coord_pair[1]
+            if (pos.length === 2) {
+                let newpos = idxOf(custom_edges_coord, pos);
+                let [newOri, newPerm] = getOriPerm(custom_edges_coord, piece);
+                cube.eo[newpos] = newOri;
+                cube.ep[newpos] = newPerm;
+            } else {
+                let newpos = idxOf(custom_corners_coord, pos);
+                let [newOri, newPerm] = getOriPerm(custom_corners_coord, piece);
+                cube.co[newpos] = newOri;
+                cube.cp[newpos] = newPerm;
+            }
+        }
+        return cube
+    }
+
+    let to_cstimer_cube = (cube: CubieT) => {
+        let facelet_mapping = to_facelet_mapping(cube, corners_coord, edges_coord)
+        let cstimer_cube = from_facelet_mapping(facelet_mapping, cstimer_corners_coord, cstimer_edges_coord)
+
+        return cstimer_cube
+    }
+
+    let is_solveable = (cube: CubieT) => {
+        if (cube.tp[0] !== 0) {
+            cube = CubieCube.apply(cube, Move.parse("M2"))
+        }
+        let perm_correct = (getParity(cube.cp) + getParity(cube.ep)) % 2 === 0
+        let ori_correct = (cube.co.reduce((x, y) => x + y, 0) % 3 === 0) && (cube.eo.reduce((x, y) => x + y, 0) % 2 === 0)
+        return perm_correct && ori_correct
+    }
 
     return {
         id,
         apply,
-        from_move
+        apply_str,
+        clone,
+        from_move,
+        from_string,
+        to_cstimer_cube,
+        is_solveable
     }
 
 })()
@@ -255,6 +375,9 @@ let Move = function () {
         return newMoves;
     }
     let inv = (move: MoveT | MoveT[]): MoveT[] => {
+        if (move === undefined || move === null) {
+            return []
+        }
         if (Array.isArray(move)) {
             return move.slice(0).reverse().map(inv).flat()
         } else {
@@ -275,7 +398,7 @@ let Move = function () {
             return move.name
         }
     }
-
+    
     return {
         all: all_moves,
         parse: parse,
@@ -283,8 +406,9 @@ let Move = function () {
         add_auf: add_auf,
         to_string: to_string,
         from_moves,
+        from_cube,
         evaluate,
-        collapse
+        collapse,
     }
 }()
 
@@ -408,9 +532,22 @@ let FaceletCube = function () {
         return color_cube;
     }
 
+    let to_cubejs_str = (faceletCube: FaceletCubeT) : String => {
+        let face_order = [U, R, F, D, L, B];
+        let face_str_map = "UDFBLR";
+        let s = "";
+        for (let face of face_order) {
+            for (let i = 0 ; i < 9; i++) {
+                s += face_str_map[faceletCube[face][i]]
+            }
+        }
+        return s
+    }
+
     return {
         from_cubie,
         to_unfolded_cube_str,
+        to_cubejs_str,
         color_of_sticker,
         faces: {
             u_face, d_face, l_face, r_face, f_face, b_face
@@ -467,6 +604,11 @@ const fs_front_mask: Mask = {
 const fb_mask: Mask = {
     cp: [0, 0, 0, 0, 1, 1, 0, 0],
     ep: [0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0],
+    tp: [0, 0, 0, 0, 1, 1]
+}
+const zhouheng_mask: Mask = {
+    cp: [0, 0, 0, 0, 0, 0, 0, 0],
+    ep: [0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 0, 0],
     tp: [0, 0, 0, 0, 1, 1]
 }
 const fbdr_mask: Mask = {
@@ -729,7 +871,7 @@ let CubeUtil = (() => {
 
 let Mask = {
     lse_mask, fs_back_mask, fs_front_mask, fbdr_mask, fb_mask, sb_mask, cmll_mask, ss_front_mask, ss_back_mask,
-    empty_mask, dl_solved_mask, db_solved_mask, solved_mask,
+    empty_mask, dl_solved_mask, db_solved_mask, solved_mask, zhouheng_mask,
     copy: mask_copy
 }
 

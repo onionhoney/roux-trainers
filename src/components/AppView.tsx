@@ -7,6 +7,7 @@ import { Grid, Container } from '@material-ui/core';
 
 import CmllTrainerView from './CmllTrainerView';
 import BlockTrainerView from './BlockTrainerView';
+import PanoramaView from './PanoramaView';
 
 import IconButton from '@material-ui/core/IconButton';
 import Brightness6Icon from '@material-ui/icons/Brightness6';
@@ -16,6 +17,8 @@ import BookmarkIcon from '@material-ui/icons/Bookmark';
 import 'typeface-roboto';
 
 import FavListView from './FavListView';
+
+import { ENABLE_DEV } from '../settings';
 
 interface TabPanelProps {
   value: number,
@@ -61,7 +64,7 @@ function AppView(props: { state: AppState, dispatch: React.Dispatch<Action> } ) 
   let classes = useStyles()
 
   const handleChange = React.useCallback( (_:any, newValue:number) => {
-    const modes : Mode[] = ["fbdr", "ss", "fb", "cmll"]
+    const modes : Mode[] = ["fbdr", "ss", "fb", "cmll", "experimental"]
     if (newValue < modes.length) {
       setValue(newValue)
       let mode = modes[newValue]
@@ -89,7 +92,7 @@ function AppView(props: { state: AppState, dispatch: React.Dispatch<Action> } ) 
     setFav(!showFav)
   }
 
-  const [ showFav, setFav ] = React.useState(true)
+  const [ showFav, setFav ] = React.useState(false)
 
   return (
     <main>
@@ -122,7 +125,7 @@ function AppView(props: { state: AppState, dispatch: React.Dispatch<Action> } ) 
 
         <Typography gutterBottom variant="overline">
 
-        --onionhoney
+        --onionhoney(Zhouheng Sun)
         </Typography>
 
       </DialogContent>
@@ -137,8 +140,10 @@ function AppView(props: { state: AppState, dispatch: React.Dispatch<Action> } ) 
         <Tabs value={value} onChange={handleChange} scrollButtons="on" variant="scrollable" indicatorColor="secondary" >
           <Tab onFocus={e => e.target.blur() } label="FBDR Trainer" id='tab0' />
           <Tab onFocus={e => e.target.blur() } label="SSquare Trainer" id='tab1' />
-          <Tab onFocus={e => e.target.blur() } label="Tough FB Trainer" id='tab2' />
+          <Tab onFocus={e => e.target.blur() } label="FB Trainer" id='tab2' />
           <Tab onFocus={e => e.target.blur() } label="CMLL Trainer" id='tab3'/>
+          { ENABLE_DEV ?
+          <Tab onFocus={e => e.target.blur() } label="..." id='tab4'/> : null }
           <div style={{ flexGrow: 1 }}/>
 
 
@@ -151,6 +156,20 @@ function AppView(props: { state: AppState, dispatch: React.Dispatch<Action> } ) 
 
       <Box paddingY={2}>
       <Container maxWidth={showFav ? "md" : "sm" }>
+
+      {
+      value === 4?
+      (
+      <Grid container className={classes.container} spacing={3}>
+        <Grid item md={12} sm={12} xs={12}>
+        <TabPanel value={value} index={4} className={classes.page}>
+          <PanoramaView {...{state, dispatch}} />
+        </TabPanel>
+        </Grid>
+      </Grid>
+      )
+      :
+      (
       <Grid container className={classes.container} spacing={3}>
         <Grid item hidden={!showFav} md={4} sm={4} xs={12} >
         <FavListView {...{state, dispatch}} />
@@ -171,6 +190,8 @@ function AppView(props: { state: AppState, dispatch: React.Dispatch<Action> } ) 
         </TabPanel>
         </Grid>
       </Grid>
+      )
+      }
       </Container></Box>
 
 

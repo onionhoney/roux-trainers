@@ -24,7 +24,7 @@ export type Config = {
 
 export type StateT = "solving" | "solved" | "hiding" | "revealed" | "revealed_all"
 
-export type Mode = "cmll" | "fbdr" | "ss" | "fb"
+export type Mode = "cmll" | "fbdr" | "ss" | "fb" | "experimental"
 
 type KeyAction = {
     type: "key",
@@ -42,7 +42,7 @@ type ScrSourceChangeAction = {
     type: "scrSource",
     content: ScrambleSource
 }
-type FavListAction = {
+export type FavListAction = {
     type: "favList",
     content: FavCase[],
     action: "add" | "remove" | "replay"
@@ -69,5 +69,8 @@ export type AppState = {
     },
     scrSource: ScrambleSource
     config: Config,
+    cubejs: {
+        initialized: boolean
+    },
     favList: FavCase[]
 }

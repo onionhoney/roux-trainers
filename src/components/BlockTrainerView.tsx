@@ -3,14 +3,10 @@ import React, { Fragment } from 'react'
 import CubeSim from './CubeSim'
 import { Button, makeStyles, Divider, Typography, useTheme } from '@material-ui/core';
 
-import Container from '@material-ui/core/Container';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
 import Box from '@material-ui/core/Box';
 import Checkbox from '@material-ui/core/Checkbox';
-import Fab from '@material-ui/core/Fab';
-
-import IconButton from '@material-ui/core/IconButton';
 
 import BookmarkIcon from '@material-ui/icons/Bookmark';
 import CreateIcon from '@material-ui/icons/Create';
@@ -97,7 +93,11 @@ function getMask(state: AppState) : Mask {
         return Mask.ss_back_mask
     }
     else if (state.mode === "fb") {
-      return Mask.fb_mask
+      if (state.case.desc.length === 0 || state.case.desc[0].kind === "fb") {
+        return Mask.fb_mask
+      }
+      else
+        return Mask.fbdr_mask
     }
     else return Mask.sb_mask
 }

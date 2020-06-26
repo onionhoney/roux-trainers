@@ -39,7 +39,21 @@ let edges_coord : Array<EdgeCoord> = [
     [D,F], [D,L], [D,B], [D,R],
     [F,L], [B,L], [B,R], [F,R],
 ]
-export {corners_coord, edges_coord}
+
+let cstimer_corners_coord : Array<CornerCoord> = [
+    [U,R,F],[U,F,L], [U,L,B], [U,B,R],
+    [D,F,R],[D,L,F], [D,B,L], [D,R,B]
+]
+
+let cstimer_edges_coord : Array<EdgeCoord> = [
+    [U, R], [U,F], [U,L], [U,B],
+    [D, R], [D,F], [D,L], [D,B],
+    [F, R], [F,L], [B,L], [B,R]
+]
+
+export {corners_coord, edges_coord, cstimer_corners_coord, cstimer_edges_coord }
+
+export type FaceletMapping = [Face[], Face[]][]
 
 export type PermChg = [number, number]
 export type OriChg = number

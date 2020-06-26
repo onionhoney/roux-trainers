@@ -26,7 +26,10 @@ let getParity = (perm: number[]) => {
             return 0
         } else {
             visited[i] = 1
-            return follow(perm[i], cnt + 1)
+            if (visited[perm[i]]) {
+                return cnt;
+            } else
+                return follow(perm[i], cnt + 1)
         }
     }
     let res = 0

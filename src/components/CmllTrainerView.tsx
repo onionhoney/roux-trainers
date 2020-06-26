@@ -36,7 +36,10 @@ const useStyles = makeStyles(theme => ({
       flexDirection: 'column',
     },
     title : {
-      flexGrow: 1,
+        color: theme.palette.text.hint,
+        fontWeight: 500,
+        fontSize: 18,
+        borderBottom: "2px solid",
     },
     prompt: {
       color: theme.palette.text.secondary,
@@ -80,7 +83,11 @@ function CmllTrainerView(props: { state: AppState, dispatch: React.Dispatch<Acti
       setReveal(true)
     }
     let alg = ""
-    if (reveal && state.case.desc.length === 3) {
+    let setup = ""
+    if (state.case.desc.length === 4) {
+      setup = state.case.desc[3].alg
+    }
+    if (reveal && state.case.desc.length >= 3) {
       const moves = Move.parse(state.case.desc[1].alg +state.case.desc[2].alg)
       let moves_c = Move.collapse(moves)
       if (moves_c.length > 0) {
@@ -114,12 +121,41 @@ function CmllTrainerView(props: { state: AppState, dispatch: React.Dispatch<Acti
 
     <Paper className={classes.paper} elevation={2}>
     <Grid container spacing={2}>
+
+      <Grid item xs={3}>
+
+      <Box display="flex">
+              <Box>
+              <Box className={classes.title} >
+                Scramble
+              </Box> </Box>
+      </Box>
+      </Grid>
+      <Grid item xs={9}>
+        <Box paddingBottom={1} lineHeight={1} >
+          <Typography style={{whiteSpace: 'pre-line', fontSize: 18, fontWeight: 500}}>
+            { setup }
+          </Typography>
+        </Box>
+
+      </Grid>
+      <Grid item xs={3}>
+
+      <Box display="flex">
+              <Box>
+              <Box className={classes.title} >
+                Case
+              </Box> </Box>
+      </Box>
+      </Grid>
+      { (!reveal) ?
       <Grid item xs={3}>
       <Button onFocus={(evt) => evt.target.blur() } className={classes.button}
       size="medium" variant="contained" color="primary" onClick={handleClick}> { /* className={classes.margin}>  */ }
           Show
       </Button>
       </Grid>
+      :
       <Grid item xs={9}>
         <Box paddingBottom={1} lineHeight={1} >
           <Typography style={{whiteSpace: 'pre-line', fontSize: 18, fontWeight: 500}}>
@@ -128,6 +164,7 @@ function CmllTrainerView(props: { state: AppState, dispatch: React.Dispatch<Acti
         </Box>
 
       </Grid>
+      }
 
     </Grid>
     </Paper>
