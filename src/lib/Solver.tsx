@@ -1,8 +1,10 @@
-import { CubieCube } from './CubeLib';
+import { CubieCube, CubeUtil, Move } from './CubeLib';
 import { CubieT, MoveT } from './Defs';
 import { arrayEqual } from './Math';
 
 import { Pruner, PrunerT, fbdrPrunerConfig, ssPrunerConfig, fbPrunerConfig } from './Pruner';
+
+import {initialize as min2phase_init, solve as min2phase_solve} from "../lib/min2phase/min2phase-wrapper"
 
 
 type SolverConfig = {
@@ -213,4 +215,28 @@ let SsSolver = function(is_front: boolean) {
     return solver
 }
 
-export { FbdrSolver, FbSolver, SsSolver }
+let Min2PhaseSolver : () => SolverT = function() {
+    // polyfill for min2phase
+
+    min2phase_init();
+    function solve(cube : CubieT, l : number, r : number, c : number) {
+        console.assert(arrayEqual(cube.tp, CubieCube.id.tp))
+        const transformed_cube = CubieCube.to_cstimer_cube(cube)
+        console.assert( CubieCube.is_solveable(transformed_cube), "Cube must be solveable")
+        let solution = min2phase_solve(transformed_cube);
+        return [Move.parse(solution)]
+    }
+    function is_solved(cube: CubieT) {
+        return true
+    }
+    function getPruner() {
+        return []
+    }
+    return {
+        solve,
+        is_solved,
+        getPruner
+    }
+}
+
+export { FbdrSolver, FbSolver, SsSolver, Min2PhaseSolver }

@@ -76,7 +76,7 @@ export const initialConfig : Config = (() => {
         },
         fbPieceSolvedSelector: {
             label: "Difficulty",
-            names: ["HARD", "DL Solved", "BL Solved", "Zhouheng Variant", "Random"],
+            names: ["Hard over x2y(Scramble only)", "Hard", "DL Solved", "BL Solved", "Random"],
             flags: [1, 0, 0, 0, 0],
             kind: "fb-piece-solved"
         }

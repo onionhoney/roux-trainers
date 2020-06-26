@@ -90,7 +90,11 @@ function AppView(props: { state: AppState, dispatch: React.Dispatch<Action> } ) 
   }, [dispatch])
 
   const [ open, setOpen ] = React.useState(false)
+
   const [value, setValue] = React.useState(_getInitialHashLocation());
+  React.useEffect( () => {
+    dispatch({type: "mode", content: modes[_getInitialHashLocation()]})
+  }, [])
 
   const handleInfoOpen = () => { setOpen(true) }
   const handleInfoClose = () => { setOpen(false) }

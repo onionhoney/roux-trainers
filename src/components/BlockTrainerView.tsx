@@ -96,8 +96,11 @@ function getMask(state: AppState) : Mask {
       if (state.case.desc.length === 0 || state.case.desc[0].kind === "fb") {
         return Mask.fb_mask
       }
-      else
+      else if (state.case.desc[0].kind === "fbdr") {
         return Mask.fbdr_mask
+      } else {
+        return Mask.solved_mask
+      }
     }
     else return Mask.sb_mask
 }

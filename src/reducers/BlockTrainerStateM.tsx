@@ -11,7 +11,37 @@ abstract class BlockTrainerStateM extends AbstractStateM {
     abstract solverL: number;
     abstract solverR: number;
     abstract getRandom(): [CubieT, string];
+
+    _solve_min2phase(cube: CubieT) : AppState  {
+
+        const state = this.state
+        const ori = alg_generator(state.config.orientationSelector)().id;
+        let algdesc: AlgDesc = {
+            id: `min2phase`,
+            alg: "",
+            alt_algs: [],
+            setup: Move.to_string( CachedSolver.get("min2phase").solve(cube,0,0,0)[0] ),
+            kind: `min2phase`
+        };
+        return {
+            ...state,
+            cube: {
+                ...state.cube,
+                state: cube,
+                ori
+            },
+            case: {
+                state: cube,
+                desc: [algdesc]
+            }
+        };
+    }
     _solve(cube: CubieT, solverName: string, updateSolutionOnly?: boolean) {
+        if (solverName === "min2phase") {
+            if (!updateSolutionOnly)
+                return this._solve_min2phase(cube)
+            return this.state
+        }
         const solver = CachedSolver.get(solverName);
         const state = this.state;
         const scramble = solver.solve(cube, this.solverL, this.solverR, 1)[0];
@@ -214,8 +244,8 @@ export class SsStateM extends BlockTrainerStateM {
 export class FbStateM extends BlockTrainerStateM {
     solverL: number;
     solverR: number;
-    _find_center_connected_edges(cube: CubieT) {
-        let centers = [Face.L]; // [Face.F, Face.B, Face.L, Face.R]
+    _find_center_connected_edges(cube: CubieT, is_l_only: boolean) {
+        let centers = is_l_only ? [ Face.L ] : [ Face.F, Face.B, Face.L, Face.R]
         let edges = CubeUtil.stickers.filter(c => c[2] === Typ.E && centers.includes(c[3])
             && FaceletCube.color_of_sticker(cube, [c[0], c[1], c[2]]) === c[3]);
         return edges;
@@ -234,18 +264,25 @@ export class FbStateM extends BlockTrainerStateM {
         else
             mask = Mask.empty_mask;
         let cube = CubeUtil.get_random_with_mask(mask);
+
         let solver = "fb";
         if (active === "Zhouheng Variant") {
             // B F'
             cube = CubieCube.apply(cube, Move.parse("B F'"));
             solver = "fbdr";
         }
-        if (active !== "HARD")
+        const g_hard = "Hard over x2y(Scramble only)"
+        if (active === g_hard) {
+            solver = "min2phase";
+        }
+        if (active !== "HARD" && active !== g_hard) {
             return [cube, solver];
+        }
         let n = 0;
+        let is_l_only = active === "HARD"
         while (true) {
             let pairs = CubeUtil.find_pairs(cube);
-            let cc_edges = this._find_center_connected_edges(cube);
+            let cc_edges = this._find_center_connected_edges(cube, is_l_only);
             n++;
             if (pairs.length === 0 && cc_edges.length === 0) {
                 console.log("Successful after " + n + " tries ");
