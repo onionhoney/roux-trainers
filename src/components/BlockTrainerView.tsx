@@ -273,12 +273,14 @@ function ConfigPanelGroup(props: {state: AppState, dispatch: React.Dispatch<Acti
   let { state, dispatch } = props
   if (state.mode === "ss") {
     let select1 = (config: Config) => { return config.ssSelector }
+    let select5 = (config: Config) => { return config.ssEOSelector }
     let select2 = (config: Config) => { return config.ssPairOnlySelector }
     let select3 = (config: Config) => { return config.solutionNumSelector }
     let select4 = (config: Config) => { return config.orientationSelector }
     return (
       <Fragment>
       <SingleSelect {...{state, dispatch, select: select1}}> </SingleSelect>
+      <SingleSelect {...{state, dispatch, select: select5}}> </SingleSelect>
       <SingleSelect {...{state, dispatch, select: select2}}> </SingleSelect>
       <SingleSelect {...{state, dispatch, select: select3}}> </SingleSelect>
       <MultiSelect {...{state, dispatch, select: select4}}> </MultiSelect>
@@ -288,6 +290,7 @@ function ConfigPanelGroup(props: {state: AppState, dispatch: React.Dispatch<Acti
     let select1 = (config: Config) => { return config.fbdrSelector }
     let select2 = (config: Config) => { return config.fbOnlySelector }
     let select3 = (config: Config) => { return config.fbPairSolvedSelector }
+    let select6 = (config: Config) => { return config.fbdrScrambleSelector }
     let select4 = (config: Config) => { return config.solutionNumSelector }
     let select5 = (config: Config) => { return config.orientationSelector }
     return (
@@ -295,6 +298,7 @@ function ConfigPanelGroup(props: {state: AppState, dispatch: React.Dispatch<Acti
       <SingleSelect {...{state, dispatch, select: select1}}> </SingleSelect>
       <SingleSelect {...{state, dispatch, select: select2}}> </SingleSelect>
       <SingleSelect {...{state, dispatch, select: select3}}> </SingleSelect>
+      <SingleSelect {...{state, dispatch, select: select6}}> </SingleSelect>
       <SingleSelect {...{state, dispatch, select: select4}}> </SingleSelect>
       <MultiSelect {...{state, dispatch, select: select5}}> </MultiSelect>
       </Fragment>

@@ -21,7 +21,7 @@ function getActiveName(s : Selector) {
             return (s.names[i])
         }
     }
-    return null
+    return ""
 }
 
 export {getActiveNames, getActiveName}

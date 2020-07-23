@@ -220,7 +220,7 @@ let Min2PhaseSolver : () => SolverT = function() {
 
     min2phase_init();
     function solve(cube : CubieT, l : number, r : number, c : number) {
-        console.assert(arrayEqual(cube.tp, CubieCube.id.tp))
+        console.assert(arrayEqual(cube.tp, CubieCube.id.tp), "Cube center is not solved: " + cube.tp)
         const transformed_cube = CubieCube.to_cstimer_cube(cube)
         console.assert( CubieCube.is_solveable(transformed_cube), "Cube must be solveable")
         let solution = min2phase_solve(transformed_cube);

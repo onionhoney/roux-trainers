@@ -45,27 +45,39 @@ export const initialConfig : Config = (() => {
         },
         fbdrSelector: {
             label: "Position of square",
-            names: ["FS at back", "FS at front", "Both"],
+            names: ["FS at back", "FS at front", "Either"],
             flags: [1, 0, 0],
             kind: "fbdr"
         },
+        fbdrScrambleSelector: {
+            label: "Type of scramble",
+            names: ["Short (Concerning FBDR Pieces only)", "Random State (Entire cube, useful for practicing F2B)"],
+            flags: [1, 0],
+            kind: "fbdr-scramble"
+        },
         fbOnlySelector: {
-            label: "Solve w/wo DR",
-            names: ["FB+DR", "FB Last Pair"],
+            label: "Pieces to solve",
+            names: ["FB Last Pair + DR", "FB Last Pair Only"],
             flags: [1, 0],
             kind: "fb-only"
         },
         fbPairSolvedSelector: {
-            label: "Last Pair",
+            label: "Last Pair pattern",
             names: ["Random", "Solved(FS at back only)"],
             flags: [1, 0],
             kind: "fb-pair-solved"
         },
         ssSelector: {
             label: "Position of square",
-            names: ["SS at front", "SS at back", "Both"],
+            names: ["SS at front", "SS at back", "Either"],
             flags: [1, 0, 0],
             kind: "ss"
+        },
+        ssEOSelector: {
+            label: "Orientation of DR",
+            names: ["Oriented", "Misoriented", "Either"],
+            flags: [1, 0, 0],
+            kind: "ss-orientation"
         },
         ssPairOnlySelector: {
             label: "Solve w/wo DR",

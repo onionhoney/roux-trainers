@@ -14,8 +14,10 @@ export type Config = {
     triggerSelector: Selector,
     orientationSelector: Selector
     fbdrSelector: Selector,
-    ssSelector: Selector
+    ssSelector: Selector,
+    ssEOSelector: Selector,
     fbOnlySelector: Selector,
+    fbdrScrambleSelector: Selector,
     ssPairOnlySelector: Selector,
     fbPairSolvedSelector: Selector
     solutionNumSelector: Selector
