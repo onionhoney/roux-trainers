@@ -76,14 +76,13 @@ function CmllTrainerView(props: { state: AppState, dispatch: React.Dispatch<Acti
     const cmllauf = (c: Config) => c.cmllAufSelector;
     const trigger = (c: Config) => c.triggerSelector;
     const ori = (c: Config) => c.orientationSelector;
-    
 
     const panel = (
       <Fragment>
         <SingleSelect {...{state, dispatch, select: cmllcubemask, label: "Virtual Cube"}} />
-        <MultiSelect {...{state, dispatch, select: cmll, label: "CMLL Case", noDialog: true}} />
-        <MultiSelect {...{state, dispatch, select: cmllauf, label: "CMLL Auf", noDialog: true}} />
-        <MultiSelect {...{state, dispatch, select: trigger, label: "SB Last Pair Trigger (Uncheck all for pure CMLL)", noDialog: true}} />
+        <MultiSelect {...{state, dispatch, select: cmll, options: { label: "CMLL Case", noDialog: true} }} />
+        <MultiSelect {...{state, dispatch, select: cmllauf, options: { label: "CMLL Auf", noDialog: true} }} />
+        <MultiSelect {...{state, dispatch, select: trigger, options: { label: "SB Last Pair Trigger (Uncheck all for pure CMLL)", noDialog: true} } } />
         <MultiSelect {...{state, dispatch, select: ori}} />
       </Fragment>
     )

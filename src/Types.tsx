@@ -16,6 +16,7 @@ export type Config = {
     fbdrSelector: Selector,
     ssSelector: Selector,
     ssEOSelector: Selector,
+    ssPosSelector: Selector,
     fbOnlySelector: Selector,
     fbdrScrambleSelector: Selector,
     ssPairOnlySelector: Selector,

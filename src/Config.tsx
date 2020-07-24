@@ -79,6 +79,13 @@ export const initialConfig : Config = (() => {
             flags: [1, 0, 0],
             kind: "ss-orientation"
         },
+        ssPosSelector: {
+            label: "Position of DR",
+            names: ["UF", "FU", "UL", "LU", "UB", "BU", "UR", "RU", "DF", "FD", "DB", "BD",
+                    "DR", "RD", "BR", "RB", "FR", "RF"],
+            flags: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+            kind: "ss-position"
+        },
         ssPairOnlySelector: {
             label: "Solve w/wo DR",
             names: ["SS", "SB First Pair"],

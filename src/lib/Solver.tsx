@@ -1,4 +1,4 @@
-import { CubieCube, CubeUtil, Move } from './CubeLib';
+import { CubieCube, Move } from './CubeLib';
 import { CubieT, MoveT } from './Defs';
 import { arrayEqual } from './Math';
 

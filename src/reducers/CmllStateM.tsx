@@ -1,7 +1,7 @@
 import { AppState, StateT, Config } from "../Types";
 import { alg_generator, AlgDesc } from "../lib/Algs";
 import { MoveT, CubieT } from "../lib/Defs";
-import { CubieCube, Move, CubeUtil, FaceletCube } from '../lib/CubeLib';
+import { CubieCube, Move, CubeUtil } from '../lib/CubeLib';
 import { AbstractStateM } from "./AbstractStateM";
 import {initialize as min2phase_init, solve as min2phase_solve} from "../lib/min2phase/min2phase-wrapper"
 import { arrayEqual } from "../lib/Math";
@@ -79,12 +79,6 @@ export abstract class CmllStateM extends AbstractStateM {
     }
     control(s: string): AppState {
         let state = this.state;
-        let { config } = state;
-        let { cmllSelector, triggerSelector, cmllAufSelector, orientationSelector } = config;
-        let generator = alg_generator(cmllSelector);
-        let trig_generator = alg_generator(triggerSelector);
-        let u_auf_generator = alg_generator(cmllAufSelector);
-        let ori_generator = alg_generator(orientationSelector);
         if (s === "#space") {
             // SCRAMBLE
             // enter cleared solving state based on selection

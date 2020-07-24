@@ -116,8 +116,13 @@ function SingleSelect(props: {state: AppState, dispatch: React.Dispatch<Action>,
 
 
 
-  function MultiSelect(props: {state: AppState, dispatch: React.Dispatch<Action>, select: (c: Config) => Selector, label?: string, noDialog?: boolean }) {
-    let { state, dispatch, select } = props
+  type MultiOptions = {
+    label?: string, noDialog?: boolean,
+    manipulators?: {name: string, enableIdx: number[]}[]
+  }
+  function MultiSelect(props: {state: AppState, dispatch: React.Dispatch<Action>, select: (c: Config) => Selector, options?: MultiOptions }) {
+    let { state, dispatch, select, options } = props
+    options = options || {}
     let { config } = state
 
     let classes = useStyles()
@@ -154,14 +159,46 @@ function SingleSelect(props: {state: AppState, dispatch: React.Dispatch<Action>,
     const handleClose = () => {
       setOpen(false);
     }
-    let label = sel.label || props.label || ""
+    const [manipChecked, setManipChecked] = React.useState< { [ name: string ]: boolean } >({})
+    let label = sel.label || options.label || ""
+    let makeManipulator = (manip: {name: string, enableIdx: number[]}) => {
+      let {name, enableIdx} = manip
+      let handleChange = (evt: { target: { value: string; checked: boolean }; }) => {
+        setManipChecked( {...manipChecked, [name] : evt.target.checked } )
+        let fillValue = (evt.target.checked);
+        let { flags } = sel
+        let new_flags = [...flags]
+        for (let i of enableIdx) {
+          new_flags[i] = fillValue ? 1 : 0;
+        }
+        let new_config = JSON.parse(JSON.stringify(config))
+        select(new_config).flags = new_flags;
+        dispatch( { type: "config", content: new_config } )
+      }
+      return (
+        <FormControlLabel
+        control={
+        <Checkbox color="primary" checked={manipChecked[name]} onChange={handleChange} />
+        }
+        label={name}
+        key={name}
+        value={name}
+        />)
+    }
+    let manipulator_row = options.manipulators ?
+      (<FormGroup row>
+      {options.manipulators.map(x => makeManipulator(x)) }
+      </FormGroup>) : null;
     const content = (
-      <FormGroup row>
-      {sel.names.map( (name, i) => makeBox(name, !!sel.flags[i]))}
-      </FormGroup>
+      <React.Fragment>
+        {manipulator_row}
+        <FormGroup row>
+        {sel.names.map( (name, i) => makeBox(name, !!sel.flags[i]))}
+        </FormGroup>
+      </React.Fragment>
     )
 
-    if (props.noDialog)
+    if (options.noDialog)
     return (
       <FormControl component="fieldset" className={classes.select}>
         <FormLabel component="legend"className={classes.selectLabel} >{label}</FormLabel>
@@ -177,6 +214,7 @@ function SingleSelect(props: {state: AppState, dispatch: React.Dispatch<Action>,
       <SettingsIcon fontSize="small" color="primary" style={{marginLeft: -6, marginRight: 3}}></SettingsIcon>
         SET
       </Button>
+      <Box height={8}/>
       <Dialog disableBackdropClick disableEscapeKeyDown open={open} onClose={handleClose}>
         <DialogTitle>Color Scheme</DialogTitle>
         <DialogContent>

@@ -8,8 +8,6 @@ import Paper from '@material-ui/core/Paper';
 import Box from '@material-ui/core/Box';
 import Checkbox from '@material-ui/core/Checkbox';
 
-import BookmarkIcon from '@material-ui/icons/Bookmark';
-import CreateIcon from '@material-ui/icons/Create';
 import FavoriteIcon from '@material-ui/icons/Favorite';
 
 import { FaceletCube, CubeUtil, Mask, Move } from '../lib/CubeLib';
@@ -136,13 +134,8 @@ function BlockTrainerView(props: { state: AppState, dispatch: React.Dispatch<Act
     const simBackground = getActiveName(state.config.theme) === "bright" ? "#eeeeef" : theme.palette.background.paper
 
     // source
-    const sourceSelected = state.scrSource === "input"
-    const handleSource = (evt: any) => {
-      if (sourceSelected)
-        dispatch({type: "scrSource", content: "random"})
-      else
-        dispatch({type: "scrSource", content: "input"})
-    }
+
+
     const [favSelected, setFav] = React.useState(false)
     const handleFav = () => {
       if (state.case.desc.length === 0) return
@@ -273,17 +266,24 @@ function ConfigPanelGroup(props: {state: AppState, dispatch: React.Dispatch<Acti
   let { state, dispatch } = props
   if (state.mode === "ss") {
     let select1 = (config: Config) => { return config.ssSelector }
-    let select5 = (config: Config) => { return config.ssEOSelector }
     let select2 = (config: Config) => { return config.ssPairOnlySelector }
     let select3 = (config: Config) => { return config.solutionNumSelector }
-    let select4 = (config: Config) => { return config.orientationSelector }
+    let select4 = (config: Config) => { return config.ssPosSelector }
+    let select5 = (config: Config) => { return config.orientationSelector }
+
+    let DRManip = [
+      // names: ["UF", "FU", "UL", "LU", "UB", "BU", "UR", "RU", "DF", "FD", "DB", "BD",
+      // "DR", "RD", "BR", "RB", "FR", "RF"],
+      { name: "Toggle Select All", enableIdx: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17] },
+      { name: "Toggle All Oriented", enableIdx: [0, 2, 4, 6, 8, 10, 12, 14, 16] },
+    ]
     return (
       <Fragment>
       <SingleSelect {...{state, dispatch, select: select1}}> </SingleSelect>
-      <SingleSelect {...{state, dispatch, select: select5}}> </SingleSelect>
       <SingleSelect {...{state, dispatch, select: select2}}> </SingleSelect>
       <SingleSelect {...{state, dispatch, select: select3}}> </SingleSelect>
-      <MultiSelect {...{state, dispatch, select: select4}}> </MultiSelect>
+      <MultiSelect {...{state, dispatch, select: select4, options: {manipulators: DRManip} }}> </MultiSelect>
+      <MultiSelect {...{state, dispatch, select: select5}}> </MultiSelect>
       </Fragment>
     )
   } else if (state.mode === "fbdr") {

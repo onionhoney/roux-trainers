@@ -1,4 +1,4 @@
-import { AbstractStateM, StateFactory} from './AbstractStateM';
+import { StateFactory} from './AbstractStateM';
 import { AppState, Mode } from '../Types';
 import { FbdrStateM, SsStateM, FbStateM} from './BlockTrainerStateM';
 import { SolvingStateM, SolvedStateM } from './CmllStateM';
