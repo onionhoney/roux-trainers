@@ -216,7 +216,7 @@ function SingleSelect(props: {state: AppState, dispatch: React.Dispatch<Action>,
       </Button>
       <Box height={8}/>
       <Dialog disableBackdropClick disableEscapeKeyDown open={open} onClose={handleClose}>
-        <DialogTitle>Color Scheme</DialogTitle>
+        <DialogTitle> {label} </DialogTitle>
         <DialogContent>
           {content}
         </DialogContent>
