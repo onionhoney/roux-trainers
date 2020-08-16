@@ -1,6 +1,7 @@
 import { StateFactory} from './AbstractStateM';
 import { AppState, Mode } from '../Types';
 import { FbdrStateM, SsStateM, FbStateM} from './BlockTrainerStateM';
+import { LSEStateM } from './LSETrainerStateM';
 import { SolvingStateM, SolvedStateM } from './CmllStateM';
 
 StateFactory.create = function(state: AppState) {
@@ -19,6 +20,8 @@ StateFactory.create = function(state: AppState) {
                     default: throw new Error("impossible");
                 }
             }
+            case "lse":
+                return new LSEStateM(state);
             case "experimental":
                 return new FbStateM(state);
         }

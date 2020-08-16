@@ -1,6 +1,7 @@
-import { CubieT, MoveT } from "./lib/Defs";
 import { AlgDesc } from "./lib/Algs";
 import { Selector } from "./lib/Selector";
+import { KeyMapping } from "./KeyMapping";
+import { CubieCube, Move } from "./lib/CubeLib";
 
 export type Slider = {
     l: number, r: number, step: number, value: number
@@ -20,15 +21,16 @@ export type Config = {
     fbOnlySelector: Selector,
     fbdrScrambleSelector: Selector,
     ssPairOnlySelector: Selector,
-    fbPairSolvedSelector: Selector
-    solutionNumSelector: Selector
-    fbPieceSolvedSelector: Selector
+    fbPairSolvedSelector: Selector,
+    solutionNumSelector: Selector,
+    fbPieceSolvedSelector: Selector,
+    lseMCSelector: Selector
     //fbdrSolutionCount: Slider
 }
 
 export type StateT = "solving" | "solved" | "hiding" | "revealed" | "revealed_all"
 
-export type Mode = "cmll" | "fbdr" | "ss" | "fb" | "experimental"
+export type Mode = "cmll" | "fbdr" | "ss" | "fb" | "experimental" | "lse"
 
 type KeyAction = {
     type: "key",
@@ -55,7 +57,7 @@ export type FavListAction = {
 export type Action = KeyAction | ConfigAction | ModeChangeAction | ScrSourceChangeAction | FavListAction
 export type ScrambleSource = "random" | "input"
 
-export type InfoT = {cube: CubieT, desc: AlgDesc[]}
+export type InfoT = {cube: CubieCube, desc: AlgDesc[]}
 
 export type FavCase = {mode: Mode, setup: string, solver: string}
 
@@ -63,12 +65,12 @@ export type AppState = {
     name: StateT,
     mode: Mode,
     cube: {
-        state: CubieT,
+        state: CubieCube,
         ori: string,
-        history: MoveT[],
+        history: Move[],
     },
     case: {
-        state: CubieT,
+        state: CubieCube,
         desc: AlgDesc[]
     },
     scrSource: ScrambleSource
@@ -76,5 +78,6 @@ export type AppState = {
     cubejs: {
         initialized: boolean
     },
+    keyMapping: KeyMapping,
     favList: FavCase[]
 }

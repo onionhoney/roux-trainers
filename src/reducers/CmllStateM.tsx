@@ -1,33 +1,28 @@
 import { AppState, StateT, Config } from "../Types";
 import { alg_generator, AlgDesc } from "../lib/Algs";
-import { MoveT, CubieT } from "../lib/Defs";
-import { CubieCube, Move, CubeUtil } from '../lib/CubeLib';
+import { CubieCube, Move, CubeUtil, MoveSeq } from '../lib/CubeLib';
 import { AbstractStateM } from "./AbstractStateM";
 import {initialize as min2phase_init, solve as min2phase_solve} from "../lib/min2phase/min2phase-wrapper"
 import { arrayEqual } from "../lib/Math";
 
 export abstract class CmllStateM extends AbstractStateM {
-    _get2PhaseSolution(cube: CubieT): AlgDesc {
+    _get2PhaseSolution(cube: CubieCube): AlgDesc {
         // Aha! f = g(b) but you modified b later, and f won't update!
 
         let m2_away = false
         if (cube.tp[0] !== 0) {
             m2_away = true
-            cube = CubieCube.apply_str(cube, "M2")
+            cube.apply("M2")
         }
-        console.assert(arrayEqual(cube.tp, CubieCube.id.tp))
+        console.assert(arrayEqual(cube.tp, new CubieCube().tp))
 
-        const transformed_cube = CubieCube.to_cstimer_cube(cube)
-        console.assert( CubieCube.is_solveable(transformed_cube), "Cube must be solveable")
+        const transformed_cube = cube.to_cstimer_cube()
+        console.assert( transformed_cube.is_solveable(), "Cube must be solveable")
         min2phase_init();
-        let  solution = min2phase_solve(transformed_cube);
+        let solution = min2phase_solve(transformed_cube);
         if (m2_away) {
             solution += " M2"
         }
-        //const alg = Move.to_string(Move.inv(Move.parse(solution)));
-        //const solver = Cube.initSolver();
-        //const ccube = Cube.fromString(fcube_str);
-        //const solution = Move.parse(ccube.solve())
         const algDesc: AlgDesc = ({
             id: `scramble`,
             alg: solution,
@@ -48,14 +43,12 @@ export abstract class CmllStateM extends AbstractStateM {
         let cmll_alg: AlgDesc = generator();
         let u_auf_alg: AlgDesc = u_auf_generator();
         let alg_str = trigger_alg.alg + " " + u_auf_alg.alg + " " + cmll_alg.alg;
-        let moves: MoveT[] = Move.inv(Move.parse(alg_str));
-        //console.log("moves", Move.to_string(moves))
+        let moves: Move[] = new MoveSeq(alg_str).inv().moves;
 
-        let lse_cube: CubieT
+        let lse_cube: CubieCube
         while (true) {
-            let cube = CubeUtil.get_random_lse();
-            lse_cube = CubieCube.apply(cube, moves);
-            if (CubieCube.is_solveable(lse_cube)) {
+            lse_cube = CubeUtil.get_random_lse().apply(moves)
+            if (lse_cube.is_solveable()) {
                 break;
             }
         }
@@ -110,17 +103,17 @@ export abstract class CmllStateM extends AbstractStateM {
 export class SolvingStateM extends CmllStateM {
     move(move: string): AppState {
         let state = this.state;
-        let moves = Move.parse(move);
+        let moves = new MoveSeq(move).moves;
         if (moves.length > 0) {
             let move = moves[0];
-            let cube = CubieCube.apply(state.cube.state, move);
+            let cube = state.cube.state.apply(move);
             let cmll_solved = CubeUtil.is_cmll_solved(cube);
             let newState: StateT = cmll_solved ? "solved" : "solving";
             return ({
                 ...state,
                 cube: {
                     ...state.cube,
-                    state: CubieCube.apply(state.cube.state, move),
+                    state: state.cube.state.apply(move),
                     history: [...state.cube.history, move],
                 },
                 name: newState

@@ -1,9 +1,9 @@
 import {initialize, solve as min2phaseSolve, Min2PhaseCube} from "./min2phase.js"
-import { CubieT } from "../Defs.js";
+import { CubieCube } from "../CubeLib";
 
 export {initialize}
 
-function toMin2Phase(state: CubieT): Min2PhaseCube {
+function toMin2Phase(state: CubieCube): Min2PhaseCube {
   // Note: this is its own inverse.
   // const conjugate = {
   //   EDGE: { permutation: [ 1, 0, 3, 2, 5, 4, 7, 6, 8, 9, 11, 10 ],
@@ -23,6 +23,6 @@ function toMin2Phase(state: CubieT): Min2PhaseCube {
   }
 }
 
-export function solve(state: CubieT): string {
+export function solve(state: CubieCube): string {
   return min2phaseSolve(toMin2Phase(state));
 }

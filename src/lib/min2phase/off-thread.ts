@@ -1,7 +1,7 @@
 import {Min2PhaseSolver} from "./min2phase-solver"
 
 import * as _AsyncWorker from "./min2phase.worker";
-import { CubieT } from "../Defs";
+import { CubieCube } from "../CubeLib";
 export const AsyncWorker = _AsyncWorker;
 
 // TODO: Support multiple workers?
@@ -19,7 +19,7 @@ export class OffThreadMin2Phase implements Min2PhaseSolver {
     return this.worker().initialize();
   }
 
-  async solve(state: CubieT): Promise<string> {
+  async solve(state: CubieCube): Promise<string> {
     const algJSON = await this.worker().solve(state);
     return algJSON;
   }

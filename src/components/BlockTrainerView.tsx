@@ -10,7 +10,7 @@ import Checkbox from '@material-ui/core/Checkbox';
 
 import FavoriteIcon from '@material-ui/icons/Favorite';
 
-import { FaceletCube, CubeUtil, Mask, Move } from '../lib/CubeLib';
+import { FaceletCube, CubeUtil, Mask, Move, MoveSeq } from '../lib/CubeLib';
 
 import { AppState,  Action, Config, FavCase} from "../Types";
 import 'typeface-roboto-mono';
@@ -116,10 +116,7 @@ function BlockTrainerView(props: { state: AppState, dispatch: React.Dispatch<Act
     let spaceButtonText = (state.name === "hiding") ? "Reveal" : "Next"
     let algs = (alt_algs !== undefined) ? ( [alg, ...alt_algs] ) : [alg]
 
-    // For debug
-    // let alg_scores = algs.map(a => a + "," + Move.evaluate(Move.parse(a)).toFixed(2) )
-
-    let minMove = algs.map(a => Move.parse(a).length).reduce( (a, b) => Math.min(a, b), 100 )
+    let minMove = algs.map(a => new MoveSeq(a).moves.length).reduce( (a, b) => Math.min(a, b), 100 )
     let algText = (state.name === "hiding") ? `(Best = ${minMove} STM)`
       : (state.name === "revealed" && alg.length > 0) ? algs.join("\n") : ""
 

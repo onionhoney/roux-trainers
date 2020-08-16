@@ -5,7 +5,7 @@ import { Divider, makeStyles, useTheme, FormControl, FormLabel, Typography, Butt
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
 import Box from '@material-ui/core/Box';
-import { FaceletCube, CubeUtil, Move, Mask } from '../lib/CubeLib';
+import { FaceletCube, CubeUtil, Mask, MoveSeq } from '../lib/CubeLib';
 
 import { AppState, Action, Config } from "../Types";
 import clsx from 'clsx';
@@ -105,14 +105,14 @@ function CmllTrainerView(props: { state: AppState, dispatch: React.Dispatch<Acti
       setup = state.case.desc[3].alg
     }
     if (reveal && state.case.desc.length >= 3) {
-      const moves = Move.parse(state.case.desc[1].alg +state.case.desc[2].alg)
-      let moves_c = Move.collapse(moves)
-      if (moves_c.length > 0) {
-        if (moves_c[0].name[0] === "U") {
-          alg += "(" + moves_c[0].name + ") ";
-          moves_c = moves_c.slice(1)
+      const moves = new MoveSeq(state.case.desc[1].alg +state.case.desc[2].alg)
+      let moves_c = moves.collapse()
+      if (moves_c.moves.length > 0) {
+        if (moves_c.moves[0].name[0] === "U") {
+          alg += "(" + moves_c.moves[0].name + ") ";
+          moves_c.moves = moves_c.moves.slice(1)
         }
-        alg += Move.to_string(moves_c)
+        alg += moves_c.toString()
       }
     }
     return (

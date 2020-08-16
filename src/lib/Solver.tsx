@@ -1,5 +1,4 @@
-import { CubieCube, Move } from './CubeLib';
-import { CubieT, MoveT } from './Defs';
+import { CubieCube, Move, MoveSeq } from './CubeLib';
 import { arrayEqual } from './Math';
 
 import { Pruner, PrunerT, fbdrPrunerConfig, ssPrunerConfig, fbPrunerConfig } from './Pruner';
@@ -8,19 +7,19 @@ import {initialize as min2phase_init, solve as min2phase_solve} from "../lib/min
 
 
 type SolverConfig = {
-    is_solved: (cube : CubieT) => boolean,
-    moveset: MoveT[],
+    is_solved: (cube : CubieCube) => boolean,
+    moveset: Move[],
     pruners: PrunerT[],
 }
 
 type Accumulator = {
-    solutions: MoveT[][],
+    solutions: MoveSeq[],
     capacity: number
 }
 
 export type SolverT = {
-    solve: (cube : CubieT, l : number, r : number, c : number) => MoveT[][],
-    is_solved: (cube : CubieT) => boolean,
+    solve: (cube : CubieCube, l : number, r : number, c : number) => MoveSeq[],
+    is_solved: (cube : CubieCube) => boolean,
     getPruner: () => PrunerT[]
 }
 function Solver(config: SolverConfig) : SolverT{
@@ -36,7 +35,7 @@ function Solver(config: SolverConfig) : SolverT{
         STOP
     };
 
-    function solve_depth(cube: CubieT, min_depth_: number, max_depth_: number, accum_: Accumulator) {
+    function solve_depth(cube: CubieCube, min_depth_: number, max_depth_: number, accum_: Accumulator) {
         accum = accum_
         max_depth = max_depth_
         min_depth = min_depth_
@@ -46,8 +45,8 @@ function Solver(config: SolverConfig) : SolverT{
         return accum
     }
 
-    let moveTable = Object.create({})
-    function prepareNextMoveTable() {
+    let Moveable = Object.create({})
+    function prepareNextMoveable() {
         function getAvailableMove(name : string) {
             switch (name[0]) {
                 case "U": return moveset.filter(k => k.name[0] !== "U");
@@ -70,17 +69,17 @@ function Solver(config: SolverConfig) : SolverT{
             }
         }
         for (let move of moveset) {
-            moveTable[move.name] = getAvailableMove(move.name)
+            Moveable[move.name] = getAvailableMove(move.name)
         }
     }
-    prepareNextMoveTable()
+    prepareNextMoveable()
 
-    function expand(cube: CubieT, depth: number, solution: MoveT[]) : SState{
-        const availableMoves = solution.length > 0 ? moveTable[solution[solution.length - 1].name] : moveset
+    function expand(cube: CubieCube, depth: number, solution: Move[]) : SState{
+        const availableMoves = solution.length > 0 ? Moveable[solution[solution.length - 1].name] : moveset
         const seen_encodings = new Set()
         seen_encodings.add(pruners[0].encode(cube))
         for (let move of availableMoves) {
-            let new_cube = CubieCube.apply(cube, move)
+            let new_cube = cube.apply(move)
             let enc = pruners[0].encode(new_cube)
             let redundant = seen_encodings.has(enc)
             if (!redundant) {
@@ -96,18 +95,18 @@ function Solver(config: SolverConfig) : SolverT{
         return SState.CONTINUE
     }
 
-    function try_push(solution: MoveT[], depth: number) {
+    function try_push(solution: Move[], depth: number) {
         if (depth < min_depth) return SState.CONTINUE
         if (accum.solutions.length < accum.capacity) {
             let flag = true
             for (let sol of accum.solutions) {
-                if (arrayEqual(sol, solution)) {
+                if (arrayEqual(sol.moves, solution)) {
                     flag = false;
                     break;
                 }
             }
             if (flag) {
-                accum.solutions.push([...solution])
+                accum.solutions.push(new MoveSeq([...solution]))
             }
         }
 
@@ -118,7 +117,7 @@ function Solver(config: SolverConfig) : SolverT{
         }
     }
 
-    function search(cube: CubieT, depth: number, solution: MoveT[]) : SState {
+    function search(cube: CubieCube, depth: number, solution: Move[]) : SState {
         state_count++;
         if (state_count > MAX_STATE_COUNT) {
             return SState.STOP
@@ -137,7 +136,7 @@ function Solver(config: SolverConfig) : SolverT{
         }
     }
 
-    function solve(cube: CubieT, depth_l: number, depth_r: number, capacity: number) {
+    function solve(cube: CubieCube, depth_l: number, depth_r: number, capacity: number) {
         let accum : Accumulator = {
             solutions: [],
             capacity
@@ -163,7 +162,7 @@ let FbdrSolver = function() {
     let pruner = Pruner(prunerConfig)
     pruner.init()
     //let solvedEncodings = prunerConfig.solved_states.map(s => prunerConfig.encode(s))
-    function is_solved(cube: CubieT) {
+    function is_solved(cube: CubieCube) {
         return pruner.query(cube) === 0;
     }
 
@@ -182,7 +181,7 @@ let FbSolver = function() {
     let pruner = Pruner(prunerConfig)
     pruner.init()
     //let solvedEncodings = prunerConfig.solved_states.map(s => prunerConfig.encode(s))
-    function is_solved(cube: CubieT) {
+    function is_solved(cube: CubieCube) {
         return pruner.query(cube) === 0;
     }
 
@@ -201,7 +200,7 @@ let SsSolver = function(is_front: boolean) {
     let pruner = Pruner(prunerConfig)
     pruner.init()
     //let solvedEncodings = prunerConfig.solved_states.map(s => prunerConfig.encode(s))
-    function is_solved(cube: CubieT) {
+    function is_solved(cube: CubieCube) {
         return pruner.query(cube) === 0;
     }
 
@@ -219,14 +218,14 @@ let Min2PhaseSolver : () => SolverT = function() {
     // polyfill for min2phase
 
     min2phase_init();
-    function solve(cube : CubieT, l : number, r : number, c : number) {
-        console.assert(arrayEqual(cube.tp, CubieCube.id.tp), "Cube center is not solved: " + cube.tp)
-        const transformed_cube = CubieCube.to_cstimer_cube(cube)
-        console.assert( CubieCube.is_solveable(transformed_cube), "Cube must be solveable")
+    function solve(cube : CubieCube, l : number, r : number, c : number) {
+        console.assert(arrayEqual(cube.tp, new CubieCube().tp), "Cube center is not solved: " + cube.tp)
+        const transformed_cube = cube.to_cstimer_cube()
+        console.assert( transformed_cube.is_solveable(), "Cube must be solveable")
         let solution = min2phase_solve(transformed_cube);
-        return [Move.parse(solution)]
+        return [ new MoveSeq(solution) ]
     }
-    function is_solved(cube: CubieT) {
+    function is_solved(cube: CubieCube) {
         return true
     }
     function getPruner() {
@@ -239,4 +238,6 @@ let Min2PhaseSolver : () => SolverT = function() {
     }
 }
 
-export { FbdrSolver, FbSolver, SsSolver, Min2PhaseSolver }
+let LSESolver = Min2PhaseSolver;
+
+export { FbdrSolver, FbSolver, SsSolver, Min2PhaseSolver, LSESolver }

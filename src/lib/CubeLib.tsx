@@ -1,4 +1,4 @@
-import { MoveT, CubieT, OriChg, PermChg, StickerT, StickerExtT, CornerCoord, EdgeCoord, cstimer_corners_coord, cstimer_edges_coord } from "./Defs";
+import { MoveT, OriChg, PermChg, StickerT, StickerExtT, CornerCoord, EdgeCoord, cstimer_corners_coord, cstimer_edges_coord } from "./Defs";
 import { u, d, f, b, l, r, m, e, s} from "./Defs";
 import { FaceletT, FaceletCubeT, corners_coord, edges_coord, u_face, f_face, color_map } from "./Defs";
 import { Typ, Face, C, E, T, U, D, F, B, L, R } from "./Defs";
@@ -8,28 +8,57 @@ const C_MOD = 3;
 const E_MOD = 2;
 const T_MOD = 1;
 
-let CubieCube = (function () {
-    /*
-    Cube should be represented as a simple struct {cp, eo, ep, eo, tp}.
-    The addition of tp is not necessary, but helps us deal with slice moves in Roux during search and simcube.
-    */
+export class CubieCube {
+    cp: number[] = [];
+    co: number[] = [];
+    ep: number[] = [];
+    eo: number[] = [];
+    tp: number[] = [];
+    // The addition of tp is not necessary, but helps us deal with slice moves in Roux during search and simcube.
 
-    /*
-    We will follow the programming pattern of returning an object with all the public functions.
-    These functions will mostly have no side effects, i.e. no 'this' will be used. instead, the object must pass itself
-    in as the first argument. This makes sense because cube moves usually changes the state representation by a lot,
-    and re-assigning the result to 'this' would be cumbersome.
-    */
-    let id: CubieT = {
-        // init state
-        cp: [0, 1, 2, 3, 4, 5, 6, 7],
-        co: [0, 0, 0, 0, 0, 0, 0, 0],
-        ep: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
-        eo: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        tp: [0, 1, 2, 3, 4, 5] // UD FB LR
+    Id() : CubieCube {
+        this.set({
+            cp: [0, 1, 2, 3, 4, 5, 6, 7],
+            co: [0, 0, 0, 0, 0, 0, 0, 0],
+            ep: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+            eo: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            tp: [0, 1, 2, 3, 4, 5]
+        })
+        return this
     }
-
-    let apply_partial = (o: Array<number>, p: Array<number>, oc: Array<OriChg>, pc: Array<PermChg>, mod: number) => {
+    clone() : CubieCube {
+        return new CubieCube({
+            cp: [...this.cp],
+            co: [...this.co],
+            ep: [...this.ep],
+            eo: [...this.eo],
+            tp: [...this.tp]
+        })
+    }
+    constructor(value?: {cp: number[], co: number[], ep: number[], eo: number[], tp?: number[]} | CubieCube) {
+        if (value instanceof CubieCube) {
+            this.set({
+                cp: value.cp, co: value.co, ep: value.ep, eo: value.eo, tp: value.tp
+            })
+        }
+        else if (value) {
+            this.cp = value.cp
+            this.co = value.co
+            this.ep = value.ep
+            this.eo = value.eo
+            this.tp = value.tp || [0, 1, 2, 3, 4, 5] // UD FB LR
+        } else {
+            this.Id()
+        }
+    }
+    set(value: {cp?: number[], co?: number[], ep?: number[], eo?: number[], tp?: number[]} | CubieCube) {
+        this.cp = value.cp || this.cp
+        this.co = value.co || this.co
+        this.ep = value.ep || this.ep
+        this.eo = value.eo || this.eo
+        this.tp = value.tp || this.tp
+    }
+    _apply_partial(o: Array<number>, p: Array<number>, oc: Array<OriChg>, pc: Array<PermChg>, mod: number) {
         let o_new = [...o];
         let p_new = [...p];
         console.assert(oc.length === pc.length)
@@ -43,48 +72,32 @@ let CubieCube = (function () {
         return [o_new, p_new]
     }
 
-    let apply_one = (cube: CubieT, move: MoveT) => {
-        let [co, cp] = apply_partial(cube.co, cube.cp, move.coc, move.cpc, C_MOD)
-        let [eo, ep] = apply_partial(cube.eo, cube.ep, move.eoc, move.epc, E_MOD)
+    // all side-effect-less
+    apply_one(move: Move) {
+        let [co, cp] = this._apply_partial(this.co, this.cp, move.coc, move.cpc, C_MOD)
+        let [eo, ep] = this._apply_partial(this.eo, this.ep, move.eoc, move.epc, E_MOD)
         let toc = Array(move.tpc.length).fill(0)
-        let [, tp] = apply_partial([0, 0, 0, 0, 0, 0], cube.tp, toc, move.tpc, T_MOD)
-        return ({ co, cp, eo, ep, tp })
+        let [, tp] = this._apply_partial([0, 0, 0, 0, 0, 0], this.tp, toc, move.tpc, T_MOD)
+        return new CubieCube({ co, cp, eo, ep, tp })
     }
 
-    let apply = (cube: CubieT, move: MoveT | Array<MoveT>) => {
-        if (Array.isArray(move)) {
-            for (let i = 0; i < move.length; i++) {
-                cube = apply_one(cube, move[i])
+    apply(move: Move | Array<Move> | MoveSeq | string): CubieCube {
+        if (Array.isArray(move) || move instanceof MoveSeq) {
+            let moves = Array.isArray(move) ? move : move.moves
+            let cube = this.clone()
+            for (let i = 0; i < moves.length; i++) {
+                cube = cube.apply_one(moves[i])
             }
             return cube
-        } else {
-            return apply_one(cube, move)
+        } else if (typeof move === "string") {
+            return this.apply(new MoveSeq(move))
+        }
+        else {
+            return this.apply_one(move)
         }
     }
 
-    let apply_str = (cube: CubieT, str: string) => {
-        return apply(cube, Move.parse(str))
-    }
-
-    let from_move = (move: MoveT | Array<MoveT>) => {
-        return apply(id, move)
-    }
-
-    let from_string = (str: string) => {
-        return from_move(Move.parse(str))
-    }
-
-    let clone = (cube: CubieT) => {
-        return {
-            co: [...cube.co],
-            cp: [...cube.cp],
-            eo: [...cube.eo],
-            ep: [...cube.ep],
-            tp: [...cube.tp]
-        }
-    }
-
-    let _rotate_coord = (fs: Face[]) => {
+    static _rotate_coord(fs: Face[]) {
         let faces = [...fs] as Face[]
         let last_face = faces[faces.length - 1];
         for (let i = faces.length - 1; i > 0; i--) {
@@ -93,7 +106,7 @@ let CubieCube = (function () {
         faces[0] = last_face
         return faces
     }
-    let _backward_rotate_coord = (fs: Face[]) => {
+    static _backward_rotate_coord(fs: Face[]){
         let faces = [...fs] as Face[]
         let first_face = faces[0]
         for (let i = 0; i < faces.length - 1; i++) {
@@ -103,31 +116,31 @@ let CubieCube = (function () {
         return faces
     }
 
-    let to_facelet_mapping = (cube: CubieT,corners_coord: CornerCoord[], edges_coord: EdgeCoord[]) => {
+    _to_facelet_mapping(corners_coord: CornerCoord[], edges_coord: EdgeCoord[]) {
         let facelet_mapping : [Face[], Face[]][]= []
 
         for (let i = 0; i < 8; i++) {
             let pos = corners_coord[i] as Face[]
-            let piece = corners_coord[cube.cp[i]] as Face[]
+            let piece = corners_coord[this.cp[i]] as Face[]
 
-            for (let j = 0; j < cube.co[i];j++) {
-                piece = _rotate_coord(piece)
+            for (let j = 0; j < this.co[i];j++) {
+                piece = CubieCube._rotate_coord(piece)
             }
             facelet_mapping.push([pos, piece])
         }
         for (let i = 0; i < 12; i++) {
             let pos = edges_coord[i] as Face[]
-            let piece = edges_coord[cube.ep[i]] as Face[]
-            for (let j = 0; j < cube.eo[i];j++) {
-                piece = _rotate_coord(piece)
+            let piece = edges_coord[this.ep[i]] as Face[]
+            for (let j = 0; j < this.eo[i];j++) {
+                piece = CubieCube._rotate_coord(piece)
             }
             facelet_mapping.push([pos, piece])
         }
         return facelet_mapping
     }
 
-    let from_facelet_mapping = (fm: [Face[], Face[]][], custom_corners_coord: CornerCoord[], custom_edges_coord: EdgeCoord[]) : CubieT => {
-        let cube = CubieCube.clone(CubieCube.id)
+    _from_facelet_mapping (fm: [Face[], Face[]][], custom_corners_coord: CornerCoord[], custom_edges_coord: EdgeCoord[]) {
+        let cube = new CubieCube()
         let idxOf = (a_: CornerCoord[] | EdgeCoord[], target: Face[]) => {
             let a = a_ as Face[][]
             for (let i = 0; i < a.length; i++) {
@@ -141,7 +154,7 @@ let CubieCube = (function () {
 
             while (perm === -1) {
                 ori++;
-                target = _backward_rotate_coord(target) as any
+                target = CubieCube._backward_rotate_coord(target) as any
                 perm = idxOf(a_, target)
 
                 if (ori > 3) break;
@@ -166,40 +179,57 @@ let CubieCube = (function () {
         return cube
     }
 
-    let to_cstimer_cube = (cube: CubieT) => {
-        let facelet_mapping = to_facelet_mapping(cube, corners_coord, edges_coord)
-        let cstimer_cube = from_facelet_mapping(facelet_mapping, cstimer_corners_coord, cstimer_edges_coord)
-
-        return cstimer_cube
+    to_cstimer_cube() {
+        let facelet_mapping = this._to_facelet_mapping(corners_coord, edges_coord)
+        let cube = this._from_facelet_mapping(facelet_mapping, cstimer_corners_coord, cstimer_edges_coord)
+        return cube
     }
 
-    let is_solveable = (cube: CubieT) => {
-        if (cube.tp[0] !== 0) {
-            cube = CubieCube.apply(cube, Move.parse("M2"))
+    is_solveable() {
+        if (this.tp[0] !== 0) {
+            this.apply(new MoveSeq("M2")) // assuming lse
         }
-        let perm_correct = (getParity(cube.cp) + getParity(cube.ep)) % 2 === 0
-        let ori_correct = (cube.co.reduce((x, y) => x + y, 0) % 3 === 0) && (cube.eo.reduce((x, y) => x + y, 0) % 2 === 0)
+        let perm_correct = (getParity(this.cp) + getParity(this.ep)) % 2 === 0
+        let ori_correct = (this.co.reduce((x, y) => x + y, 0) % 3 === 0) && (this.eo.reduce((x, y) => x + y, 0) % 2 === 0)
         return perm_correct && ori_correct
     }
-
-    return {
-        id,
-        apply,
-        apply_str,
-        clone,
-        from_move,
-        from_string,
-        to_cstimer_cube,
-        is_solveable
-    }
-
-})()
+}
 
 
 /* Moves */
 /* We will generate all the moves based on the base moves and rotations, and return them in an array */
-let Move = function () {
-    let from_cube = (cube: CubieT, name: string): MoveT => {
+export class Move {
+    cpc: Array<PermChg> = [];
+    coc: Array<OriChg> = [];
+    epc: Array<PermChg> = [];
+    eoc: Array<OriChg> = [];
+    tpc: Array<PermChg> = [];
+    name: string = "";
+    constructor(arg?: Array<Move> | CubieCube | Move | MoveT, name?: string) {
+        if (Array.isArray(arg)) {
+            this.from_moves(arg, name!)
+        } else if (arg instanceof Move){
+            this.cpc = [...arg.cpc]
+            this.coc = [...arg.coc]
+            this.epc = [...arg.epc]
+            this.eoc = [...arg.eoc]
+            this.tpc = [...arg.tpc]
+            this.name = name!
+        } else if (arg instanceof CubieCube) {
+            this.from_cube(arg, name!)
+        } else if (arg) {
+            this.set(arg)
+        }
+    }
+    set(move: Move | MoveT) {
+        this.cpc = move.cpc
+        this.coc = move.coc
+        this.epc = move.epc
+        this.eoc = move.eoc
+        this.tpc = move.tpc
+        this.name = move.name
+    }
+    from_cube(cube: CubieCube, name: string) {
         let get_change = (p: Array<number>, o: Array<number>, acc_p: Array<PermChg>, acc_o: Array<OriChg>) => {
             for (let i = 0; i < p.length; i++) {
                 if (i === p[i] && o[i] === 0) {
@@ -209,100 +239,110 @@ let Move = function () {
                 }
             }
         }
-        let cpc: Array<PermChg> = [];
-        let coc: Array<OriChg> = [];
-        let epc: Array<PermChg> = [];
-        let eoc: Array<OriChg> = [];
-        let tpc: Array<PermChg> = [];
-        get_change(cube.cp, cube.co, cpc, coc);
-        get_change(cube.ep, cube.eo, epc, eoc);
-        get_change(cube.tp, [0, 0, 0, 0, 0, 0], tpc, []);
-        return {
-            cpc, coc, epc, eoc, tpc, name
-        }
+        get_change(cube.cp, cube.co, this.cpc, this.coc);
+        get_change(cube.ep, cube.eo, this.epc, this.eoc);
+        get_change(cube.tp, [0, 0, 0, 0, 0, 0], this.tpc, []);
+        this.name = name
+        return this
     }
-    let from_moves = (moves: Array<MoveT>, name: string): MoveT => {
-        let move = from_cube(CubieCube.apply(CubieCube.id, moves), name)
-        return move
+    from_moves (moves: Move[], name: string) {
+        this.from_cube(new CubieCube().apply(moves), name)
+        return this
     }
-    let make_rot_set = (move: MoveT): Array<MoveT> => {
+    clone() {
+        return new Move(this, this.name)
+    }
+    static make_rot_set(move: Move): Array<Move> {
         return [move,
-            from_moves([move, move], move.name + "2"),
-            from_moves([move, move, move], move.name + "'")
+            new Move().from_moves([move, move], move.name + "2"),
+            new Move().from_moves([move, move, move], move.name + "'"),
         ]
     }
-    let add_auf = (moves: Array<MoveT>, auf_moves?: Array<MoveT | MoveT[]>): MoveT[] => {
-        auf_moves = auf_moves || [[], Move.all["U"], Move.all["U'"], Move.all["U2"]]
-        let auf_move = auf_moves[Math.floor(Math.random() * auf_moves.length)]
-        if (Array.isArray(auf_move)) {
-            return moves.concat(auf_move)
-        } else {
-            moves.push(auf_move)
-            return moves
-        }
-    }
 
-    let generate_base_moves = () => {
-        let us = make_rot_set(u);
-        let fs = make_rot_set(f)
-        let rs = make_rot_set(r)
-        let ls = make_rot_set(l)
-        let ds = make_rot_set(d)
-        let bs = make_rot_set(b)
-        let ms = make_rot_set(m)
-        let es = make_rot_set(e);
-        let ss = make_rot_set(s);
+    static generate_base_moves = () => {
+        let make_rot_set = Move.make_rot_set
+        let us = make_rot_set(new Move(u));
+        let fs = make_rot_set(new Move(f));
+        let rs = make_rot_set(new Move(r));
+        let ls = make_rot_set(new Move(l));
+        let ds = make_rot_set(new Move(d));
+        let bs = make_rot_set(new Move(b));
+        let ms = make_rot_set(new Move(m));
+        let es = make_rot_set(new Move(e));
+        let ss = make_rot_set(new Move(s));
 
-        let rw = from_moves([r, ms[2]], "r")
+        let rw = new Move([new Move(r), ms[2]], "r")
         let rws = make_rot_set(rw)
-        let lw = from_moves([l, m], "l")
+        let lw = new Move([new Move(l), new Move(m)], "l")
         let lws = make_rot_set(lw)
-        let uw = from_moves([u, e], "u")
+        let uw = new Move([new Move(u), new Move(e)], "u")
         let uws = make_rot_set(uw)
 
-        let x = from_moves([r, ls[2], ms[2]], "x")
+        let x = new Move([new Move(r), ls[2], ms[2]], "x")
         let xs = make_rot_set(x)
-        let y = from_moves([u, e, ds[2]], "y")
+        let y = new Move([new Move(u), new Move(e), ds[2]], "y")
         let ys = make_rot_set(y)
-        let z = from_moves([x, y, x, x, x], "z")
+        let z = new Move([x, y, x, x, x], "z")
         let zs = make_rot_set(z)
+
+        let id = new Move(new CubieCube(), "id")
         let moves = [
+            id,
             us, fs, rs, ls, ds, bs, ms, es, ss,
             xs, ys, zs,
             rws, lws, uws
         ].flat()
-        let moves_dict: { [key: string]: MoveT } = Object.create({})
+        let moves_dict: { [key: string]: Move } = Object.create({})
         moves.forEach(m => moves_dict[m.name] = m)
         return moves_dict
     }
+    static all: {[key: string]: Move} = Move.generate_base_moves();
 
-    const moveCost = function() {
-        let pairs : [string, number][]= [
-            ["U", 1], ["U'", 1], ["U2", 1.4],
-            ["R", 1], ["R'", 1], ["R2", 1.4],
-            ["r", 1], ["r'", 1], ["r2", 1.5],
-            ["L", 1], ["L'", 1], ["L2", 1.4],
-            ["F", 1.4], ["F'", 1.4], ["F2", 1.8],
-            ["B", 1.6], ["B'", 1.6], ["B2", 2.2],
-            ["D", 1.4], ["D'", 1.4], ["D2", 1.7],
-            ["M", 1.5], ["M'", 1.2], ["M2", 1.8],
-            ["S", 1.7], ["S'", 1.7], ["S2", 3.0],
-            ["E", 1.5], ["E'", 1.5], ["E2", 2.4],
-        ]
-        let costMap = new Map(pairs)
-        return costMap
-    }()
-    function evaluate(moves : MoveT[]) {
-        let sum = 0
-        for (let m of moves) {
-            const value = (moveCost.get(m.name)) || 1.4
-            sum += value
+    inv(): Move {
+        let name: string
+        switch (this.name[this.name.length - 1]) {
+            case "'": name = this.name.slice(0, this.name.length - 1); break
+            case "2": name = this.name; break
+            default: name = this.name + "'"
         }
-        return sum
+        return Move.all[name]
     }
 
-    let all_moves = generate_base_moves()
-    let parse = (str: string) => {
+    toString() {
+        return this.name
+    }
+}
+
+
+export class MoveSeq {
+    moves: Move[] = [];
+
+    constructor(moves: Move[] | string) {
+        if (typeof moves === "string") {
+            this.parse(moves);
+        } else {
+            this.moves = moves
+        }
+    }
+
+    static _combine(move1: Move, move2: Move) : MoveSeq {
+        const getCnt = (name : string) => {
+            if (name.length === 1) return 1
+            return name[1] === "2" ? 2 : 3
+        }
+        const getStr = (cnt : number) => {
+            return (cnt === 1) ? "" : (cnt === 2 ? "2" : "'")
+        }
+        if (move1.name[0] === move2.name[0]) {
+            let cnt = (getCnt(move1.name) + getCnt(move2.name)) % 4
+            if (cnt === 0) return new MoveSeq([])
+            else return new MoveSeq([ Move.all[move1.name[0] + getStr(cnt)] ])
+        } else {
+            return new MoveSeq([move1, move2])
+        }
+    }
+
+    parse(str: string) {
         let tokens = []
         let token = ""
         for (let i = 0; i < str.length; i++) {
@@ -330,91 +370,88 @@ let Move = function () {
         }
         if (token.length > 0) tokens.push(token);
 
-        let res: MoveT[] = []
+        this.moves = []
         for (let token of tokens) {
-            let move = all_moves[token]
+            let move = Move.all[token]
             if (move) {
-                res.push(move)
+                this.moves.push(move)
             } else {
-                return []
+                return this
                 //throw Error("Invalid move sequence " + move)
             }
         }
-        return res
+        return this
     }
 
-    let combine = (move1: MoveT, move2: MoveT) : MoveT[] => {
-        const getCnt = (name : string) => {
-            if (name.length === 1) return 1
-            return name[1] === "2" ? 2 : 3
-        }
-        const getStr = (cnt : number) => {
-            return (cnt === 1) ? "" : (cnt === 2 ? "2" : "'")
-        }
-        if (move1.name[0] === move2.name[0]) {
-            let cnt = (getCnt(move1.name) + getCnt(move2.name)) % 4
-            if (cnt === 0) return []
-            else return [ all_moves[move1.name[0] + getStr(cnt)] ]
-        } else {
-            return [move1, move2]
-        }
-    }
-    let collapse = (moves: MoveT[]) : MoveT[] => {
-        let newMoves : MoveT[] = []
+    collapse() : MoveSeq {
+        let newMoves : Move[] = []
+        let moves = this.moves
         while (moves.length > 0) {
             const nextMove = moves.shift()!
             if (newMoves.length === 0) {
                 newMoves.push(nextMove)
             } else {
                 const move = newMoves.pop()!
-                const combined = combine(move, nextMove)
-                for (let m of combined)
+                const combined = MoveSeq._combine(move, nextMove)
+                for (let m of combined.moves)
                     newMoves.push(m)
             }
         }
-        return newMoves;
+        return new MoveSeq(newMoves);
     }
-    let inv = (move: MoveT | MoveT[]): MoveT[] => {
-        if (move === undefined || move === null) {
-            return []
-        }
-        if (Array.isArray(move)) {
-            return move.slice(0).reverse().map(inv).flat()
+
+    inv() {
+        let moves: Move[] = this.moves.slice(0).reverse().map(x => x.inv()).flat()
+        return new MoveSeq(moves)
+    }
+
+    static add_auf(moves: Array<Move>, auf_moves?: Array<Move | MoveSeq>) {
+        auf_moves = auf_moves || [ Move.all["id"], Move.all["U"], Move.all["U'"], Move.all["U2"]]
+        let auf_move = rand_choice(auf_moves)
+        if (auf_move instanceof MoveSeq) {
+            moves.concat(auf_move.moves)
         } else {
-            let name: string
-            switch (move.name[move.name.length - 1]) {
-                case "'": name = move.name.slice(0, move.name.length - 1); break
-                case "2": name = move.name; break
-                default: name = move.name + "'"
-            }
-            return [all_moves[name]]
+            moves.push(auf_move)
         }
     }
 
-    let to_string = (move: MoveT | MoveT[]): string => {
-        if (Array.isArray(move)) {
-            return move.map(to_string).join(" ") + " "
-        } else {
-            return move.name
+    toString() {
+        return this.moves.map(m => m.toString()).join(" ") + " "
+    }
+}
+
+export class SeqEvaluator {
+    static moveCost_gen() {
+    let pairs : [string, number][]= [
+        ["U", 1], ["U'", 1], ["U2", 1.4],
+        ["R", 1], ["R'", 1], ["R2", 1.4],
+        ["r", 1], ["r'", 1], ["r2", 1.5],
+        ["L", 1], ["L'", 1], ["L2", 1.4],
+        ["F", 1.4], ["F'", 1.4], ["F2", 1.8],
+        ["B", 1.6], ["B'", 1.6], ["B2", 2.2],
+        ["D", 1.4], ["D'", 1.4], ["D2", 1.7],
+        ["M", 1.5], ["M'", 1.2], ["M2", 1.8],
+        ["S", 1.7], ["S'", 1.7], ["S2", 3.0],
+        ["E", 1.5], ["E'", 1.5], ["E2", 2.4],
+    ]
+    let costMap = new Map(pairs)
+    return costMap
+    }
+    static moveCost = SeqEvaluator.moveCost_gen()
+
+    static evaluate(moves : MoveSeq) {
+        let sum = 0
+        for (let m of moves.moves) {
+            const value = (SeqEvaluator.moveCost.get(m.name)) || 1.4
+            sum += value
         }
+        return sum
     }
-    
-    return {
-        all: all_moves,
-        parse: parse,
-        inv: inv,
-        add_auf: add_auf,
-        to_string: to_string,
-        from_moves,
-        from_cube,
-        evaluate,
-        collapse,
-    }
-}()
+}
 
 /* Faces */
 let FaceletCube = function () {
-    let mult_move = (face: FaceletT, move: MoveT): FaceletT => {
+    let mult_move = (face: FaceletT, move: Move): FaceletT => {
         let face_new: FaceletT = [...face]
         let mod_for_typ = (typ: Typ) => {
             switch (typ) {
@@ -450,7 +487,7 @@ let FaceletCube = function () {
         edges_coord[p][(2 - o1 + o2) % 2];
     let color_of_t = (p: number) => [U, D, F, B, L, R][p]
 
-    let color_of_sticker = (cube: CubieT, sticker: StickerT) => {
+    let color_of_sticker = (cube: CubieCube, sticker: StickerT) => {
         let [p, o, typ] = sticker
         if (typ === C) {
             return color_of_c(cube.cp[p], cube.co[p], o)
@@ -463,10 +500,10 @@ let FaceletCube = function () {
         }
     }
 
-    let from_cubie_partial = (cube: CubieT, facelet: FaceletT) => {
+    let from_cubie_partial = (cube: CubieCube, facelet: FaceletT) => {
         return facelet.map(s => color_of_sticker(cube, s))
     }
-    let from_cubie_partial_masked = (cube: CubieT, facelet: FaceletT, mask: Mask) => {
+    let from_cubie_partial_masked = (cube: CubieCube, facelet: FaceletT, mask: Mask) => {
         return facelet.map(([p, o, typ]) => {
             if (typ === C) {
                 if (mask.cp[cube.cp[p]] === 1)
@@ -501,7 +538,7 @@ let FaceletCube = function () {
     }
     let { d_face, l_face, r_face, b_face } = generate_base_facelets()
 
-    let from_cubie = (cube: CubieT, mask?: Mask): FaceletCubeT => {
+    let from_cubie = (cube: CubieCube, mask?: Mask): FaceletCubeT => {
         //console.log("converting from cube", cube)
         let faces = [u_face, d_face, f_face, b_face, l_face, r_face]
         if (mask)
@@ -577,6 +614,12 @@ const lse_mask: Mask = {
     ep: [0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1],
 }
 
+const lse_4c_mask: Mask = {
+    cp: [1, 1, 1, 1, 1, 1, 1, 1],
+    ep: [0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1],
+    eo: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+}
+
 const solved_mask : Mask = {
     cp: [1, 1, 1, 1,  1, 1, 1, 1],
     ep:[1, 1, 1, 1,  1, 1, 1, 1, 1, 1, 1, 1],
@@ -638,8 +681,8 @@ const cmll_mask : Mask = {
 }
 
 let CubeUtil = (() => {
-    let is_cube_solved = (cube: CubieT) => {
-        let id = CubieCube.id
+    let is_cube_solved = (cube: CubieCube) => {
+        let id = new CubieCube()
         return arrayEqual(cube.co, id.co) &&
                arrayEqual(cube.eo, id.eo) &&
                arrayEqual(cube.cp, id.cp) &&
@@ -685,10 +728,10 @@ let CubeUtil = (() => {
         }
 
 
-        let get_color = (cube: CubieT, s: StickerExtT) => {
+        let get_color = (cube: CubieCube, s: StickerExtT) => {
             return FaceletCube.color_of_sticker(cube, [s[0], s[1], s[2]] )
         }
-        let func = (cube: CubieT) => {
+        let func = (cube: CubieCube) => {
             // now we process the cube
             let connected_pairs : [number, number][]= []
             //console.log("All neighboring pairs ", epcp_pairs)
@@ -709,12 +752,12 @@ let CubeUtil = (() => {
         return func
     }()
 
-    let is_mask_solved = (cube: CubieT, { co, eo, cp, ep }: Mask, premove: (MoveT | MoveT[])[]) => {
+    let is_mask_solved = (cube: CubieCube, { co, eo, cp, ep }: Mask, premove: (Move | Move[])[]) => {
         //let moves = [ [], Move.all["U"], Move.all["U'"], Move.all["U2"] ]
         co = co || cp
         eo = eo || ep
         for (let move of premove) {
-            let cube1 = CubieCube.apply(cube, move)
+            let cube1 = cube.apply(move)
             let solved = true
             for (let i = 0; i < 8 && solved; i++) {
                 if ((co[i] && cube1.co[i] !== 0)
@@ -735,14 +778,12 @@ let CubeUtil = (() => {
 
     const u_premove = [[], Move.all["U"], Move.all["U'"], Move.all["U2"]]
     const m2_premove = [[], Move.all["M2"]]
-    //let m2u_premove = [[], Move.parse("U"), Move.parse("U'"), Move.parse("U2"),
-    //Move.parse("M2"), Move.parse("M2U"), Move.parse("M2U'"), Move.parse("M2U2")]
 
-    let is_cmll_solved = (cube: CubieT) => {
+    let is_cmll_solved = (cube: CubieCube) => {
         return is_mask_solved(cube, lse_mask, u_premove)
     }
 
-    let get_random_with_mask = ({ co, eo, cp, ep }: Mask): CubieT => {
+    let get_random_with_mask = ({ co, eo, cp, ep }: Mask): CubieCube => {
         co = co || cp
         eo = eo || ep
         // get_random -- figure out which masks are 0, and assign random to these
@@ -786,18 +827,17 @@ let CubeUtil = (() => {
             par = (getParity(cp_rand) + getParity(ep_rand)) & 1
         } while (par > 0)
 
-        return {
+        return new CubieCube({
             co: random_ori(co, C),
             cp: cp_rand,
             eo: random_ori(eo, E),
             ep: ep_rand,
-            tp: [0, 1, 2, 3, 4, 5]
-        }
+        })
     }
 
-    let get_random_lse = (): CubieT => {
+    let get_random_lse = (): CubieCube => {
         let cube = get_random_with_mask(lse_mask)
-        return CubieCube.apply(cube, rand_choice(m2_premove))
+        return cube.apply(rand_choice(m2_premove))
     }
 
     const ori_to_color_scheme = (() => {
@@ -871,8 +911,8 @@ let CubeUtil = (() => {
 
 let Mask = {
     lse_mask, fs_back_mask, fs_front_mask, fbdr_mask, fb_mask, sb_mask, cmll_mask, ss_front_mask, ss_back_mask,
-    empty_mask, dl_solved_mask, db_solved_mask, solved_mask, zhouheng_mask,
+    empty_mask, dl_solved_mask, db_solved_mask, solved_mask, zhouheng_mask, lse_4c_mask,
     copy: mask_copy
 }
 
-export { CubieCube, Move, FaceletCube, CubeUtil, Mask }
+export { FaceletCube, CubeUtil, Mask }

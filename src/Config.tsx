@@ -103,6 +103,12 @@ export const initialConfig : Config = (() => {
             names: ["Hard over x2y(Scramble only)", "Hard", "DL Solved", "BL Solved", "Random"],
             flags: [1, 0, 0, 0, 0],
             kind: "fb-piece-solved"
+        },
+        lseMCSelector: {
+            label: "Center",
+            names: ["Aligned", "Misaligned"],
+            flags: [0, 1],
+            kind: "lse-mc"
         }
     }
 })()

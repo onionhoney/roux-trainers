@@ -4,6 +4,7 @@ import { CubieCube } from '../lib/CubeLib';
 import { setConfig, getConfig, getFavList, setFavList} from '../lib/Local';
 import { getActiveName } from '../lib/Selector';
 import { StateFactory } from "./StateFactory";
+import { DefaultKeyMapping, LSEKeyMapping } from "../KeyMapping";
 
 export const getInitialState = (mode?: Mode) : AppState => {
     mode = mode || "fbdr"
@@ -13,6 +14,7 @@ export const getInitialState = (mode?: Mode) : AppState => {
             case "fbdr":
             case "ss":
             case "fb":
+            case "lse":
                 return "revealed"
             case "experimental":
                 return "revealed"
@@ -24,19 +26,20 @@ export const getInitialState = (mode?: Mode) : AppState => {
         mode,
         scrSource: "random",
         cube: {
-            state: CubieCube.id,
+            state: new CubieCube(),
             ori,
             history: [],
         },
         case: {
-            state: CubieCube.id,
+            state: new CubieCube(),
             desc: []
         },
         cubejs: {
             initialized: false
         },
         config: getConfig(),
-        favList: getFavList()
+        favList: getFavList(),
+        keyMapping: (mode === "lse") ? new LSEKeyMapping() : new DefaultKeyMapping()
     }
 }
 

@@ -159,9 +159,6 @@ const setup = function (width: number, height: number, colorScheme?: Array<numbe
 
     //let defaultColorScheme = [ 0x00ff00, 0x0000ff, 0xff0000,0xff8800,0xffff00, 0xffffff]
     updateWidthHeight(width, height)
-    //updateColorScheme(defaultColorScheme)
-    //updateCube(FaceletCube.from_cubie( CubieCube.id))
-
 
     return {
         domElement: () => { return renderer.domElement },

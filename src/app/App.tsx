@@ -1,5 +1,4 @@
 import React from 'react'
-import { defaultKeyMapping } from "../lib/Defs";
 import AppView from "../components/AppView"
 import { reducer, getInitialState } from '../reducers/Reducer'
 import CssBaseline from '@material-ui/core/CssBaseline';
@@ -18,13 +17,8 @@ function App(props: {}) {
 
   // Add event listeners
   React.useEffect(() => {
-    function downHandler({ key }: { key : string}) {
-      key = key.toUpperCase()
-      if (defaultKeyMapping.hasOwnProperty(key)) {
-        dispatch({
-          type: "key", content: defaultKeyMapping[key] }
-        );
-      }
+    function downHandler(event: KeyboardEvent) {
+      state.keyMapping.handle(event, dispatch);
     }
     window.addEventListener('keydown', downHandler);
     return () => {

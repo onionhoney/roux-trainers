@@ -1,18 +1,18 @@
 import { AppState, Config, FavCase } from "../Types";
 import { alg_generator, AlgDesc } from "../lib/Algs";
-import { MoveT, CubieT, Face, Typ, FBpairPos } from "../lib/Defs";
-import { CubieCube, Move, CubeUtil, Mask, FaceletCube } from '../lib/CubeLib';
+import { Face, Typ, FBpairPos } from "../lib/Defs";
+import { CubieCube, Move, CubeUtil, Mask, FaceletCube, SeqEvaluator, MoveSeq } from '../lib/CubeLib';
 import { getActiveName, getActiveNames } from '../lib/Selector';
 import { CachedSolver } from "../lib/CachedSolver";
 import { rand_choice, arrayEqual } from '../lib/Math';
 import { AbstractStateM, StateFactory } from "./AbstractStateM";
 
-abstract class BlockTrainerStateM extends AbstractStateM {
+export abstract class BlockTrainerStateM extends AbstractStateM {
     abstract solverL: number;
     abstract solverR: number;
-    abstract getRandom(): [CubieT, string] | [CubieT, string, boolean];
+    abstract getRandom(): [CubieCube, string] | [CubieCube, string, boolean];
 
-    _solve_min2phase(cube: CubieT) : AppState  {
+    _solve_min2phase(cube: CubieCube) : AppState  {
 
         const state = this.state
         const ori = alg_generator(state.config.orientationSelector)().id;
@@ -20,7 +20,7 @@ abstract class BlockTrainerStateM extends AbstractStateM {
             id: `min2phase`,
             alg: "",
             alt_algs: [],
-            setup: Move.to_string( CachedSolver.get("min2phase").solve(cube,0,0,0)[0] ),
+            setup: CachedSolver.get("min2phase").solve(cube,0,0,0)[0].toString(),
             kind: `min2phase`
         };
         return {
@@ -36,7 +36,7 @@ abstract class BlockTrainerStateM extends AbstractStateM {
             }
         };
     }
-    _solve(cube: CubieT, solverName: string, updateSolutionOnly?: boolean, use2PhaseScramble?: boolean) {
+    _solve(cube: CubieCube, solverName: string, updateSolutionOnly?: boolean, use2PhaseScramble?: boolean) {
         if (solverName === "min2phase") {
             if (!updateSolutionOnly)
                 return this._solve_min2phase(cube)
@@ -46,16 +46,17 @@ abstract class BlockTrainerStateM extends AbstractStateM {
         const state = this.state;
         const scramble = use2PhaseScramble ?
             CachedSolver.get("min2phase").solve(cube,0,0,0)[0] :
-            Move.inv(solver.solve(cube, this.solverL, this.solverR, 1)[0]);
+            solver.solve(cube, this.solverL, this.solverR, 1)[0].inv();
         //console.log(cube, solverName, scramble, this.solverL, this.solverR)
         const magnification = 4;
         const solutionCap = +(getActiveName(state.config.solutionNumSelector) || 5);
         // not using solutionCap for now
-        const setup = Move.to_string(scramble);
+        const setup = scramble.toString()
         let solution = solver.solve(cube, 0, this.solverR, solutionCap * magnification);
-        solution.sort((a, b) => Move.evaluate(a) - Move.evaluate(b));
-        const alg = Move.to_string(solution[0]);
-        const alt_algs = solution.slice(1, solutionCap).map((s: MoveT[]) => Move.to_string(s));
+        solution.sort((a, b) =>
+            SeqEvaluator.evaluate(a) - SeqEvaluator.evaluate(b));
+        const alg = solution[0].toString();
+        const alt_algs = solution.slice(1, solutionCap).map(s => s.toString());
         const ori = (updateSolutionOnly) ? this.state.cube.ori : alg_generator(state.config.orientationSelector)().id;
         let algdesc: AlgDesc = {
             id: `${solverName}`,
@@ -93,7 +94,7 @@ abstract class BlockTrainerStateM extends AbstractStateM {
         return this._solve(cube, solverName, true);
     }
     replay(case_: FavCase): AppState {
-        const cube = CubieCube.from_move(Move.parse(case_.setup));
+        const cube = new CubieCube().apply(case_.setup)
         const solverName = case_.solver;
         const state1 = this._solve(cube, solverName);
         return {
@@ -129,8 +130,8 @@ abstract class BlockTrainerStateM extends AbstractStateM {
     }
     move(movestr: string): AppState {
         let state = this.state;
-        let move = Move.parse(movestr)[0];
-        let cube = CubieCube.apply(state.cube.state, move);
+        let move = new MoveSeq(movestr);
+        let cube = state.cube.state.apply(move);
         return {
             ...state,
             cube: {
@@ -186,7 +187,7 @@ export class FbdrStateM extends BlockTrainerStateM {
         return cube;
         //return CubieCube.apply(cube, rand_choice(m_premove));
     }
-    getRandom(): [CubieT, string, boolean] {
+    getRandom(): [CubieCube, string, boolean] {
         const fbOnly = getActiveName(this.state.config.fbOnlySelector) === "FB Last Pair Only";
         const pairSolved = getActiveName(this.state.config.fbPairSolvedSelector) !== "Random";
         const scrambleType = getActiveName(this.state.config.fbdrScrambleSelector) || "Short";
@@ -220,7 +221,7 @@ export class SsStateM extends BlockTrainerStateM {
     _get_random_fb(allowed_dr_eo_ep: [number, number][]) {
         let active = getActiveName(this.state.config.ssPairOnlySelector);
         let mask = (active === "SS") ? Mask.fb_mask : Mask.fbdr_mask;
-        let cube : CubieT;
+        let cube : CubieCube;
         while (true) {
             cube = CubeUtil.get_random_with_mask(mask);
             if (active !== "SS") break;
@@ -232,7 +233,7 @@ export class SsStateM extends BlockTrainerStateM {
         }
         return cube
     }
-    getRandom(): [CubieT, string] {
+    getRandom(): [CubieCube, string] {
         let active = getActiveNames(this.state.config.ssSelector)[0];
         const drPositionMap : [number, number][] = [
             [0, 0], [1, 0],
@@ -269,13 +270,13 @@ export class SsStateM extends BlockTrainerStateM {
 export class FbStateM extends BlockTrainerStateM {
     solverL: number;
     solverR: number;
-    _find_center_connected_edges(cube: CubieT, is_l_only: boolean) {
+    _find_center_connected_edges(cube: CubieCube, is_l_only: boolean) {
         let centers = is_l_only ? [ Face.L ] : [ Face.F, Face.B, Face.L, Face.R]
         let edges = CubeUtil.stickers.filter(c => c[2] === Typ.E && centers.includes(c[3])
             && FaceletCube.color_of_sticker(cube, [c[0], c[1], c[2]]) === c[3]);
         return edges;
     }
-    _get_random(): [CubieT, string] {
+    _get_random(): [CubieCube, string] {
         let active = getActiveName(this.state.config.fbPieceSolvedSelector);
         let mask;
         if (active === "Random")
@@ -293,7 +294,7 @@ export class FbStateM extends BlockTrainerStateM {
         let solver = "fb";
         if (active === "Zhouheng Variant") {
             // B F'
-            cube = CubieCube.apply(cube, Move.parse("B F'"));
+            cube = cube.apply("B F'");
             solver = "fbdr";
         }
         const g_hard = "Hard over x2y(Scramble only)"
@@ -316,7 +317,7 @@ export class FbStateM extends BlockTrainerStateM {
             cube = CubeUtil.get_random_with_mask(Mask.empty_mask);
         }
     }
-    getRandom(): [CubieT, string] {
+    getRandom(): [CubieCube, string] {
         let [cube, solver] = this._get_random();
         return [cube, solver];
     }
