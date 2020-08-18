@@ -7,7 +7,8 @@ import { getConfig } from '../lib/Local';
 
 type Config = {
     cube: FaceletCubeT, width: number, height: number, colorScheme: Array<number>, facesToReveal: Face[],
-    bgColor?: string
+    bgColor?: string,
+    hintDistance?: number
 }
 
 /*
@@ -36,6 +37,7 @@ const axesInfo: [THREE.Vector3, THREE.Euler][] = [
 const setup = function (width: number, height: number, colorScheme?: Array<number>, mode?: string,
     faces?: Face[]) {
     let facesToReveal = faces || [Face.L, Face.B, Face.D]
+    let hintDistance = 7
     const scene = new THREE.Scene()
     const camera = new THREE.PerspectiveCamera(70, width / height, 0.1, 1000)
     const renderer = new THREE.WebGLRenderer({ antialias: true })
@@ -109,7 +111,7 @@ const setup = function (width: number, height: number, colorScheme?: Array<numbe
 
                     if (facesToReveal.indexOf(i) > -1) { // (i === 5 && mode === "UF")) {
                         const stickerhint = curr_tmpl.clone()
-                        stickerhint.position.copy(new THREE.Vector3(x * 2, 3 + 7 + 3, z * 2))
+                        stickerhint.position.copy(new THREE.Vector3(x * 2, 3 + hintDistance + 3, z * 2))
                         cubie.add(stickerhint)
 
                     }
@@ -151,6 +153,10 @@ const setup = function (width: number, height: number, colorScheme?: Array<numbe
         }
     }
 
+    const updateDrawParam = (distance: number) => {
+        hintDistance = distance
+    }
+
 
     const cleanup = () => {
         geo.dispose()
@@ -167,7 +173,8 @@ const setup = function (width: number, height: number, colorScheme?: Array<numbe
         updateWidthHeight,
         cleanup,
         updateColorScheme,
-        updateFacesToReveal
+        updateFacesToReveal,
+        updateDrawParam
     }
 }
 
@@ -185,6 +192,10 @@ function CubeSim(props: Config) {
         cubeSim.updateFacesToReveal(props.facesToReveal)
         cubeSim.updateWidthHeight(width, height, props.bgColor || "#eeeeef")
         cubeSim.updateColorScheme(props.colorScheme)
+
+        if (props.hintDistance)
+            cubeSim.updateDrawParam(props.hintDistance)
+
         cubeSim.updateCube(props.cube)
         cubeSim.renderScene()
 

@@ -17,6 +17,7 @@ import DeleteOutlineIcon from '@material-ui/icons/DeleteOutline';
 import AddIcon from '@material-ui/icons/Add';
 import FileCopyIcon from '@material-ui/icons/FileCopy';
 import { AppState, Action, FavCase } from '../Types';
+import { all_solvers } from '../lib/CachedSolver';
 
 
 const useStyles = makeStyles(theme => ({
@@ -38,7 +39,7 @@ function parseAddString(state: AppState, s : string) : [ FavCase[], boolean] {
     if (cols.length !== 2) continue
     let solver = cols[0].trim()
     let setup = cols[1].trim()
-    if (["fb", "fbdr", "ss-front", "ss-back"].includes(solver)) {
+    if (all_solvers.includes(solver)) {
       let case_ : FavCase = {
         mode: state.mode,
         solver,

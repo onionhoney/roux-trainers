@@ -1,4 +1,5 @@
 import { CubieCube, Move, CubeUtil } from './CubeLib';
+import { cartesianProduct } from './Math';
 
 export type PrunerConfig = {
     size: number,
@@ -92,7 +93,7 @@ let fbdrPrunerConfig : PrunerConfig = function() {
       return enc_c + 24 * 24 * enc_e
     }
 
-    const moves = [[]] 
+    const moves = [[]]//, Move.parse("L R'"), Move.parse("L' R"), Move.parse("L2 R2")] 
     const solved_states = moves.map( (move : Move[]) => new CubieCube().apply(move) )
 
     const max_depth = 4
@@ -185,7 +186,7 @@ let ssPrunerConfig = (is_front: boolean) => {
 
     const max_depth = 5
     const moveset : Move[] = ["U", "U'", "U2", "R", "R'", "R2",
-        "r", "r'", "r2", "M", "M'", "M2"].map(s => Move.all[s])
+        "r", "r'", "r2", "M'", "M", "M2"].map(s => Move.all[s])
 
     return {
         size,
@@ -196,4 +197,86 @@ let ssPrunerConfig = (is_front: boolean) => {
     }
 }
 
-export { fbdrPrunerConfig, ssPrunerConfig, fbPrunerConfig }
+
+let lsePrunerConfig : PrunerConfig = function() {
+    const size = Math.pow(12, 6) * 4 * 4 // TODO: optimize this plz
+    function encode(cube:CubieCube) {
+      let edge_encode = [0, 1, 2, 3, 4, -1, 5, -1, -1, -1, -1, -1];
+      let enc = [0, 0, 0, 0, 0, 0]
+      for (let i = 0; i < 12; i++) {
+        let idx = edge_encode[cube.ep[i]];
+        if (idx > -1) {
+            enc[idx] = edge_encode[i] * 2 + cube.eo[i];
+        }
+      }
+      let edge_enc = 0;
+      for (let i = 0; i < 6; i++) {
+        edge_enc = edge_enc * 12 + enc[i];
+      }
+      return edge_enc * 4 * 4 + cube.tp[0] * 4 + cube.cp[0]// center[0] and cp[0] must be (0-3)
+    }
+
+    const moves = [Move.all["id"]]
+    const solved_states = moves.map( m => new CubieCube().apply(m))
+
+    const max_depth = 7
+    const moveset : Move[] = ["U", "U'", "U2", "M'", "M", "M2"].map(s => Move.all[s])
+
+    return {
+        size,
+        encode,
+        solved_states,
+        max_depth,
+        moveset
+    }
+}()
+
+function eolrPrunerConfig(center_flag: number, use_barbie?: boolean): PrunerConfig {
+    const size = 6 * 6 * Math.pow(2, 6) * 4 * 2 // TODO: optimize this plz
+
+    const edge_encode = [0, 1, 0, 2, 0, -1, 0, -1, -1, -1, -1, -1];
+    const edge_idx = [0, 1, 2, 3, 4, -1, 5, -1, -1, -1, -1, -1];
+    function encode(cube:CubieCube) {
+      let eo = 0, ep = 0
+      for (let i = 0; i < 12; i++) {
+        let idx = edge_encode[cube.ep[i]];
+        if (idx >= 0) {
+            eo = eo * 2 + cube.eo[i]
+        }
+        if (idx > 0) {
+            ep += Math.pow(6, idx - 1) * edge_idx[i]
+        }
+      }
+      // make no distinction between centers M2 apart
+      return (eo * 36 + ep) * 4 * 2 + ~~(cube.tp[0] / 2) * 4 + cube.cp[0]// center[0] and cp[0] must be (0-3)
+    }
+
+    const moves_ac = cartesianProduct( ["U'", "U"], ["M2"], ["", "U", "U'", "U2"] ).map(x => x.join(" "))
+    const moves_mc = cartesianProduct( ["M'"], ["U", "U'"], ["M2"], ["", "U", "U'", "U2"]).map(x => x.join(" "))
+    let moves: string[] = []
+    if (center_flag & 0x01) moves = moves.concat(moves_ac)
+    if (center_flag & 0x10) moves = moves.concat(moves_mc)
+
+    const barb_moves_ac = ["U", "U'"]
+    const barb_moves_mc = ["M U", "M U'"]
+    let barb_moves: string[] = []
+    if (center_flag & 0x01) barb_moves = barb_moves.concat(barb_moves_ac)
+    if (center_flag & 0x10) barb_moves = barb_moves.concat(barb_moves_mc)
+
+    const pre_moves = use_barbie ? barb_moves : moves
+
+    const solved_states = pre_moves.map( m => new CubieCube().apply(m))
+
+    const max_depth = 20
+    const moveset : Move[] = ["U", "U'", "U2", "M'", "M", "M2"].map(s => Move.all[s])
+
+    return {
+        size,
+        encode,
+        solved_states,
+        max_depth,
+        moveset
+    }
+}
+
+export { fbdrPrunerConfig, ssPrunerConfig, fbPrunerConfig, lsePrunerConfig, eolrPrunerConfig }

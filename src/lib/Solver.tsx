@@ -1,7 +1,7 @@
 import { CubieCube, Move, MoveSeq } from './CubeLib';
 import { arrayEqual } from './Math';
 
-import { Pruner, PrunerT, fbdrPrunerConfig, ssPrunerConfig, fbPrunerConfig } from './Pruner';
+import { Pruner, PrunerT, fbdrPrunerConfig, ssPrunerConfig, fbPrunerConfig, lsePrunerConfig, PrunerConfig, eolrPrunerConfig } from './Pruner';
 
 import {initialize as min2phase_init, solve as min2phase_solve} from "../lib/min2phase/min2phase-wrapper"
 
@@ -238,6 +238,42 @@ let Min2PhaseSolver : () => SolverT = function() {
     }
 }
 
-let LSESolver = Min2PhaseSolver;
+let LSESolver = function() {
+    let pruner = Pruner(lsePrunerConfig)
+    pruner.init()
+    //let solvedEncodings = prunerConfig.solved_states.map(s => prunerConfig.encode(s))
+    function is_solved(cube: CubieCube) {
+        return pruner.query(cube) === 0;
+    }
 
-export { FbdrSolver, FbSolver, SsSolver, Min2PhaseSolver, LSESolver }
+    let config = {
+        is_solved,
+        moveset: lsePrunerConfig.moveset,
+        pruners: [pruner],
+    }
+
+    let solver = Solver(config)
+    return solver
+}
+
+let EOLRSolver = function(center_flag: number, use_barbie?: boolean) {
+    let prunerConfig : PrunerConfig = eolrPrunerConfig(center_flag, use_barbie)
+    let pruner = Pruner(prunerConfig)
+    pruner.init()
+    //let solvedEncodings = prunerConfig.solved_states.map(s => prunerConfig.encode(s))
+    let solved_states = new Set(prunerConfig.solved_states.map(x => pruner.query(x)))
+    function is_solved(cube: CubieCube) {
+        return solved_states.has(pruner.query(cube))
+    }
+
+    let config = {
+        is_solved,
+        moveset: lsePrunerConfig.moveset,
+        pruners: [pruner],
+    }
+
+    let solver = Solver(config)
+    return solver
+}
+
+export { FbdrSolver, FbSolver, SsSolver, Min2PhaseSolver, LSESolver, EOLRSolver }

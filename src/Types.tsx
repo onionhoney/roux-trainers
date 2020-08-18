@@ -24,13 +24,18 @@ export type Config = {
     fbPairSolvedSelector: Selector,
     solutionNumSelector: Selector,
     fbPieceSolvedSelector: Selector,
-    lseMCSelector: Selector
+    lseMCSelector: Selector,
+    lseBarSelector: Selector,
+    lseStageSelector: Selector,
+    lseEOSelector: Selector,
+    lseEOLRMCSelector: Selector,
+    lseBarbieSelector: Selector
     //fbdrSolutionCount: Slider
 }
 
 export type StateT = "solving" | "solved" | "hiding" | "revealed" | "revealed_all"
 
-export type Mode = "cmll" | "fbdr" | "ss" | "fb" | "experimental" | "lse"
+export type Mode = "cmll" | "fbdr" | "ss" | "fb" | "experimental" | "4c" | "eopair"
 
 type KeyAction = {
     type: "key",

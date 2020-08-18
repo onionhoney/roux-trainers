@@ -1,7 +1,7 @@
 import { AppState, Config, FavCase } from "../Types";
 import { alg_generator, AlgDesc } from "../lib/Algs";
 import { Face, Typ, FBpairPos } from "../lib/Defs";
-import { CubieCube, Move, CubeUtil, Mask, FaceletCube, SeqEvaluator, MoveSeq } from '../lib/CubeLib';
+import { CubieCube, CubeUtil, Mask, FaceletCube, SeqEvaluator, MoveSeq } from '../lib/CubeLib';
 import { getActiveName, getActiveNames } from '../lib/Selector';
 import { CachedSolver } from "../lib/CachedSolver";
 import { rand_choice, arrayEqual } from '../lib/Math';
@@ -10,6 +10,9 @@ import { AbstractStateM, StateFactory } from "./AbstractStateM";
 export abstract class BlockTrainerStateM extends AbstractStateM {
     abstract solverL: number;
     abstract solverR: number;
+    scrambleMargin: number = 1;
+    scrambleCount: number = 1;
+    algDescWithMoveCount: string = "";
     abstract getRandom(): [CubieCube, string] | [CubieCube, string, boolean];
 
     _solve_min2phase(cube: CubieCube) : AppState  {
@@ -36,28 +39,39 @@ export abstract class BlockTrainerStateM extends AbstractStateM {
             }
         };
     }
-    _solve(cube: CubieCube, solverName: string, updateSolutionOnly?: boolean, use2PhaseScramble?: boolean) {
+    _solve(cube: CubieCube, solverName: string, options?: {
+        updateSolutionOnly?: boolean, use2PhaseScramble?: boolean,
+        scrambleMargin?: number,
+        scrambleCount?: number
+    }) {
+        options = options || {}
         if (solverName === "min2phase") {
-            if (!updateSolutionOnly)
+            if (!options.updateSolutionOnly)
                 return this._solve_min2phase(cube)
             return this.state
         }
         const solver = CachedSolver.get(solverName);
         const state = this.state;
-        const scramble = use2PhaseScramble ?
-            CachedSolver.get("min2phase").solve(cube,0,0,0)[0] :
-            solver.solve(cube, this.solverL, this.solverR, 1)[0].inv();
+;
         //console.log(cube, solverName, scramble, this.solverL, this.solverR)
         const magnification = 4;
         const solutionCap = +(getActiveName(state.config.solutionNumSelector) || 5);
         // not using solutionCap for now
-        const setup = scramble.toString()
         let solution = solver.solve(cube, 0, this.solverR, solutionCap * magnification);
+
+        const solutionLength = solution[0].moves.length;
+        const scrambleMargin = 1;
+        const scramble = options.use2PhaseScramble ?
+            CachedSolver.get("min2phase").solve(cube,0,0,0)[0] :
+            rand_choice(solver.solve(cube, Math.max(this.solverL, solutionLength + scrambleMargin), this.solverR, options.scrambleCount || 1)).inv()
+
+        const setup = scramble.toString()
+
         solution.sort((a, b) =>
             SeqEvaluator.evaluate(a) - SeqEvaluator.evaluate(b));
-        const alg = solution[0].toString();
-        const alt_algs = solution.slice(1, solutionCap).map(s => s.toString());
-        const ori = (updateSolutionOnly) ? this.state.cube.ori : alg_generator(state.config.orientationSelector)().id;
+        const alg = solution[0].toString(this.algDescWithMoveCount);
+        const alt_algs = solution.slice(1, solutionCap).map(s => s.toString(this.algDescWithMoveCount));
+        const ori = (options.updateSolutionOnly) ? this.state.cube.ori : alg_generator(state.config.orientationSelector)().id;
         let algdesc: AlgDesc = {
             id: `${solverName}`,
             alg,
@@ -65,7 +79,7 @@ export abstract class BlockTrainerStateM extends AbstractStateM {
             setup,
             kind: `${solverName}`
         };
-        const name = updateSolutionOnly ? this.state.name : "hiding";
+        const name = options.updateSolutionOnly ? this.state.name : "hiding";
         // console.log("algdesc", algdesc)
         return {
             ...state,
@@ -83,7 +97,10 @@ export abstract class BlockTrainerStateM extends AbstractStateM {
     }
     _updateCase(): AppState {
         const [cube, solverName, use2PhaseScramble] = this.getRandom();
-        return this._solve(cube, solverName, false, use2PhaseScramble);
+        return this._solve(cube, solverName, {
+            updateSolutionOnly: false,
+            use2PhaseScramble
+        });
     }
     _updateCap(): AppState {
         const state = this.state;
@@ -91,7 +108,9 @@ export abstract class BlockTrainerStateM extends AbstractStateM {
             return state;
         }
         const [cube, solverName] = [state.cube.state, state.case.desc[0]!.kind];
-        return this._solve(cube, solverName, true);
+        return this._solve(cube, solverName, {
+            updateSolutionOnly:true
+        });
     }
     replay(case_: FavCase): AppState {
         const cube = new CubieCube().apply(case_.setup)

@@ -19,6 +19,16 @@ let rand_shuffle = function<T>(arr: T[]) {
     return arr
 }
 
+export function cartesianProduct<T>(...allEntries: T[][]): T[][] {
+    return allEntries.reduce<T[][]>(
+      (results, entries) =>
+        results
+          .map(result => entries.map(entry => result.concat([entry])))
+          .reduce((subResults, result) => subResults.concat(result), []),
+      [[]]
+    )
+  }
+
 let getParity = (perm: number[]) => {
     let visited = Array(perm.length).fill(false)
     let follow = (i: number, cnt: number) : number => {

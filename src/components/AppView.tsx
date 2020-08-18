@@ -58,7 +58,7 @@ const useStyles = makeStyles(theme => ({
 }))
 
 
-const modes : Mode[] = ["fbdr", "ss", "fb", "cmll", "experimental"]
+const modes : Mode[] = ["fbdr", "fb", "ss", "cmll", "4c", "eopair"]
 
 function _getInitialHashLocation() {
   if (window.location.hash) {
@@ -159,12 +159,14 @@ function AppView(props: { state: AppState, dispatch: React.Dispatch<Action> } ) 
 
       <AppBar color="primary" position="static">
         <Tabs value={value} onChange={handleChange} scrollButtons="on" variant="scrollable" indicatorColor="secondary" >
-          <Tab onFocus={e => e.target.blur() } label="FBDR Trainer" id='tab0' />
-          <Tab onFocus={e => e.target.blur() } label="SSquare Trainer" id='tab1' />
-          <Tab onFocus={e => e.target.blur() } label="FB Trainer" id='tab2' />
-          <Tab onFocus={e => e.target.blur() } label="CMLL Trainer" id='tab3'/>
+          <Tab onFocus={e => e.target.blur() } label="FB Pair + DR " id='tab0' />
+          <Tab onFocus={e => e.target.blur() } label="Tough FB " id='tab1' />
+          <Tab onFocus={e => e.target.blur() } label="SSquare " id='tab2' />
+          <Tab onFocus={e => e.target.blur() } label="CMLL " id='tab3'/>
+          <Tab onFocus={e => e.target.blur() } label="LSE 4c" id='tab4'/>
+          <Tab onFocus={e => e.target.blur() } label="EOPair (LR/FB)" id='tab5'/>
           { ENABLE_DEV ?
-          <Tab onFocus={e => e.target.blur() } label="..." id='tab4'/> : null }
+          <Tab onFocus={e => e.target.blur() } label="..." id='tab6'/> : null }
           <div style={{ flexGrow: 1 }}/>
 
 
@@ -179,7 +181,7 @@ function AppView(props: { state: AppState, dispatch: React.Dispatch<Action> } ) 
       <Container maxWidth={showFav ? "md" : "sm" }>
 
       {
-      value === 4?
+      value === -1?
       (
       <Grid container className={classes.container} spacing={3}>
         <Grid item md={12} sm={12} xs={12}>
@@ -208,6 +210,12 @@ function AppView(props: { state: AppState, dispatch: React.Dispatch<Action> } ) 
         </TabPanel>
         <TabPanel value={value} index={3} className={classes.page}>
           <CmllTrainerView {...{state, dispatch}} />
+        </TabPanel>
+        <TabPanel value={value} index={4} className={classes.page}>
+          <BlockTrainerView {...{state, dispatch}} />
+        </TabPanel>
+        <TabPanel value={value} index={5} className={classes.page}>
+          <BlockTrainerView {...{state, dispatch}} />
         </TabPanel>
         </Grid>
       </Grid>

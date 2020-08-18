@@ -14,7 +14,8 @@ export const getInitialState = (mode?: Mode) : AppState => {
             case "fbdr":
             case "ss":
             case "fb":
-            case "lse":
+            case "4c":
+            case "eopair":
                 return "revealed"
             case "experimental":
                 return "revealed"
@@ -39,7 +40,7 @@ export const getInitialState = (mode?: Mode) : AppState => {
         },
         config: getConfig(),
         favList: getFavList(),
-        keyMapping: (mode === "lse") ? new LSEKeyMapping() : new DefaultKeyMapping()
+        keyMapping: (mode === "4c" || mode === "eopair") ? new LSEKeyMapping() : new DefaultKeyMapping()
     }
 }
 

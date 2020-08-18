@@ -100,6 +100,9 @@ function getMask(state: AppState) : Mask {
         return Mask.solved_mask
       }
     }
+    else if (state.mode === "4c" || state.mode === "eopair") {
+      return Mask.solved_mask
+    }
     else return Mask.sb_mask
 }
 
@@ -126,6 +129,7 @@ function BlockTrainerView(props: { state: AppState, dispatch: React.Dispatch<Act
         setFav(false)
       }
     }
+
 
     const theme = useTheme()
     const simBackground = getActiveName(state.config.theme) === "bright" ? "#eeeeef" : theme.palette.background.paper
@@ -162,6 +166,7 @@ function BlockTrainerView(props: { state: AppState, dispatch: React.Dispatch<Act
               height={250}
               cube={facelet}
               colorScheme={CubeUtil.ori_to_color_scheme(props.state.cube.ori)}
+              hintDistance={ (state.mode === "4c" || state.mode === "eopair") ? 1.1 : 7 }
               bgColor={simBackground}
               facesToReveal={ [Face.L, Face.B, Face.D]  }
             />
@@ -312,7 +317,40 @@ function ConfigPanelGroup(props: {state: AppState, dispatch: React.Dispatch<Acti
         <MultiSelect {...{ state, dispatch, select: select5 }}> </MultiSelect>
       </Fragment>
     )
-   } else return <Fragment/>
+   } else if (state.mode === "4c"){
+    let select1 = (config: Config) => { return config.lseStageSelector }
+    let select2 = (config: Config) => { return config.lseMCSelector }
+    let select3 = (config: Config) => { return config.lseBarSelector }
+    let select4 = (config: Config) => { return config.solutionNumSelector }
+    let select5 = (config: Config) => { return config.orientationSelector }
+
+    return (
+      <Fragment>
+        <SingleSelect {...{ state, dispatch, select: select1 }}> </SingleSelect>
+        <SingleSelect {...{ state, dispatch, select: select2 }}> </SingleSelect>
+        <SingleSelect {...{ state, dispatch, select: select3 }}> </SingleSelect>
+        <SingleSelect {...{ state, dispatch, select: select4 }}> </SingleSelect>
+        <MultiSelect {...{ state, dispatch, select: select5 }}> </MultiSelect>
+      </Fragment>
+    )
+   } else if (state.mode === "eopair"){
+    let select1 = (config: Config) => { return config.lseEOSelector }
+    let select2 = (config: Config) => { return config.lseEOLRMCSelector }
+    let select3 = (config: Config) => { return config.lseBarbieSelector }
+    let select4 = (config: Config) => { return config.solutionNumSelector }
+    let select5 = (config: Config) => { return config.orientationSelector }
+
+    return (
+      <Fragment>
+        <MultiSelect {...{ state, dispatch, select: select1, options: {noDialog: true}} }> </MultiSelect>
+        <SingleSelect {...{ state, dispatch, select: select2 }}> </SingleSelect>
+        <SingleSelect {...{ state, dispatch, select: select3 }}> </SingleSelect>
+        <SingleSelect {...{ state, dispatch, select: select4 }}> </SingleSelect>
+        <MultiSelect {...{ state, dispatch, select: select5}} > </MultiSelect>
+      </Fragment>
+    )
+   }
+   else return <Fragment/>
 }
 
 

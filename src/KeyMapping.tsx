@@ -40,7 +40,9 @@ const defaultKeyMapping : { [key: string]: string } = {
 
 const lseKeyMapping : { [key: string]: string } = {
     "I": "M'",
+    "E": "M'",
     "K": "M",
+    "D": "M",
     "J": "U",
     "F": "U'",
     "S": "E'",

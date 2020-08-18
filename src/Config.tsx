@@ -94,8 +94,8 @@ export const initialConfig : Config = (() => {
         },
         solutionNumSelector: {
             label: "Number of solutions",
-            names: ["5", "10", "25"],
-            flags: [1, 0, 0],
+            names: ["1", "5", "10", "25"],
+            flags: [0, 1, 0, 0],
             kind: "solution-num"
         },
         fbPieceSolvedSelector: {
@@ -109,6 +109,36 @@ export const initialConfig : Config = (() => {
             names: ["Aligned", "Misaligned"],
             flags: [0, 1],
             kind: "lse-mc"
+        },
+        lseBarSelector: {
+            label: "Bars",
+            names: ["ULUR", "UFUB"],
+            flags: [1, 0],
+            kind: "lse-bar"
+        },
+        lseStageSelector: {
+            label: "Stage",
+            names: ["4b for MC(1 move EOPair insert)", "M2 to 4c", "4c"],
+            flags: [0, 1, 0],
+            kind: "lse-stage"
+        },
+        lseEOSelector: {
+            label: "EO",
+            names: ["solved", "arrow", "4/0", "2o/0", "2a/0", "1/1", "6flip", "2o/2", "0/2", "2a/2"],
+            flags: [0, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+            kind: "lse-eo"
+        },
+        lseEOLRMCSelector: {
+            label: "Center strategy",
+            names: ["Non MC only", "MC only", "Show both", "MC better", "Non MC better"],
+            flags: [0, 0, 1, 0, 0],
+            kind: "lse-eolrmc"
+        },
+        lseBarbieSelector: {
+            label: "EOLR / EOLRb",
+            names: ["EOLR", "EOLRb"],
+            flags: [1, 0],
+            kind: "lse-barbie"
         }
     }
 })()

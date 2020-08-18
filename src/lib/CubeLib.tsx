@@ -415,8 +415,8 @@ export class MoveSeq {
         }
     }
 
-    toString() {
-        return this.moves.map(m => m.toString()).join(" ") + " "
+    toString(useMetric?: string) {
+        return this.moves.map(m => m.toString()).join(" ") + " " + (useMetric ? "(" + this.moves.length + ")" : "")
     }
 }
 
