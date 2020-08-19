@@ -13,7 +13,7 @@ export abstract class BlockTrainerStateM extends AbstractStateM {
     scrambleMargin: number = 1;
     scrambleCount: number = 1;
     algDescWithMoveCount: string = "";
-    abstract getRandom(): [CubieCube, string] | [CubieCube, string, boolean];
+    abstract getRandom(): [CubieCube, string] | [CubieCube, string, string];
 
     _solve_min2phase(cube: CubieCube) : AppState  {
 
@@ -40,7 +40,7 @@ export abstract class BlockTrainerStateM extends AbstractStateM {
         };
     }
     _solve(cube: CubieCube, solverName: string, options?: {
-        updateSolutionOnly?: boolean, use2PhaseScramble?: boolean,
+        updateSolutionOnly?: boolean, scrambleSolver?: string
         scrambleMargin?: number,
         scrambleCount?: number
     }) {
@@ -61,9 +61,13 @@ export abstract class BlockTrainerStateM extends AbstractStateM {
 
         const solutionLength = solution[0].moves.length;
         const scrambleMargin = 1;
-        const scramble = options.use2PhaseScramble ?
+        const use2PhaseScramble = options.scrambleSolver === "2phase"
+        const scramble = use2PhaseScramble ?
             CachedSolver.get("min2phase").solve(cube,0,0,0)[0] :
-            rand_choice(solver.solve(cube, Math.max(this.solverL, solutionLength + scrambleMargin), this.solverR, options.scrambleCount || 1)).inv()
+            rand_choice(
+                CachedSolver.get(options.scrambleSolver || solverName)
+                .solve(cube, Math.max(this.solverL, solutionLength + scrambleMargin),
+                    this.solverR, options.scrambleCount || 1)).inv()
 
         const setup = scramble.toString()
 
@@ -96,10 +100,10 @@ export abstract class BlockTrainerStateM extends AbstractStateM {
         };
     }
     _updateCase(): AppState {
-        const [cube, solverName, use2PhaseScramble] = this.getRandom();
+        const [cube, solverName, scrambleSolver] = this.getRandom();
         return this._solve(cube, solverName, {
             updateSolutionOnly: false,
-            use2PhaseScramble
+            scrambleSolver
         });
     }
     _updateCap(): AppState {
@@ -206,27 +210,28 @@ export class FbdrStateM extends BlockTrainerStateM {
         return cube;
         //return CubieCube.apply(cube, rand_choice(m_premove));
     }
-    getRandom(): [CubieCube, string, boolean] {
+    getRandom(): [CubieCube, string, string] {
         const fbOnly = getActiveName(this.state.config.fbOnlySelector) === "FB Last Pair Only";
         const pairSolved = getActiveName(this.state.config.fbPairSolvedSelector) !== "Random";
         const scrambleType = getActiveName(this.state.config.fbdrScrambleSelector) || "Short";
         const useMin2PhaseScramble = !scrambleType.startsWith("Short");
         const solverName = fbOnly ? "fb" : "fbdr";
+        const scrambleSolver = useMin2PhaseScramble ? "min2phase" : solverName
         let active = getActiveNames(this.state.config.fbdrSelector)[0];
         //console.log("active", active)
         if (active === "FS at back") {
             if (pairSolved) {
-                return [this._get_pair_solved_front(), solverName, useMin2PhaseScramble];
+                return [this._get_pair_solved_front(), solverName, scrambleSolver];
             }
             else
-                return [this._get_random_fs_back(), solverName, useMin2PhaseScramble];
+                return [this._get_random_fs_back(), solverName, scrambleSolver];
         }
         else if (active === "FS at front") {
-            return [this._get_random_fs_front(), solverName, useMin2PhaseScramble];
+            return [this._get_random_fs_front(), solverName, scrambleSolver];
         }
         else
             return [rand_choice([this._get_random_fs_back, this._get_random_fs_front])(),
-                solverName, useMin2PhaseScramble];
+                solverName, scrambleSolver];
     }
     constructor(state: AppState) {
         super(state);

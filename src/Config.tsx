@@ -111,7 +111,7 @@ export const initialConfig : Config = (() => {
             kind: "lse-mc"
         },
         lseBarSelector: {
-            label: "Bars",
+            label: "EO Pair",
             names: ["ULUR", "UFUB"],
             flags: [1, 0],
             kind: "lse-bar"
@@ -130,7 +130,7 @@ export const initialConfig : Config = (() => {
         },
         lseEOLRMCSelector: {
             label: "Center strategy",
-            names: ["Non MC only", "MC only", "Show both", "MC better", "Non MC better"],
+            names: ["Non MC only", "MC only", "Combined","Filter by Non-MC shorter",  "Filter by MC shorter", ],
             flags: [0, 0, 1, 0, 0],
             kind: "lse-eolrmc"
         },
@@ -139,6 +139,12 @@ export const initialConfig : Config = (() => {
             names: ["EOLR", "EOLRb"],
             flags: [1, 0],
             kind: "lse-barbie"
+        },
+        lseEOLRScrambleSelector: {
+            label: "Type of scramble",
+            names: ["Short", "Random State"],
+            flags: [0, 1],
+            kind: "lse-eolr-scramble"
         }
     }
 })()

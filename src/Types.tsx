@@ -29,7 +29,8 @@ export type Config = {
     lseStageSelector: Selector,
     lseEOSelector: Selector,
     lseEOLRMCSelector: Selector,
-    lseBarbieSelector: Selector
+    lseBarbieSelector: Selector,
+    lseEOLRScrambleSelector: Selector
     //fbdrSolutionCount: Slider
 }
 

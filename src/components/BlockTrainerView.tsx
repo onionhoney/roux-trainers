@@ -1,7 +1,7 @@
 import React, { Fragment } from 'react'
 
 import CubeSim from './CubeSim'
-import { Button, makeStyles, Divider, Typography, useTheme } from '@material-ui/core';
+import { Button, makeStyles, Divider, Typography, useTheme, FormControl, FormLabel, } from '@material-ui/core';
 
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
@@ -12,7 +12,7 @@ import FavoriteIcon from '@material-ui/icons/Favorite';
 
 import { FaceletCube, CubeUtil, Mask, Move, MoveSeq } from '../lib/CubeLib';
 
-import { AppState,  Action, Config, FavCase} from "../Types";
+import { AppState,  Action, Config, FavCase, Mode} from "../Types";
 import 'typeface-roboto-mono';
 import clsx from 'clsx';
 import { Face } from '../lib/Defs';
@@ -74,6 +74,9 @@ const useStyles = makeStyles(theme => ({
       top: theme.spacing(7),
       left: theme.spacing(2),
     },
+    prompt: {
+      color: theme.palette.text.secondary,
+    },
   }))
 
 
@@ -104,6 +107,15 @@ function getMask(state: AppState) : Mask {
       return Mask.solved_mask
     }
     else return Mask.sb_mask
+}
+
+function getHelperTextForMode(mode: Mode) {
+  if (mode === "4c" || mode === "eopair") {
+    return ("Usage: Press space for next case. Enter to redo."
+      + "\n\n" + "Virtual Cube: I/K (E/D) for M'/M, J/F for U/U'")
+  } else {
+    return null
+  }
 }
 
 function BlockTrainerView(props: { state: AppState, dispatch: React.Dispatch<Action> } ) {
@@ -153,6 +165,9 @@ function BlockTrainerView(props: { state: AppState, dispatch: React.Dispatch<Act
         dispatch({type: "favList", content: [ case_ ], action: "remove" })
       }
     }
+
+    // helper-text
+    let helperText = getHelperTextForMode(state.mode)
 
     return (
     <Box className={classes.container}>
@@ -258,6 +273,22 @@ function BlockTrainerView(props: { state: AppState, dispatch: React.Dispatch<Act
       <Box height={20}/>
 
       <ConfigPanelGroup {...{state, dispatch} } />
+
+      {helperText ?
+      <Fragment>
+        <Box height={20}/>
+          <Divider/>
+        <Box height={15}/>
+        <Box>
+        <FormControl component="fieldset" className={classes.prompt}>
+          <FormLabel component="legend">
+            <pre style={{ fontFamily: 'inherit' }}>
+              {helperText}
+            </pre>
+          </FormLabel>
+          </FormControl>
+        </Box>
+      </Fragment> : null }
     </Box>
     );
 }
@@ -337,8 +368,9 @@ function ConfigPanelGroup(props: {state: AppState, dispatch: React.Dispatch<Acti
     let select1 = (config: Config) => { return config.lseEOSelector }
     let select2 = (config: Config) => { return config.lseEOLRMCSelector }
     let select3 = (config: Config) => { return config.lseBarbieSelector }
-    let select4 = (config: Config) => { return config.solutionNumSelector }
-    let select5 = (config: Config) => { return config.orientationSelector }
+    let select4 = (config: Config) => { return config.lseEOLRScrambleSelector }
+    let select5 = (config: Config) => { return config.solutionNumSelector }
+    let select6 = (config: Config) => { return config.orientationSelector }
 
     return (
       <Fragment>
@@ -346,7 +378,8 @@ function ConfigPanelGroup(props: {state: AppState, dispatch: React.Dispatch<Acti
         <SingleSelect {...{ state, dispatch, select: select2 }}> </SingleSelect>
         <SingleSelect {...{ state, dispatch, select: select3 }}> </SingleSelect>
         <SingleSelect {...{ state, dispatch, select: select4 }}> </SingleSelect>
-        <MultiSelect {...{ state, dispatch, select: select5}} > </MultiSelect>
+        <SingleSelect {...{ state, dispatch, select: select5 }}> </SingleSelect>
+        <MultiSelect {...{ state, dispatch, select: select6}} > </MultiSelect>
       </Fragment>
     )
    }
