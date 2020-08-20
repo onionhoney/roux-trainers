@@ -40,7 +40,8 @@ export abstract class BlockTrainerStateM extends AbstractStateM {
         };
     }
     _solve(cube: CubieCube, solverName: string, options?: {
-        updateSolutionOnly?: boolean, scrambleSolver?: string
+        updateSolutionOnly?: boolean, scrambleSolver?: string,
+        scramble?: string,
         scrambleMargin?: number,
         scrambleCount?: number
     }) {
@@ -62,14 +63,21 @@ export abstract class BlockTrainerStateM extends AbstractStateM {
         const solutionLength = solution[0].moves.length;
         const scrambleMargin = 1;
         const use2PhaseScramble = options.scrambleSolver === "2phase"
-        const scramble = use2PhaseScramble ?
+
+        let setup : string
+        if (options.scramble) {
+            setup = options.scramble
+        } else if (options.updateSolutionOnly) {
+            setup = this.state.case.desc[0]!.setup!
+        } else {
+            const scramble = use2PhaseScramble ?
             CachedSolver.get("min2phase").solve(cube,0,0,0)[0] :
             rand_choice(
                 CachedSolver.get(options.scrambleSolver || solverName)
                 .solve(cube, Math.max(this.solverL, solutionLength + scrambleMargin),
                     this.solverR, options.scrambleCount || 1)).inv()
-
-        const setup = scramble.toString()
+            setup = scramble.toString()
+        }
 
         solution.sort((a, b) =>
             SeqEvaluator.evaluate(a) - SeqEvaluator.evaluate(b));
@@ -94,7 +102,7 @@ export abstract class BlockTrainerStateM extends AbstractStateM {
                 ori
             },
             case: {
-                state: cube,
+                state: new CubieCube().apply(setup),
                 desc: [algdesc]
             }
         };
@@ -119,7 +127,7 @@ export abstract class BlockTrainerStateM extends AbstractStateM {
     replay(case_: FavCase): AppState {
         const cube = new CubieCube().apply(case_.setup)
         const solverName = case_.solver;
-        const state1 = this._solve(cube, solverName);
+        const state1 = this._solve(cube, solverName, {scramble: case_.setup});
         return {
             ...state1,
             mode: case_.mode

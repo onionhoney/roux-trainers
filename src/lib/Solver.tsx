@@ -256,8 +256,8 @@ let LSESolver = function() {
     return solver
 }
 
-let EOLRSolver = function(center_flag: number, use_barbie?: boolean) {
-    let prunerConfig : PrunerConfig = eolrPrunerConfig(center_flag, use_barbie)
+let EOLRSolver = function(center_flag: number, barbie_mode?: string) {
+    let prunerConfig : PrunerConfig = eolrPrunerConfig(center_flag, barbie_mode)
     let pruner = Pruner(prunerConfig)
     pruner.init()
     //let solvedEncodings = prunerConfig.solved_states.map(s => prunerConfig.encode(s))

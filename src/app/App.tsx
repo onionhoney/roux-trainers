@@ -15,16 +15,7 @@ window.addEventListener('keypress', function(e) {
 function App(props: {}) {
   const [state, dispatch] = React.useReducer( reducer, getInitialState() )
 
-  // Add event listeners
-  React.useEffect(() => {
-    function downHandler(event: KeyboardEvent) {
-      state.keyMapping.handle(event, dispatch);
-    }
-    window.addEventListener('keydown', downHandler);
-    return () => {
-      window.removeEventListener('keydown', downHandler);
-    };
-  });
+
 
   const appTheme = getActiveName(state.config.theme) === "bright" ? theme : themeDark
   return (

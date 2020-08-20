@@ -118,6 +118,7 @@ function getHelperTextForMode(mode: Mode) {
   }
 }
 
+
 function BlockTrainerView(props: { state: AppState, dispatch: React.Dispatch<Action> } ) {
     let { state, dispatch } = props
     let cube = state.cube.state
@@ -147,6 +148,19 @@ function BlockTrainerView(props: { state: AppState, dispatch: React.Dispatch<Act
     const simBackground = getActiveName(state.config.theme) === "bright" ? "#eeeeef" : theme.palette.background.paper
 
     // source
+    // Add event listeners
+    React.useEffect(() => {
+      function downHandler(event: KeyboardEvent) {
+        if (event.key === " " && spaceButtonText === "Next") {
+          setFav(false)
+        }
+        state.keyMapping.handle(event, dispatch);
+      }
+      window.addEventListener('keydown', downHandler);
+      return () => {
+        window.removeEventListener('keydown', downHandler);
+      };
+    });
 
 
     const [favSelected, setFav] = React.useState(false)

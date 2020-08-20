@@ -15,12 +15,13 @@ let CachedSolver = function() {
                 case "ss-back": cache.set(s, SsSolver(false)); break
                 case "min2phase": cache.set(s, Min2PhaseSolver()); break
                 case "lse": cache.set(s, LSESolver()); break
+                case "lse-ab4c": cache.set(s, EOLRSolver(0x01, "ab4c")); break
                 case "eolrac": cache.set(s, EOLRSolver(0x01)); break
                 case "eolrmc": cache.set(s, EOLRSolver(0x10)); break
                 case "eolr": cache.set(s, EOLRSolver(0x11)); break
-                case "eolrac-b": cache.set(s, EOLRSolver(0x01, true)); break
-                case "eolrmc-b": cache.set(s, EOLRSolver(0x10, true)); break
-                case "eolr-b": cache.set(s, EOLRSolver(0x11, true)); break
+                case "eolrac-b": cache.set(s, EOLRSolver(0x01, "barbie")); break
+                case "eolrmc-b": cache.set(s, EOLRSolver(0x10, "barbie")); break
+                case "eolr-b": cache.set(s, EOLRSolver(0x11, "barbie")); break
             }
         }
         return cache.get(s) as SolverT

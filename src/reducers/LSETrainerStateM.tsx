@@ -3,7 +3,6 @@ import { BlockTrainerStateM } from "./BlockTrainerStateM";
 import { Mask, CubeUtil, CubieCube, Move } from "../lib/CubeLib";
 import { getActiveName, getActiveNames } from "../lib/Selector";
 import { rand_choice } from "../lib/Math";
-import { executionAsyncResource } from "async_hooks";
 import { CachedSolver } from "../lib/CachedSolver";
 
 export class LSEStateM extends BlockTrainerStateM {
@@ -130,11 +129,11 @@ export class EOLRStateM extends BlockTrainerStateM {
             break
         }
 
-        const ss = useFullScramble? "lse" : (useBarbie ? "eolrac-b" : "eolrac");
+        const ss = useFullScramble? "lse" : "lse-ab4c";
         switch (eolrMCMode) {
             case "Non MC only": return [cube, useBarbie ? "eolrac-b" : "eolrac", ss];
             case "MC only": return [cube, useBarbie ? "eolrmc-b" : "eolrmc", ss];
-            case "Show both": return [cube, useBarbie ? "eolr-b" : "eolr", ss];
+            case "Combined": return [cube, useBarbie ? "eolr-b" : "eolr", ss];
             case "Filter by Non-MC shorter":
             case "Filter by MC shorter": return [cube, useBarbie ? "eolr-b" : "eolr", ss];
             default: return [cube, "eolr", ss];

@@ -231,7 +231,7 @@ let lsePrunerConfig : PrunerConfig = function() {
     }
 }()
 
-function eolrPrunerConfig(center_flag: number, use_barbie?: boolean): PrunerConfig {
+function eolrPrunerConfig(center_flag: number, barbie_mode?: string): PrunerConfig {
     const size = 6 * 6 * Math.pow(2, 6) * 4 * 2 // TODO: optimize this plz
 
     const edge_encode = [0, 1, 0, 2, 0, -1, 0, -1, -1, -1, -1, -1];
@@ -263,7 +263,8 @@ function eolrPrunerConfig(center_flag: number, use_barbie?: boolean): PrunerConf
     if (center_flag & 0x01) barb_moves = barb_moves.concat(barb_moves_ac)
     if (center_flag & 0x10) barb_moves = barb_moves.concat(barb_moves_mc)
 
-    const pre_moves = use_barbie ? barb_moves : moves
+    const pre_moves = barbie_mode === "barbie" ? barb_moves :
+        (barbie_mode === "ab4c" ? ["id"] : moves)
 
     const solved_states = pre_moves.map( m => new CubieCube().apply(m))
 
