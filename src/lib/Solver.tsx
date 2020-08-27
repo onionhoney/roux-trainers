@@ -1,8 +1,9 @@
 import { CubieCube, Move, MoveSeq } from './CubeLib';
 import { arrayEqual } from './Math';
 
-import { Pruner, PrunerT, fbdrPrunerConfig, ssPrunerConfig, fbPrunerConfig, lsePrunerConfig, PrunerConfig, eolrPrunerConfig } from './Pruner';
+import { Pruner, PrunerT, fbdrPrunerConfig, fsPrunerConfig, ssPrunerConfig, fbPrunerConfig, lsePrunerConfig, PrunerConfig, eolrPrunerConfig, PrunerDef, fbPrunerConfig_old } from './Pruner';
 
+import { prunerFactory } from './Pruner';
 import {initialize as min2phase_init, solve as min2phase_solve} from "../lib/min2phase/min2phase-wrapper"
 
 
@@ -22,6 +23,8 @@ export type SolverT = {
     is_solved: (cube : CubieCube) => boolean,
     getPruner: () => PrunerT[]
 }
+
+
 function Solver(config: SolverConfig) : SolverT{
     const MAX_STATE_COUNT = 1000000
     let { moveset, is_solved, pruners } = config
@@ -157,14 +160,20 @@ function Solver(config: SolverConfig) : SolverT{
     return { solve, is_solved, getPruner }
 };
 
-let FbdrSolver = function() {
-    let prunerConfig = fbdrPrunerConfig
+function solverFactory(def: PrunerDef | PrunerConfig) {
+    let prunerConfig: PrunerConfig
+    if ("corner" in def) {
+        prunerConfig = prunerFactory(def);
+    } else {
+        prunerConfig = def
+    }
     let pruner = Pruner(prunerConfig)
     pruner.init()
     //let solvedEncodings = prunerConfig.solved_states.map(s => prunerConfig.encode(s))
-    function is_solved(cube: CubieCube) {
-        return pruner.query(cube) === 0;
-    }
+    let solved_states = new Set(prunerConfig.solved_states.map(x => pruner.query(x)))
+    let is_solved = (prunerConfig.solved_states.length === 0) ?
+        (cube: CubieCube) => pruner.query(cube) === 0 :
+        (cube: CubieCube) => solved_states.has(pruner.query(cube));
 
     let config = {
         is_solved,
@@ -176,43 +185,18 @@ let FbdrSolver = function() {
     return solver
 }
 
-let FbSolver = function() {
-    let prunerConfig = fbPrunerConfig
-    let pruner = Pruner(prunerConfig)
-    pruner.init()
-    //let solvedEncodings = prunerConfig.solved_states.map(s => prunerConfig.encode(s))
-    function is_solved(cube: CubieCube) {
-        return pruner.query(cube) === 0;
-    }
+let FbSolver = (useOld?: boolean) => solverFactory(useOld ? fbPrunerConfig_old : fbPrunerConfig)
 
-    let config = {
-        is_solved,
-        moveset: prunerConfig.moveset,
-        pruners: [pruner],
-    }
+let FbdrSolver = () => solverFactory(fbdrPrunerConfig)
 
-    let solver = Solver(config)
-    return solver
-}
+let SsSolver = (is_front: boolean) => solverFactory(ssPrunerConfig(is_front))
 
-let SsSolver = function(is_front: boolean) {
-    let prunerConfig = ssPrunerConfig(is_front)
-    let pruner = Pruner(prunerConfig)
-    pruner.init()
-    //let solvedEncodings = prunerConfig.solved_states.map(s => prunerConfig.encode(s))
-    function is_solved(cube: CubieCube) {
-        return pruner.query(cube) === 0;
-    }
+let FsSolver = (is_front: boolean) => solverFactory(fsPrunerConfig(is_front))
 
-    let config = {
-        is_solved,
-        moveset: prunerConfig.moveset,
-        pruners: [pruner],
-    }
+let LSESolver = () => solverFactory(lsePrunerConfig)
 
-    let solver = Solver(config)
-    return solver
-}
+let EOLRSolver = (center_flag: number, barbie_mode?: string) =>
+    solverFactory(eolrPrunerConfig(center_flag, barbie_mode))
 
 let Min2PhaseSolver : () => SolverT = function() {
     // polyfill for min2phase
@@ -238,42 +222,6 @@ let Min2PhaseSolver : () => SolverT = function() {
     }
 }
 
-let LSESolver = function() {
-    let pruner = Pruner(lsePrunerConfig)
-    pruner.init()
-    //let solvedEncodings = prunerConfig.solved_states.map(s => prunerConfig.encode(s))
-    function is_solved(cube: CubieCube) {
-        return pruner.query(cube) === 0;
-    }
 
-    let config = {
-        is_solved,
-        moveset: lsePrunerConfig.moveset,
-        pruners: [pruner],
-    }
 
-    let solver = Solver(config)
-    return solver
-}
-
-let EOLRSolver = function(center_flag: number, barbie_mode?: string) {
-    let prunerConfig : PrunerConfig = eolrPrunerConfig(center_flag, barbie_mode)
-    let pruner = Pruner(prunerConfig)
-    pruner.init()
-    //let solvedEncodings = prunerConfig.solved_states.map(s => prunerConfig.encode(s))
-    let solved_states = new Set(prunerConfig.solved_states.map(x => pruner.query(x)))
-    function is_solved(cube: CubieCube) {
-        return solved_states.has(pruner.query(cube))
-    }
-
-    let config = {
-        is_solved,
-        moveset: lsePrunerConfig.moveset,
-        pruners: [pruner],
-    }
-
-    let solver = Solver(config)
-    return solver
-}
-
-export { FbdrSolver, FbSolver, SsSolver, Min2PhaseSolver, LSESolver, EOLRSolver }
+export { FbdrSolver, FbSolver, FsSolver, SsSolver, Min2PhaseSolver, LSESolver, EOLRSolver }

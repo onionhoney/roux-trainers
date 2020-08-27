@@ -120,12 +120,13 @@ function SingleSelect(props: {state: AppState, dispatch: React.Dispatch<Action>,
     label?: string, noDialog?: boolean,
     manipulators?: {name: string, enableIdx: number[]}[]
   }
-  function MultiSelect(props: {state: AppState, dispatch: React.Dispatch<Action>, select: (c: Config) => Selector, options?: MultiOptions }) {
+
+
+  function MultiSelectContent(props: {state: AppState, dispatch: React.Dispatch<Action>, select: (c: Config) => Selector, options?: MultiOptions }) {
     let { state, dispatch, select, options } = props
     options = options || {}
     let { config } = state
 
-    let classes = useStyles()
     let sel = select(config)
     const handleChange = (evt: { target: { value: string; checked: boolean }; }) => {
       let { names, flags } = sel
@@ -152,13 +153,7 @@ function SingleSelect(props: {state: AppState, dispatch: React.Dispatch<Action>,
           value={name}
       />)
     }
-    const [open, setOpen] = React.useState(false);
-    const handleClickOpen = () => {
-      setOpen(true);
-    };
-    const handleClose = () => {
-      setOpen(false);
-    }
+
     const [manipChecked, setManipChecked] = React.useState< { [ name: string ]: boolean } >({})
     let label = sel.label || options.label || ""
     let makeManipulator = (manip: {name: string, enableIdx: number[]}) => {
@@ -197,6 +192,22 @@ function SingleSelect(props: {state: AppState, dispatch: React.Dispatch<Action>,
         </FormGroup>
       </React.Fragment>
     )
+    return {label, content}
+  }
+
+  function MultiSelect(props: {state: AppState, dispatch: React.Dispatch<Action>, select: (c: Config) => Selector, options?: MultiOptions }) {
+    let { state, dispatch, select, options } = props
+    let {label, content} = MultiSelectContent({state, dispatch, select, options})
+    options = options || {}
+
+    const [open, setOpen] = React.useState(false);
+    const handleClickOpen = () => {
+      setOpen(true);
+    };
+    const handleClose = () => {
+      setOpen(false);
+    }
+    let classes = useStyles()
 
     if (options.noDialog)
     return (
@@ -212,7 +223,7 @@ function SingleSelect(props: {state: AppState, dispatch: React.Dispatch<Action>,
       <Box height={8}/>
       <Button color="primary" variant="outlined" style={{borderWidth: 2}} onClick={handleClickOpen}>
       <SettingsIcon fontSize="small" color="primary" style={{marginLeft: -6, marginRight: 3}}></SettingsIcon>
-        SET
+        Edit
       </Button>
       <Box height={8}/>
       <Dialog disableBackdropClick disableEscapeKeyDown open={open} onClose={handleClose}>
@@ -230,4 +241,4 @@ function SingleSelect(props: {state: AppState, dispatch: React.Dispatch<Action>,
     )
   }
 
-  export { SingleSelect, MultiSelect }
+  export { SingleSelect, MultiSelectContent, MultiSelect }

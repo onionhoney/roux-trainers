@@ -10,7 +10,7 @@ export class LSEStateM extends BlockTrainerStateM {
     solverR = 20;
     scrambleCount = 3;
     algDescWithMoveCount = "STM";
-    getRandom(): [CubieCube, string] {
+    getRandom(): [CubieCube, string[]] {
         /*
         LSE Modes:
         pure 4c (UFUB/ULUR, MC/NC)
@@ -36,14 +36,14 @@ export class LSEStateM extends BlockTrainerStateM {
         let stage = getActiveName(this.state.config.lseStageSelector)
         if (stage === "M2 to 4c")  {
             cube = cube.apply(rand_choice(["U M2", "U' M2"])).apply(rand_choice(["U", "U'", "U2", "id"]))
-            return [cube, "lse"];
+            return [cube, ["lse"]];
         } else if (stage.startsWith("4b for MC")) {
             cube = cube.apply(rand_choice(["U M2", "U' M2"])).apply(rand_choice(["U", "U'", "U2", "id"]))
             cube = cube.apply(rand_choice(["M", "M'"]))
             cube = cube.apply(rand_choice(["U", "U'", "U2", "id"]))
-            return [cube, "lse"];
+            return [cube, ["lse"]];
         } else {
-            return [cube, "lse"];
+            return [cube, ["lse"]];
         }
     }
 }
@@ -90,7 +90,7 @@ export class EOLRStateM extends BlockTrainerStateM {
         return "Error"
     }
 
-    getRandom(): [CubieCube, string, string] {
+    getRandom(): [CubieCube, string[], string] {
         /*
         LSE Modes:
         pure 4c (UFUB/ULUR, MC/NC)
@@ -131,12 +131,12 @@ export class EOLRStateM extends BlockTrainerStateM {
 
         const ss = useFullScramble? "lse" : "lse-ab4c";
         switch (eolrMCMode) {
-            case "Non MC only": return [cube, useBarbie ? "eolrac-b" : "eolrac", ss];
-            case "MC only": return [cube, useBarbie ? "eolrmc-b" : "eolrmc", ss];
-            case "Combined": return [cube, useBarbie ? "eolr-b" : "eolr", ss];
+            case "Non MC only": return [cube, useBarbie ? ["eolrac-b"] : ["eolrac"], ss];
+            case "MC only": return [cube, useBarbie ? ["eolrmc-b"] : ["eolrmc"], ss];
+            case "Combined": return [cube, useBarbie ? ["eolr-b"] : ["eolr"], ss];
             case "Filter by Non-MC shorter":
-            case "Filter by MC shorter": return [cube, useBarbie ? "eolr-b" : "eolr", ss];
-            default: return [cube, "eolr", ss];
+            case "Filter by MC shorter": return [cube, useBarbie ? ["eolr-b"] : ["eolr"], ss];
+            default: return [cube, ["eolr"], ss];
         }
     }
 }

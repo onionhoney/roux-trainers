@@ -4,7 +4,7 @@ import { CubeUtil } from "../lib/CubeLib"
 import min2phase from "../lib/min2phase"
 
 
-it('calls cubejs correctly', () => {
+it('calls cstimer correctly', () => {
 
   console.debug("tf")
   const cube = new CubieCube().apply("R U B")

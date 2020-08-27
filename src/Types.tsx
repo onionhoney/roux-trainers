@@ -1,7 +1,7 @@
 import { AlgDesc } from "./lib/Algs";
 import { Selector } from "./lib/Selector";
 import { KeyMapping } from "./KeyMapping";
-import { CubieCube, Move } from "./lib/CubeLib";
+import { CubieCube, Move, ColorScheme } from "./lib/CubeLib";
 
 export type Slider = {
     l: number, r: number, step: number, value: number
@@ -15,6 +15,7 @@ export type Config = {
     triggerSelector: Selector,
     orientationSelector: Selector
     fbdrSelector: Selector,
+    fsSelector: Selector,
     ssSelector: Selector,
     ssEOSelector: Selector,
     ssPosSelector: Selector,
@@ -36,7 +37,7 @@ export type Config = {
 
 export type StateT = "solving" | "solved" | "hiding" | "revealed" | "revealed_all"
 
-export type Mode = "cmll" | "fbdr" | "ss" | "fb" | "experimental" | "4c" | "eopair"
+export type Mode = "cmll" | "fs" | "fbdr" | "ss" | "fb" | "experimental" | "4c" | "eopair"
 
 type KeyAction = {
     type: "key",
@@ -54,18 +55,26 @@ type ScrSourceChangeAction = {
     type: "scrSource",
     content: ScrambleSource
 }
+type ColorSchemeAction = {
+    type: "colorScheme",
+    content: {[key: string]: string} | string[]
+}
 export type FavListAction = {
     type: "favList",
     content: FavCase[],
     action: "add" | "remove" | "replay"
 }
 
-export type Action = KeyAction | ConfigAction | ModeChangeAction | ScrSourceChangeAction | FavListAction
+type CustomAction = {
+    type: "custom",
+    content: (s: AppState) => AppState
+}
+export type Action = KeyAction | ConfigAction | ModeChangeAction | ScrSourceChangeAction | FavListAction | ColorSchemeAction | CustomAction
 export type ScrambleSource = "random" | "input"
 
 export type InfoT = {cube: CubieCube, desc: AlgDesc[]}
 
-export type FavCase = {mode: Mode, setup: string, solver: string}
+export type FavCase = {mode: Mode, setup: string, solver: string[] }
 
 export type AppState = {
     name: StateT,
@@ -81,9 +90,7 @@ export type AppState = {
     },
     scrSource: ScrambleSource
     config: Config,
-    cubejs: {
-        initialized: boolean
-    },
     keyMapping: KeyMapping,
-    favList: FavCase[]
+    favList: FavCase[],
+    colorScheme: ColorScheme
 }

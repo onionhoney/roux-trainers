@@ -6,7 +6,7 @@ import { useTheme } from '@material-ui/core';
 import { getConfig } from '../lib/Local';
 
 type Config = {
-    cube: FaceletCubeT, width: number, height: number, colorScheme: Array<number>, facesToReveal: Face[],
+    cube: FaceletCubeT, width: number, height: number, colorScheme: Array<string>, facesToReveal: Face[],
     bgColor?: string,
     hintDistance?: number
 }
@@ -34,7 +34,7 @@ const axesInfo: [THREE.Vector3, THREE.Euler][] = [
     [new THREE.Vector3(1, 0, 0), new THREE.Euler(0, TAU / 4, 0)],
 ];
 
-const setup = function (width: number, height: number, colorScheme?: Array<number>, mode?: string,
+const setup = function (width: number, height: number, colorScheme?: Array<string>, mode?: string,
     faces?: Face[]) {
     let facesToReveal = faces || [Face.L, Face.B, Face.D]
     let hintDistance = 7
@@ -67,7 +67,7 @@ const setup = function (width: number, height: number, colorScheme?: Array<numbe
     function updateFacesToReveal(faces: Face[]) {
         facesToReveal = faces
     }
-    function updateColorScheme(colorScheme: Array<number>) {
+    function updateColorScheme(colorScheme: Array<string>) {
         let colorScheme_ = colorScheme
         //console.log("update color scheme ", colorScheme_)
         let materials = Array(7).fill(0).map((_, i) => {

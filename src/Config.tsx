@@ -67,6 +67,12 @@ export const initialConfig : Config = (() => {
             flags: [1, 0],
             kind: "fb-pair-solved"
         },
+        fsSelector: {
+            label: "Position of square",
+            names: ["Front FS", "Back FS", "Both"],
+            flags: [0, 0, 1],
+            kind: "fs"
+        },
         ssSelector: {
             label: "Position of square",
             names: ["SS at front", "SS at back", "Either"],
@@ -94,8 +100,8 @@ export const initialConfig : Config = (() => {
         },
         solutionNumSelector: {
             label: "Number of solutions",
-            names: ["1", "5", "10", "25"],
-            flags: [0, 1, 0, 0],
+            names: ["1", "3", "5", "10", "25"],
+            flags: [0, 0, 1, 0, 0],
             kind: "solution-num"
         },
         fbPieceSolvedSelector: {

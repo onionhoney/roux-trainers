@@ -48,6 +48,16 @@ const themeDark = createMuiTheme({
       hint: '#eee'
     }
   },
+  overrides: {
+    // Style sheet name ⚛️
+    MuiDivider: {
+      // Name of the rule
+      // Some CSS
+      root: {
+        backgroundColor: 'rgba(255, 255 ,255, 0.3)',
+      }
+    },
+  }
 
 });
 

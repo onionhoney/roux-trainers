@@ -342,6 +342,14 @@ export class MoveSeq {
         }
     }
 
+    remove_setup() {
+        let rotset = new Set(["x", "x'", "x2", "y", "y'", "y2", "z", "z'", "z2"]);
+        while (this.moves.length > 0 && rotset.has(this.moves[0].name)) {
+            this.moves.shift()
+        }
+        return this
+    }
+
     parse(str: string) {
         let tokens = []
         let token = ""
@@ -569,22 +577,9 @@ let FaceletCube = function () {
         return color_cube;
     }
 
-    let to_cubejs_str = (faceletCube: FaceletCubeT) : String => {
-        let face_order = [U, R, F, D, L, B];
-        let face_str_map = "UDFBLR";
-        let s = "";
-        for (let face of face_order) {
-            for (let i = 0 ; i < 9; i++) {
-                s += face_str_map[faceletCube[face][i]]
-            }
-        }
-        return s
-    }
-
     return {
         from_cubie,
         to_unfolded_cube_str,
-        to_cubejs_str,
         color_of_sticker,
         faces: {
             u_face, d_face, l_face, r_face, f_face, b_face
@@ -632,18 +627,22 @@ const dl_solved_mask : Mask = {
     cp: [0, 0, 0, 0, 0, 0, 0, 0],
     ep: [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0]
 }
-const db_solved_mask : Mask = {
+const bl_solved_mask : Mask = {
     cp: [0, 0, 0, 0, 0, 0, 0, 0],
     ep: [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0]
 }
 const fs_back_mask: Mask = {
     cp: [0, 0, 0, 0, 0, 1, 0, 0],
-    ep: [0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0]
+    ep: [0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0],
+    tp: [0, 0, 0, 0, 1, 1]
 }
+
 const fs_front_mask: Mask = {
     cp: [0, 0, 0, 0, 1, 0, 0, 0],
-    ep: [0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0]
+    ep: [0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0],
+    tp: [0, 0, 0, 0, 1, 1]
 }
+
 const fb_mask: Mask = {
     cp: [0, 0, 0, 0, 1, 1, 0, 0],
     ep: [0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0],
@@ -840,78 +839,126 @@ let CubeUtil = (() => {
         return cube.apply(rand_choice(m2_premove))
     }
 
-    const ori_to_color_scheme = (() => {
-        // UDFBLR
-        // specify the colors for uf
-        // how to do this?
-        const arr: [string, number][] = [
-            ["G", 0x00ff00],
-            ["B", 0x0000ff],
-            ["R", 0xff0000],
-            ["O", 0xff8800],
-            ["Y", 0xffff00],
-            ["W", 0xffffff],
-            ["X", 0xcccccc]
-        ]
-        const colorMap = new Map<string, number>(arr)
-        // UDFBLR from UF
-        // INFERR UFR from UF?
-        const valid_schemes = [
-            "WYGBOR",
-            "WYBGRO",
-            "WYROGB",
-            "WYORBG",
-            "YWGBRO",
-            "YEBGOR",
-            "YWROBG",
-            "YWORGB",
-
-            "GBWYRO",
-            "GBYWOR",
-            "GBROYW",
-            "GBORWY",
-            "BGWYOR",
-            "BGYWRO",
-            "BGROWY",
-            "BGORYW",
-
-            "ORWYGB",
-            "ORYWBG",
-            "ORGBYW",
-            "ORBGWY",
-            "ROWYBG",
-            "ROYWGB",
-            "ROGBWY",
-            "ROBGYW",
-        ]
-        const valid_scheme_mapper: { [key: string]: number[] } = Object.create({})
-        valid_schemes.forEach(s => {
-            let arr = s.split('').map(ch => colorMap.get(ch)!)
-            arr.push(colorMap.get("X")!)
-            valid_scheme_mapper[s[0] + s[2]] = arr
-        })
-
-        const mapper = (sel: string) => {
-            return valid_scheme_mapper[sel]
-        }
-
-        return mapper
-    })()
+ 
 
     return {
         is_cmll_solved,
         get_random_lse,
         get_random_with_mask,
-        ori_to_color_scheme,
         is_cube_solved,
         find_pairs,
         stickers
     }
 })()
 
+export abstract class Storage {
+    abstract name: string;
+    abstract serialize(): string;
+    abstract deserialize(x: string): void;
+    abstract _setDefault(): void;
+    save() {
+        window.localStorage.setItem(this.name, this.serialize());
+    }
+    load() {
+        const item = window.localStorage.getItem(this.name)
+        if (item) this.deserialize(item);
+        else this._setDefault();
+    }
+}
+
+export class ColorScheme extends Storage {
+    // UDFBLR
+    // specify the colors for uf
+    // how to do this?
+    static default_colors = {
+        "G": "#00b500",
+        "B": "#0000ff",
+        "R": "#ff0000",
+        "O": "#ff8800",
+        "Y": "#ffff00",
+        "W": "#ffffff",
+        "X": "#cccccc"
+    }
+    name = "colorscheme";
+    colors: {[key:string]:string} = {};
+    // UDFBLR from UF
+    // INFERR UFR from UF?
+    static valid_schemes = [
+        "WYGBOR",
+        "WYBGRO",
+        "WYROGB",
+        "WYORBG",
+        "YWGBRO",
+        "YEBGOR",
+        "YWROBG",
+        "YWORGB",
+
+        "GBWYRO",
+        "GBYWOR",
+        "GBROYW",
+        "GBORWY",
+        "BGWYOR",
+        "BGYWRO",
+        "BGROWY",
+        "BGORYW",
+
+        "ORWYGB",
+        "ORYWBG",
+        "ORGBYW",
+        "ORBGWY",
+        "ROWYBG",
+        "ROYWGB",
+        "ROGBWY",
+        "ROBGYW",
+    ]
+    static valid_schemes_map = function() {
+        return new Map(ColorScheme.valid_schemes.map(x => [ x[0] + x[2], x]))
+    }();
+    constructor(suppressLoad?: boolean) {
+        super();
+        if (!suppressLoad) {
+            this.load();
+        }
+    }
+    toUserInput() {
+        return "GBROYWX".split('').map(x => this.colors[x])
+    }
+    set( colors:{[key:string]:string} | string[]) {
+        let newScheme = new ColorScheme(true);
+        if (Array.isArray(colors)) {
+            colors.forEach( (color, i) => newScheme.colors["GBROYWX"[i]] = color )
+        } else {
+            newScheme.colors = {...this.colors, ...colors};
+        }
+        newScheme.save();
+        return newScheme
+    }
+    setWithDefault() {
+        let newScheme = new ColorScheme(true);
+        newScheme._setDefault();
+        newScheme.save();
+        return newScheme
+    }
+    _setDefault() { this.colors = ColorScheme.default_colors; };
+    serialize() {
+        return JSON.stringify(this.colors)
+    }
+    deserialize(s: string) {
+        this.colors = JSON.parse(s)
+    }
+    getColorsForOri(s: string) {
+        let faces = (ColorScheme.valid_schemes_map.get(s) || ColorScheme.valid_schemes_map.get("WG")) + "X";
+        let arr : string[] = []
+        for (let i = 0; i < faces.length; i++) {
+            arr.push(this.colors[faces[i]]!)
+        }
+        return arr
+    }
+}
+
 let Mask = {
     lse_mask, fs_back_mask, fs_front_mask, fbdr_mask, fb_mask, sb_mask, cmll_mask, ss_front_mask, ss_back_mask,
-    empty_mask, dl_solved_mask, db_solved_mask, solved_mask, zhouheng_mask, lse_4c_mask,
+    empty_mask, dl_solved_mask, bl_solved_mask, solved_mask, zhouheng_mask, lse_4c_mask,
     copy: mask_copy
 }
 

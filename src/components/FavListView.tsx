@@ -2,8 +2,7 @@ import React from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 
 import {
-  Button,
-  Checkbox, IconButton, DialogContent, TextField, DialogContentText
+  Button, IconButton, DialogContent, TextField, DialogContentText
 } from '@material-ui/core';
 
 import Dialog from '@material-ui/core/Dialog';
@@ -15,7 +14,6 @@ import { Table, Paper, TableBody, TableCell, TableHead, TableRow } from '@materi
 import PlaylistPlayIcon from '@material-ui/icons/PlaylistPlay';
 import DeleteOutlineIcon from '@material-ui/icons/DeleteOutline';
 import AddIcon from '@material-ui/icons/Add';
-import FileCopyIcon from '@material-ui/icons/FileCopy';
 import { AppState, Action, FavCase } from '../Types';
 import { all_solvers } from '../lib/CachedSolver';
 
@@ -34,12 +32,15 @@ export function warnDialog(props: { confirm: () => void} ) {
 
 function parseAddString(state: AppState, s : string) : [ FavCase[], boolean] {
   const res : FavCase[] = []
+
+  const allSolvers = new Set(all_solvers);
   for (const line of s.split('\n')) {
     let cols = line.split(',')
     if (cols.length !== 2) continue
-    let solver = cols[0].trim()
+    let solver = cols[0].trim().split("|")
     let setup = cols[1].trim()
-    if (all_solvers.includes(solver)) {
+
+    if (solver.every(x => allSolvers.has(x))) {
       let case_ : FavCase = {
         mode: state.mode,
         solver,
@@ -55,15 +56,15 @@ function parseAddString(state: AppState, s : string) : [ FavCase[], boolean] {
 export default function FavListView(props: { state: AppState, dispatch: React.Dispatch<Action> }) {
   const {state, dispatch} = props
   const classes = useStyles();
-  const play = (i: number) => () => {
-    dispatch({ type: "favList", content: [ state.favList[i] ], action: "replay" })
-  }
-  const remove = () => {
-    if (dialogID >= 0 && dialogID < state.favList.length)
-    dispatch({ type: "favList", content: [ state.favList[dialogID] ], action: "remove" })
-  }
   const favList = state.favList.filter(c => c.mode === state.mode)
 
+  const play = (i: number) => {
+    dispatch({ type: "favList", content: [ favList[i] ], action: "replay" })
+  }
+  const remove = () => {
+    if (dialogID >= 0 && dialogID < favList.length)
+    dispatch({ type: "favList", content: [ favList[dialogID] ], action: "remove" })
+  }
   const [ dialogID, setDialogID ] = React.useState(-1)
 
   const handleClose = () => setDialogID(-1)
@@ -150,9 +151,11 @@ export default function FavListView(props: { state: AppState, dispatch: React.Di
                 {/* <TableCell align="center" >
                   {/* padding=checkbox <Checkbox></Checkbox> */}
 
-                <TableCell align="center"> {value.solver + " , " + value.setup} </TableCell>
                 <TableCell align="center">
-                  <IconButton onFocus={(e: { target: { blur: () => void; }; }) => e.target.blur() } onClick={play(i)}
+                { value.solver.join("|") + "," + value.setup }
+                </TableCell>
+                <TableCell align="center">
+                  <IconButton onFocus={(e: { target: { blur: () => void; }; }) => e.target.blur() } onClick={() => play(i)}
                   component="span" edge="end" size="small" color="primary">
                     <PlaylistPlayIcon />
                   </IconButton>

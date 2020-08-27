@@ -1,7 +1,8 @@
 import React, { Fragment } from 'react'
 
 import CubeSim from './CubeSim'
-import { Button, makeStyles, Divider, Typography, useTheme, FormControl, FormLabel, } from '@material-ui/core';
+import { Button, makeStyles, Typography, useTheme, FormControl, FormLabel, } from '@material-ui/core';
+import Divider from '@material-ui/core/Divider';
 
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
@@ -19,6 +20,8 @@ import { Face } from '../lib/Defs';
 import { getActiveName } from '../lib/Selector';
 
 import { SingleSelect, MultiSelect } from './Select';
+import { ColorSetter, ColorPanel } from './Input';
+import { AlgDesc } from '../lib/Algs';
 
 const useStyles = makeStyles(theme => ({
     container: {
@@ -86,6 +89,14 @@ function getMask(state: AppState) : Mask {
       //   getActiveName(state.config.fbOnlySelector) === "FB Last Pair"
       return fbOnly ? Mask.fb_mask : Mask.fbdr_mask
     }
+    else if (state.mode === "fs") {
+      let name = getActiveName(state.config.fsSelector)
+      return ({
+        "Front FS": Mask.fs_front_mask,
+        "Back FS": Mask.fs_back_mask,
+        "Both": Mask.fb_mask
+      } as any)[name]
+    }
     else if (state.mode === "ss") {
       if (state.case.desc.length === 0) return Mask.sb_mask
       if (state.case.desc[0].kind === "ss-front")
@@ -126,15 +137,33 @@ function BlockTrainerView(props: { state: AppState, dispatch: React.Dispatch<Act
 
     let facelet = FaceletCube.from_cubie(cube, getMask(state))
 
-    let desc = state.case.desc[0] || { alg: "", setup:"Press next for new case"}
-    let { alg, setup, alt_algs } = desc
+    let desc : AlgDesc[] = state.case.desc.length ? state.case.desc :
+       [ { alg: "", alt_algs: [], setup:"Press next for new case", id: "", kind: ""} ]
 
     let spaceButtonText = (state.name === "hiding") ? "Reveal" : "Next"
-    let algs = (alt_algs !== undefined) ? ( [alg, ...alt_algs] ) : [alg]
 
-    let minMove = algs.map(a => new MoveSeq(a).moves.length).reduce( (a, b) => Math.min(a, b), 100 )
-    let algText = (state.name === "hiding") ? `(Best = ${minMove} STM)`
-      : (state.name === "revealed" && alg.length > 0) ? algs.join("\n") : ""
+
+    let describe_reveal = function(algs: AlgDesc[]) {
+      let get_algs = (d: AlgDesc) => [d.alg].concat(d.alt_algs || []);
+      if (algs.length === 1) {
+        return get_algs(algs[0]).join("\n")
+      } else {
+        return algs.map( alg =>
+          `[${alg.kind}]:\n` + get_algs(alg).join("\n") + "\n"
+        )
+      }
+    }
+
+    let describe_hide = (desc: AlgDesc[]) => {
+      let minMove = desc.map( d =>
+        [d.alg].concat(d.alt_algs || [])
+        .map(a => new MoveSeq(a).remove_setup().moves.length))
+        .flat()
+        .reduce( (a, b) => Math.min(a, b), 100 )
+      return `(Min = ${minMove} STM)`
+    }
+    let algText = (state.name === "hiding") ? describe_hide(desc)
+      : (state.name === "revealed") ? describe_reveal(desc) : ""
 
     const handleSpace = () => {
       dispatch({type: "key", content: "#space"})
@@ -142,6 +171,8 @@ function BlockTrainerView(props: { state: AppState, dispatch: React.Dispatch<Act
         setFav(false)
       }
     }
+
+    const setup = desc.length ? desc[0].setup! : ""
 
 
     const theme = useTheme()
@@ -168,8 +199,8 @@ function BlockTrainerView(props: { state: AppState, dispatch: React.Dispatch<Act
       if (state.case.desc.length === 0) return
       const case_ : FavCase = {
         mode: state.mode,
-        solver: state.case.desc[0].kind,
-        setup: state.case.desc[0].setup!
+        solver: state.case.desc.map(x => x.kind),
+        setup: setup || ""
       }
       if (!favSelected){
         setFav(true)
@@ -194,7 +225,7 @@ function BlockTrainerView(props: { state: AppState, dispatch: React.Dispatch<Act
               width={250}
               height={250}
               cube={facelet}
-              colorScheme={CubeUtil.ori_to_color_scheme(props.state.cube.ori)}
+              colorScheme={state.colorScheme.getColorsForOri(state.cube.ori)}
               hintDistance={ (state.mode === "4c" || state.mode === "eopair") ? 1.1 : 7 }
               bgColor={simBackground}
               facesToReveal={ [Face.L, Face.B, Face.D]  }
@@ -316,7 +347,6 @@ function ConfigPanelGroup(props: {state: AppState, dispatch: React.Dispatch<Acti
     let select2 = (config: Config) => { return config.ssPairOnlySelector }
     let select3 = (config: Config) => { return config.solutionNumSelector }
     let select4 = (config: Config) => { return config.ssPosSelector }
-    let select5 = (config: Config) => { return config.orientationSelector }
 
     let DRManip = [
       // names: ["UF", "FU", "UL", "LU", "UB", "BU", "UR", "RU", "DF", "FD", "DB", "BD",
@@ -330,7 +360,7 @@ function ConfigPanelGroup(props: {state: AppState, dispatch: React.Dispatch<Acti
       <SingleSelect {...{state, dispatch, select: select2}}> </SingleSelect>
       <SingleSelect {...{state, dispatch, select: select3}}> </SingleSelect>
       <MultiSelect {...{state, dispatch, select: select4, options: {manipulators: DRManip} }}> </MultiSelect>
-      <MultiSelect {...{state, dispatch, select: select5}}> </MultiSelect>
+      <ColorPanel {...{state, dispatch}} />
       </Fragment>
     )
   } else if (state.mode === "fbdr") {
@@ -339,7 +369,6 @@ function ConfigPanelGroup(props: {state: AppState, dispatch: React.Dispatch<Acti
     let select3 = (config: Config) => { return config.fbPairSolvedSelector }
     let select6 = (config: Config) => { return config.fbdrScrambleSelector }
     let select4 = (config: Config) => { return config.solutionNumSelector }
-    let select5 = (config: Config) => { return config.orientationSelector }
     return (
       <Fragment>
       <SingleSelect {...{state, dispatch, select: select1}}> </SingleSelect>
@@ -347,27 +376,36 @@ function ConfigPanelGroup(props: {state: AppState, dispatch: React.Dispatch<Acti
       <SingleSelect {...{state, dispatch, select: select3}}> </SingleSelect>
       <SingleSelect {...{state, dispatch, select: select6}}> </SingleSelect>
       <SingleSelect {...{state, dispatch, select: select4}}> </SingleSelect>
-      <MultiSelect {...{state, dispatch, select: select5}}> </MultiSelect>
+      <ColorPanel {...{state, dispatch}} />
       </Fragment>
     )
   } else if (state.mode === "fb") {
-    let select3 = (config: Config) => { return config.fbPieceSolvedSelector }
-    let select4 = (config: Config) => { return config.solutionNumSelector }
-    let select5 = (config: Config) => { return config.orientationSelector }
+    let select1 = (config: Config) => { return config.fbPieceSolvedSelector }
+    let select2 = (config: Config) => { return config.solutionNumSelector }
 
     return (
       <Fragment>
-        <SingleSelect {...{ state, dispatch, select: select3 }}> </SingleSelect>
-        <SingleSelect {...{ state, dispatch, select: select4 }}> </SingleSelect>
-        <MultiSelect {...{ state, dispatch, select: select5 }}> </MultiSelect>
+        <SingleSelect {...{ state, dispatch, select: select1 }}> </SingleSelect>
+        <SingleSelect {...{ state, dispatch, select: select2 }}> </SingleSelect>
+        <ColorPanel {...{state, dispatch}} />
       </Fragment>
     )
-   } else if (state.mode === "4c"){
+   } else if (state.mode === "fs") {
+    let select1 = (config: Config) => { return config.fsSelector }
+    let select2 = (config: Config) => { return config.solutionNumSelector }
+
+    return (
+      <Fragment>
+        <SingleSelect {...{ state, dispatch, select: select1 }}> </SingleSelect>
+        <SingleSelect {...{ state, dispatch, select: select2 }}> </SingleSelect>
+        <ColorPanel {...{state, dispatch}} />
+      </Fragment>
+    )
+   }else if (state.mode === "4c"){
     let select1 = (config: Config) => { return config.lseStageSelector }
     let select2 = (config: Config) => { return config.lseMCSelector }
     let select3 = (config: Config) => { return config.lseBarSelector }
     let select4 = (config: Config) => { return config.solutionNumSelector }
-    let select5 = (config: Config) => { return config.orientationSelector }
 
     return (
       <Fragment>
@@ -375,7 +413,7 @@ function ConfigPanelGroup(props: {state: AppState, dispatch: React.Dispatch<Acti
         <SingleSelect {...{ state, dispatch, select: select2 }}> </SingleSelect>
         <SingleSelect {...{ state, dispatch, select: select3 }}> </SingleSelect>
         <SingleSelect {...{ state, dispatch, select: select4 }}> </SingleSelect>
-        <MultiSelect {...{ state, dispatch, select: select5 }}> </MultiSelect>
+        <ColorPanel {...{state, dispatch}} />
       </Fragment>
     )
    } else if (state.mode === "eopair"){
@@ -384,7 +422,6 @@ function ConfigPanelGroup(props: {state: AppState, dispatch: React.Dispatch<Acti
     let select3 = (config: Config) => { return config.lseBarbieSelector }
     let select4 = (config: Config) => { return config.lseEOLRScrambleSelector }
     let select5 = (config: Config) => { return config.solutionNumSelector }
-    let select6 = (config: Config) => { return config.orientationSelector }
 
     return (
       <Fragment>
@@ -393,7 +430,7 @@ function ConfigPanelGroup(props: {state: AppState, dispatch: React.Dispatch<Acti
         <SingleSelect {...{ state, dispatch, select: select3 }}> </SingleSelect>
         <SingleSelect {...{ state, dispatch, select: select4 }}> </SingleSelect>
         <SingleSelect {...{ state, dispatch, select: select5 }}> </SingleSelect>
-        <MultiSelect {...{ state, dispatch, select: select6}} > </MultiSelect>
+        <ColorPanel {...{state, dispatch}} />
       </Fragment>
     )
    }

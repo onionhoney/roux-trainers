@@ -1,18 +1,21 @@
-import { Config, FavCase } from "../Types"
+import { Config, FavCase, Mode } from "../Types"
 import { version } from "../Version"
 import { initialConfig, initialFavList } from "../Config"
 
+export type FavCaseStore = {mode: Mode, setup: string, solver: string }
 let favListManager = function() {
     const key = "fav"
     let cache : FavCase[] | null = null
     let getFavList = () => {
         if (cache) return cache
         const item = window.localStorage.getItem(key)
-        const item1 : FavCase[] = item ? JSON.parse(item) : initialFavList
-        return item1
+        const item1 : FavCaseStore[] = item ? JSON.parse(item) : initialFavList
+        const item2 : FavCase[] = item1.map( ({mode, setup, solver}) => ({mode, setup, solver: solver.trim().split("|")}) );
+        return item2
     }
     let setFavList = (item : FavCase[]) => {
-        window.localStorage.setItem(key, JSON.stringify(item));
+        const item1 : FavCaseStore[] = item.map(({mode, setup, solver}) => ({mode, setup, solver: solver.join("|")}) );
+        window.localStorage.setItem(key, JSON.stringify(item1));
         cache = item
     }
     return {

@@ -1,7 +1,9 @@
 import React, { Fragment } from 'react'
 
 import CubeSim from './CubeSim'
-import { Divider, makeStyles, useTheme, FormControl, FormLabel, Typography, Button} from '@material-ui/core';
+import { makeStyles, useTheme, FormControl, FormLabel, Typography, Button} from '@material-ui/core';
+
+import Divider from '@material-ui/core/Divider';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
 import Box from '@material-ui/core/Box';
@@ -47,8 +49,7 @@ const useStyles = makeStyles(theme => ({
     button: {
       width: "100%"
     },
-
-  }))
+}))
 
 
 
@@ -98,6 +99,15 @@ function CmllTrainerView(props: { state: AppState, dispatch: React.Dispatch<Acti
       dispatch({type: "key", content: "#space"})
     }
 
+    React.useEffect(() => {
+      function downHandler(event: KeyboardEvent) {
+        state.keyMapping.handle(event, dispatch);
+      }
+      window.addEventListener('keydown', downHandler);
+      return () => {
+        window.removeEventListener('keydown', downHandler);
+      };
+    });
 
     let alg = ""
     let setup = ""
@@ -125,7 +135,7 @@ function CmllTrainerView(props: { state: AppState, dispatch: React.Dispatch<Acti
                 width={300}
                 height={300}
                 cube={facelet}
-                colorScheme={CubeUtil.ori_to_color_scheme(props.state.cube.ori)}
+                colorScheme={state.colorScheme.getColorsForOri(state.cube.ori)}
                 bgColor={simBackground}
                 facesToReveal={[Face.L]}
               />
@@ -197,12 +207,12 @@ function CmllTrainerView(props: { state: AppState, dispatch: React.Dispatch<Acti
 
 
     <Box height={20}/>
-      <Divider/>
+      <Divider />
     <Box height={20}/>
     { panel }
 
     <Box height={20}/>
-      <Divider/>
+      <Divider />
     <Box height={15}/>
 
     <Box>

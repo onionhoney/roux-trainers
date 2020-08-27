@@ -1,10 +1,11 @@
 
 import { AppState, StateT, Action, Mode, Config, FavListAction } from "../Types"
-import { CubieCube } from '../lib/CubeLib';
+import { CubieCube, ColorScheme } from '../lib/CubeLib';
 import { setConfig, getConfig, getFavList, setFavList} from '../lib/Local';
 import { getActiveName } from '../lib/Selector';
 import { StateFactory } from "./StateFactory";
 import { DefaultKeyMapping, LSEKeyMapping } from "../KeyMapping";
+import { arrayEqual } from "../lib/Math";
 
 export const getInitialState = (mode?: Mode) : AppState => {
     mode = mode || "fbdr"
@@ -16,6 +17,7 @@ export const getInitialState = (mode?: Mode) : AppState => {
             case "fb":
             case "4c":
             case "eopair":
+            case "fs":
                 return "revealed"
             case "experimental":
                 return "revealed"
@@ -35,12 +37,10 @@ export const getInitialState = (mode?: Mode) : AppState => {
             state: new CubieCube(),
             desc: []
         },
-        cubejs: {
-            initialized: false
-        },
         config: getConfig(),
         favList: getFavList(),
-        keyMapping: (mode === "4c" || mode === "eopair") ? new LSEKeyMapping() : new DefaultKeyMapping()
+        keyMapping: (mode === "4c" || mode === "eopair") ? new LSEKeyMapping() : new DefaultKeyMapping(),
+        colorScheme: new ColorScheme()
     }
 }
 
@@ -56,7 +56,7 @@ function reduceByFavlist(state: AppState, action: FavListAction) {
         // only remove one at a time for now
             const rem = action.content[0]
             favList = favList.filter((value) => {
-                return !(value.mode === rem.mode && value.setup === rem.setup && value.solver === rem.solver)
+                return !(value.mode === rem.mode && value.setup === rem.setup && arrayEqual(value.solver, rem.solver))
             })
             setFavList(favList)
             break;
@@ -102,6 +102,13 @@ export function reducer(state: AppState, action: Action): AppState {
             }
         case "favList":
             return reduceByFavlist(state, action)
+        case "colorScheme":
+            return {
+                ...state,
+                colorScheme: state.colorScheme.set(action.content)
+            }
+        case "custom":
+            return action.content(state)
         default:
             return state
         }

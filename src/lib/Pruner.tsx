@@ -1,5 +1,6 @@
-import { CubieCube, Move, CubeUtil } from './CubeLib';
+import { CubieCube, Move, CubeUtil, Mask } from './CubeLib';
 import { cartesianProduct } from './Math';
+import { corners_coord } from './Defs';
 
 export type PrunerConfig = {
     size: number,
@@ -14,6 +15,20 @@ export type PrunerT = {
     query: (c : CubieCube) => number,
     equal: (c1 : CubieCube, c2: CubieCube) => boolean,
     encode: (c : CubieCube) => number
+}
+
+enum PrunerPiece {
+    S, O, I, X
+}; // Solved, Oriented, Include in Permutation, Exclude in Permutation (meaning the moveset will exclude this area)
+const { S, O, I, X } = PrunerPiece
+
+export type PrunerDef = {
+    corner: PrunerPiece[],
+    edge:   PrunerPiece[],
+    center: PrunerPiece[],
+    solved_states: string[],
+    moveset: string[],
+    max_depth: number
 }
 
 export function Pruner(config: PrunerConfig) : PrunerT {
@@ -65,6 +80,97 @@ export function Pruner(config: PrunerConfig) : PrunerT {
 
 
 
+let prunerFactory = function(def: PrunerDef): PrunerConfig {
+    // edge
+    if (def.corner.length !== 8 || def.edge.length !== 12 || def.center.length !== 6) {
+        throw new Error("Invalid pruner def");
+    }
+    const {S, O, I, X} = PrunerPiece
+    const def_to_idx = (d : PrunerPiece[], count_all?: boolean) => {
+        let curr_idx = 0, idx_arr = []
+        for (let i = 0; i < d.length; i++) {
+            if (d[i] === S || (count_all && (d[i] === O || d[i] === I))) {
+                idx_arr.push(curr_idx++);
+            } else idx_arr.push(-1);
+        }
+        return idx_arr;
+    }
+    let eosize = def.edge.filter(x => x === S || x === O).length
+    let epsize = def.edge.filter(x => x === S).length
+    let eisize = def.edge.filter(x => x !== X).length
+    let esize = Math.pow(2, eosize) * Math.pow(eisize, epsize)
+    let ep_idx = def_to_idx(def.edge, false);
+    let e_idx = def_to_idx(def.edge, true);
+
+    let cosize = def.corner.filter(x => x === S || x === O).length
+    let cpsize = def.corner.filter(x => x === S).length
+    let cisize = def.edge.filter(x => x !== X).length
+    let csize = Math.pow(2, cosize) * Math.pow(cisize, cpsize)
+    let cp_idx = def_to_idx(def.corner, false);
+    let c_idx = def_to_idx(def.corner, true);
+
+    let tosize = def.center.filter(x => x === O).length
+    let tpsize = def.center.filter(x => x === S).length
+    let tisize = def.edge.filter(x => x !== X).length
+    let tsize = Math.pow(2, tosize) * Math.pow(tisize, tpsize)
+    let tp_idx = def_to_idx(def.center, false);
+    let t_idx = def_to_idx(def.center, true);
+
+    let size = esize * csize * tsize;
+
+    function encode(cube: CubieCube) {
+        let eo = 0, ep = 0, co = 0, cp = 0, to = 0, tp = 0, e, c, t
+        for (let i = 0; i < 12; i++) {
+            switch (def.edge[cube.ep[i]]) {
+                case S:
+                    eo = eo * 2 + cube.eo[i];
+                    ep = ep + Math.pow(eisize, ep_idx[cube.ep[i]]) * e_idx[i];
+                    break;
+                case O:
+                    eo = eo * 2 + cube.eo[i];
+                    break;
+            }
+        }
+        e = ep * Math.pow(2, eosize) + eo
+        for (let i = 0; i < 8; i++) {
+            switch (def.corner[cube.cp[i]]) {
+                case S:
+                    co = co * 3 + cube.co[i];
+                    cp = cp + Math.pow(cisize, cp_idx[cube.cp[i]]) * c_idx[i];
+                    break;
+                case O:
+                    co = co * 3 + cube.co[i];
+                    break;
+            }
+        }
+        c = cp * Math.pow(3, cosize) + co
+        for (let i = 0; i < 6; i++) {
+            switch (def.center[cube.tp[i]]) {
+                case S:
+                    tp = Math.pow(tisize, tp_idx[cube.tp[i]]) + i;
+                    break;
+                case O:
+                    to = to * 3 + (cube.tp[i] / 2) | 0;
+                    break;
+            }
+        }
+        t = tp * Math.pow(3, tosize) + to
+        return e * csize * tsize + c * tsize + t
+    }
+
+    const solved_states = def.solved_states.map( m => new CubieCube().apply(m))
+    const moveset : Move[] = def.moveset.map(s => Move.all[s])
+    const max_depth = def.max_depth
+    return {
+        size,
+        encode,
+        solved_states,
+        max_depth,
+        moveset
+    }
+}
+
+
 let fbdrPrunerConfig : PrunerConfig = function() {
     const esize = Math.pow(24, 4)
     const csize = Math.pow(24, 2)
@@ -109,8 +215,19 @@ let fbdrPrunerConfig : PrunerConfig = function() {
     }
 }()
 
+let htm_rwm = ["U", "U2", "U'", "F", "F2", "F'", "R", "R2", "R'",
+    "r", "r2", "r'", "D", "D2", "D'", "M", "M'", "M2", "B", "B'", "B2"]
 
-let fbPrunerConfig : PrunerConfig = function() {
+let fbPrunerConfig = prunerFactory({
+    corner: [I,I,I,I,S,S,I,I],
+    edge:   [I,I,I,I,I,S,I,I,S,S,I,I],
+    center: [I,I,I,I,S,I],
+    solved_states: ["id"],
+    moveset: htm_rwm,
+    max_depth: 4
+});
+
+let fbPrunerConfig_old : PrunerConfig = function() {
     const esize = Math.pow(24, 3)
     const csize = Math.pow(24, 2)
     const size = esize * csize * 6
@@ -144,8 +261,8 @@ let fbPrunerConfig : PrunerConfig = function() {
       return enc
     }
 
-    const moves = [[]]
-    const solved_states = moves.map( (move : Move[]) => new CubieCube().apply(move))
+    const moves = ["id"]
+    const solved_states = moves.map( move => new CubieCube().apply(move))
 
     const max_depth = 4
     const moveset : Move[] = ["U", "U2", "U'", "F", "F2", "F'", "R", "R2", "R'",
@@ -196,6 +313,15 @@ let ssPrunerConfig = (is_front: boolean) => {
         moveset
     }
 }
+
+let fsPrunerConfig = (is_front: boolean) => prunerFactory({
+        corner: is_front ? [I,I,I,I,S,I,I,I] : [I,I,I,I,I,S,I,I] ,
+        edge:   is_front ? [I,I,I,I,I,S,I,I,S,I,I,I] : [I,I,I,I,I,S,I,I,I,S,I,I] ,
+        center: [I,I,I,I,S,I],
+        solved_states: ["id"],
+        moveset: htm_rwm,
+        max_depth: 4
+    });
 
 
 let lsePrunerConfig : PrunerConfig = function() {
@@ -280,4 +406,5 @@ function eolrPrunerConfig(center_flag: number, barbie_mode?: string): PrunerConf
     }
 }
 
-export { fbdrPrunerConfig, ssPrunerConfig, fbPrunerConfig, lsePrunerConfig, eolrPrunerConfig }
+export { fbdrPrunerConfig, fsPrunerConfig, ssPrunerConfig, fbPrunerConfig, lsePrunerConfig, eolrPrunerConfig,
+    prunerFactory, fbPrunerConfig_old}
