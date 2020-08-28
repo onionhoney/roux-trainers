@@ -14,6 +14,7 @@ import clsx from 'clsx';
 import { Face } from '../lib/Defs';
 import { getActiveName } from '../lib/Selector';
 import { MultiSelect, SingleSelect } from './Select';
+import { ColorPanel } from './Input';
 
 
 const useStyles = makeStyles(theme => ({
@@ -84,7 +85,7 @@ function CmllTrainerView(props: { state: AppState, dispatch: React.Dispatch<Acti
         <MultiSelect {...{state, dispatch, select: cmll, options: { label: "CMLL Case", noDialog: true} }} />
         <MultiSelect {...{state, dispatch, select: cmllauf, options: { label: "CMLL Auf", noDialog: true} }} />
         <MultiSelect {...{state, dispatch, select: trigger, options: { label: "SB Last Pair Trigger (Uncheck all for pure CMLL)", noDialog: true} } } />
-        <MultiSelect {...{state, dispatch, select: ori}} />
+        <ColorPanel {...{state, dispatch}} />
       </Fragment>
     )
 
