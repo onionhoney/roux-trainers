@@ -1,23 +1,23 @@
 self.__precacheManifest = (self.__precacheManifest || []).concat([
   {
-    "revision": "4b462c9edbd7ba70fdbc0bcd48a35e0c",
+    "revision": "f63a843e2d984ab88a31445bd98e9a17",
     "url": "/roux-trainers/index.html"
   },
   {
-    "revision": "2afb2fceaad6fdc8a6b5",
+    "revision": "38b3362c4f891676427e",
     "url": "/roux-trainers/static/css/2.8b2a06ee.chunk.css"
   },
   {
-    "revision": "5322384f7655690be4b5",
+    "revision": "ffe63de4ef0b32693d6d",
     "url": "/roux-trainers/static/css/main.34de6062.chunk.css"
   },
   {
-    "revision": "2afb2fceaad6fdc8a6b5",
-    "url": "/roux-trainers/static/js/2.db6e1e7e.chunk.js"
+    "revision": "38b3362c4f891676427e",
+    "url": "/roux-trainers/static/js/2.3bb12771.chunk.js"
   },
   {
-    "revision": "5322384f7655690be4b5",
-    "url": "/roux-trainers/static/js/main.c5665aa0.chunk.js"
+    "revision": "ffe63de4ef0b32693d6d",
+    "url": "/roux-trainers/static/js/main.97ed1d8a.chunk.js"
   },
   {
     "revision": "2ce6647bb5dd4cf52078",
