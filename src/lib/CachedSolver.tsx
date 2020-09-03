@@ -1,7 +1,7 @@
 import { FbdrSolver, SolverT, FsSolver, SsSolver, FbSolver, Min2PhaseSolver, LSESolver, EOLRSolver} from './Solver';
 
 let all_solvers = [
-"fbdr","fb", "ss-front", "ss-back", "min2phase",
+"fbdr","fb", "fs-front", "fs-back", "ss-front", "ss-back", "min2phase",
 "lse", "eolrac", "eolrmc", "eolr", "eolrac-b", "eolrmc-b", "eolr-b" ]
 
 let CachedSolver = function() {

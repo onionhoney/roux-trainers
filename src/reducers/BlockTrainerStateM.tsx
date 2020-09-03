@@ -17,45 +17,22 @@ export abstract class BlockTrainerStateM extends AbstractStateM {
     abstract getRandom(): [CubieCube, string[]] | [CubieCube, string[], string];
     premoves: string[] = [""];
 
-    _solve_min2phase(cube: CubieCube) : AppState  {
-
-        const state = this.state
-        const ori = alg_generator(state.config.orientationSelector)().id;
-        let algdesc: AlgDesc = {
-            id: `min2phase`,
-            alg: "",
-            alt_algs: [],
-            setup: CachedSolver.get("min2phase").solve(cube,0,0,0)[0].toString(),
-            kind: `min2phase`
-        };
-        return {
-            ...state,
-            cube: {
-                ...state.cube,
-                state: cube,
-                ori
-            },
-            case: {
-                state: cube,
-                desc: [algdesc]
-            }
-        };
-    }
     _solve_with_solvers(cube: CubieCube, solverNames: string[]): AlgDesc[]{
         const state = this.state;
-        const solutionCap = 0 | (+(getActiveName(state.config.solutionNumSelector) || 5) * this.magnification);
+        const totalSolutionCap = 0 | (+(getActiveName(state.config.solutionNumSelector) || 5) * this.magnification);
+        const selectedSolutionCap = +(getActiveName(state.config.solutionNumSelector) || 5);
         let getDesc = (solverName: string) => {
             const solver = CachedSolver.get(solverName);
             const premoves = this.premoves || [""]
             let solutions = premoves.map(pm =>
                 solver
-                .solve(cube.apply(pm), 0, this.solverR, solutionCap)
+                .solve(cube.apply(pm), 0, this.solverR, totalSolutionCap)
                 .map(sol => ({pre: pm, sol: sol, score: SeqEvaluator.evaluate(sol)}) )).flat()
             solutions.sort((a, b) => a.score - b.score);
             const toString = (sol: any) =>
                 (sol.pre === "" ? "" : "(" + sol.pre + ") ") + sol.sol.toString(this.algDescWithMoveCount);
             const alg = toString(solutions[0])
-            const alt_algs = solutions.slice(1, solutionCap).map(toString);
+            const alt_algs = solutions.slice(1, selectedSolutionCap).map(toString);
             let algdesc: AlgDesc = {
                 id: `${solverName}`,
                 alg,
@@ -73,13 +50,12 @@ export abstract class BlockTrainerStateM extends AbstractStateM {
     }) {
         const state = this.state;
         options = options || {}
-        if (solverNames === ["min2phase"]) {
-            if (!options.updateSolutionOnly)
-                return this._solve_min2phase(cube)
-            return this.state
-        }
+        // if ( arrayEqual(solverNames, ["min2phase"])) {
+        //     if (!options.updateSolutionOnly)
+        //         return this._solve_min2phase(cube)
+        //     return this.state
+        // }
         let algDescs = this._solve_with_solvers(cube, solverNames);
-        const solutionLength = new MoveSeq(algDescs[0].alg).remove_setup().moves.length;
         const scrambleMargin = 1;
         let setup : string
         if (options.scramble) {
@@ -87,16 +63,29 @@ export abstract class BlockTrainerStateM extends AbstractStateM {
         } else if (options.updateSolutionOnly) {
             setup = this.state.case.desc[0]!.setup!
         } else {
-            const scramble = options.scrambleSolver === "2phase"?
-            CachedSolver.get("min2phase").solve(cube,0,0,0)[0] :
-            rand_choice(
+            const scramble = options.scrambleSolver === "min2phase"?
+            CachedSolver.get("min2phase").solve(cube,0,0,0)[0].inv() :
+            (()=>{
+            const solutionLength = new MoveSeq(algDescs[0].alg).remove_setup().moves.length;
+            return rand_choice(
                 CachedSolver.get(options.scrambleSolver || solverNames[0])
                 .solve(cube, Math.max(this.solverL, solutionLength + scrambleMargin),
                     this.solverR, this.scrambleCount || 1)).inv()
+            })()
             setup = scramble.toString()
         }
-        // populate setup into setup
-        algDescs.forEach(algDesc => algDesc.setup = setup);
+        if (algDescs.length === 0) {
+            algDescs = [{
+                id: `min2phase`,
+                alg: "",
+                alt_algs: [],
+                setup,
+                kind: `min2phase`
+            }];
+        } else {
+            // populate setup into setup
+            algDescs.forEach(algDesc => algDesc.setup = setup);
+        }
 
         const ori = (options.updateSolutionOnly) ? this.state.cube.ori : alg_generator(state.config.orientationSelector)().id;
         const name = options.updateSolutionOnly ? this.state.name : "hiding";
@@ -360,9 +349,9 @@ export class FbStateM extends BlockTrainerStateM {
             cube = CubeUtil.get_random_with_mask(Mask.empty_mask);
         }
     }
-    getRandom() : [CubieCube, string[]]{
+    getRandom() : [CubieCube, string[], string]{
         let [cube, solver] = this._get_random();
-        return [cube, [solver] ];
+        return [cube, solver === "min2phase" ? [] : [solver], solver ];
     }
     constructor(state: AppState) {
         super(state);
