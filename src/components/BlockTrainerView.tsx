@@ -367,15 +367,24 @@ function ConfigPanelGroup(props: {state: AppState, dispatch: React.Dispatch<Acti
     let select1 = (config: Config) => { return config.fbdrSelector }
     let select2 = (config: Config) => { return config.fbOnlySelector }
     let select3 = (config: Config) => { return config.fbPairSolvedSelector }
-    let select6 = (config: Config) => { return config.fbdrScrambleSelector }
-    let select4 = (config: Config) => { return config.solutionNumSelector }
+    let select4 = (config: Config) => { return config.fbdrScrambleSelector }
+    let select5 = (config: Config) => { return config.solutionNumSelector }
+
+    let LPEdgeManip = [
+      { name: "Toggle Select All", enableIdx: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17] },
+    ]
+    let pos1 = (config: Config) => { return config.fbdrPosSelector1 }
+    let pos3 = (config: Config) => { return config.fbdrPosSelector3 }
+
     return (
       <Fragment>
       <SingleSelect {...{state, dispatch, select: select1}}> </SingleSelect>
       <SingleSelect {...{state, dispatch, select: select2}}> </SingleSelect>
       <SingleSelect {...{state, dispatch, select: select3}}> </SingleSelect>
-      <SingleSelect {...{state, dispatch, select: select6}}> </SingleSelect>
       <SingleSelect {...{state, dispatch, select: select4}}> </SingleSelect>
+      <SingleSelect {...{state, dispatch, select: select5}}> </SingleSelect>
+      <MultiSelect {...{state, dispatch, select: pos1, options: {manipulators: LPEdgeManip} }}> </MultiSelect>
+      <MultiSelect {...{state, dispatch, select: pos3, options: {manipulators: LPEdgeManip} }}> </MultiSelect>
       <ColorPanel {...{state, dispatch}} />
       </Fragment>
     )

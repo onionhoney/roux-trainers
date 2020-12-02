@@ -16,6 +16,9 @@ export type Config = {
     orientationSelector: Selector
     fbdrSelector: Selector,
     fsSelector: Selector,
+    fbdrPosSelector1: Selector,
+    fbdrPosSelector2: Selector,
+    fbdrPosSelector3: Selector,
     ssSelector: Selector,
     ssEOSelector: Selector,
     ssPosSelector: Selector,

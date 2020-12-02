@@ -7,3 +7,10 @@
 - Up to 25 different solutions generated, sorted by a finger-friendliness metric.
 - Inspired by http://cubegrass.appspot.com/, but with everything that it is missing.
 
+
+===
+
+Version Log:
+(v1.0.0) All work prior to 12/02/2020.
+(v1.0.1) 12/02/2020: Added edge position control for FB Last Pair trainer.
+

@@ -204,16 +204,45 @@ export class FbdrStateM extends BlockTrainerStateM {
         }
         return cube;
     }
+    _edge_piece_in_pattern(cube: CubieCube, idx: number, pattern: [number, number][]) {
+        let dr_ep = cube.ep.indexOf(idx);
+        let dr_eo = cube.eo[dr_ep];
+        let good = (pattern.find( ([eo, ep]) => (eo === dr_eo) && (ep === dr_ep)))
+        return good
+    }
     _get_random_fs_back() {
         let cube = CubeUtil.get_random_with_mask(Mask.fs_back_mask);
+        for (let i = 0; i < 1000; i++) {
+            if (this._edge_piece_in_pattern(cube, 7, this.allowed_dr) &&
+                this._edge_piece_in_pattern(cube, 8, this.allowed_pedge)) break;
+            cube = CubeUtil.get_random_with_mask(Mask.fs_back_mask);
+        }
         return cube;
         //return CubieCube.apply(cube, rand_choice(m_premove));
     }
     _get_random_fs_front() {
         let cube = CubeUtil.get_random_with_mask(Mask.fs_front_mask);
-        return cube;
+        for (let i = 0; i < 1000; i++) {
+            if (this._edge_piece_in_pattern(cube, 7, this.allowed_dr) &&
+                this._edge_piece_in_pattern(cube, 9, this.allowed_pedge)) break;
+            cube = CubeUtil.get_random_with_mask(Mask.fs_front_mask);
+        }
+        return cube;;
         //return CubieCube.apply(cube, rand_choice(m_premove));
     }
+    edgePositionMap : [number, number][] = [
+        [0, 0], [1, 0],
+        [0, 1], [1, 1],
+        [0, 2], [1, 2],
+        [0, 3], [1, 3],
+        [0, 4], [1, 4],
+        [0, 6], [1, 6],
+        [0, 7], [1, 7],
+        [0, 10], [1, 10],
+        [0, 11], [1, 11]
+    ]
+    allowed_pedge : [number, number][] = []
+    allowed_dr : [number, number][] = []
     getRandom(): [CubieCube, string[], string] {
         const fbOnly = getActiveName(this.state.config.fbOnlySelector) === "FB Last Pair Only";
         const pairSolved = getActiveName(this.state.config.fbPairSolvedSelector) !== "Random";
@@ -223,6 +252,12 @@ export class FbdrStateM extends BlockTrainerStateM {
         const scrambleSolver = useMin2PhaseScramble ? "min2phase" : solverName
         let active = getActiveNames(this.state.config.fbdrSelector)[0];
         //console.log("active", active)
+        this.allowed_pedge = this.state.config.fbdrPosSelector1.flags.map( (value, i) => [value, i])
+            .filter( ([value, i]) => value ).map( ([value, i]) => this.edgePositionMap[i] )
+        this.allowed_dr = this.state.config.fbdrPosSelector3.flags.map( (value, i) => [value, i])
+            .filter( ([value, i]) => value ).map( ([value, i]) => this.edgePositionMap[i] )
+
+
         if (active === "FS at back") {
             if (pairSolved)
                 return [this._get_pair_solved_front(), [solverName], scrambleSolver];

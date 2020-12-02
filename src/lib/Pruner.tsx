@@ -301,7 +301,7 @@ let ssPrunerConfig = (is_front: boolean) => {
     const moves = [[]] 
     const solved_states = moves.map( (move : Move[]) => new CubieCube().apply(move))
 
-    const max_depth = 5
+    const max_depth = 8
     const moveset : Move[] = ["U", "U'", "U2", "R", "R'", "R2",
         "r", "r'", "r2", "M'", "M", "M2"].map(s => Move.all[s])
 

@@ -19,7 +19,7 @@ let rand_shuffle = function<T>(arr: T[]) {
     return arr
 }
 
-export function cartesianProduct<T>(...allEntries: T[][]): T[][] {
+function cartesianProduct<T>(...allEntries: T[][]): T[][] {
     return allEntries.reduce<T[][]>(
       (results, entries) =>
         results
@@ -64,4 +64,4 @@ let encodeArr = function(base: number, rarr: number[]) {
     return int
 }
 
-export {rand_int, rand_choice, rand_shuffle, getParity, arrayEqual, encodeArr}
+export {rand_int, rand_choice, rand_shuffle, getParity, arrayEqual, encodeArr, cartesianProduct}

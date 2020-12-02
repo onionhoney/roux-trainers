@@ -67,6 +67,27 @@ export const initialConfig : Config = (() => {
             flags: [1, 0],
             kind: "fb-pair-solved"
         },
+        fbdrPosSelector1: {
+            label: "Position of FB edge",
+            names: ["UF", "FU", "UL", "LU", "UB", "BU", "UR", "RU", "DF", "FD", "DB", "BD",
+                    "DR", "RD", "BR", "RB", "FR", "RF"],
+            flags: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+            kind: "fbdr-position-1"
+        },
+        fbdrPosSelector2: {
+            label: "Position of FB edge",
+            names: ["UF", "FU", "UL", "LU", "UB", "BU", "UR", "RU", "DF", "FD", "DB", "BD",
+                    "DR", "RD", "BR", "RB", "FR", "RF"],
+            flags: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+            kind: "fbdr-position-2"
+        },
+        fbdrPosSelector3: {
+            label: "Position of DR",
+            names: ["UF", "FU", "UL", "LU", "UB", "BU", "UR", "RU", "DF", "FD", "DB", "BD",
+                    "DR", "RD", "BR", "RB", "FR", "RF"],
+            flags: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+            kind: "fbdr-position-3"
+        },
         fsSelector: {
             label: "Position of square",
             names: ["Front FS", "Back FS", "Both"],

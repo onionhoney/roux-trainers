@@ -1,4 +1,4 @@
-import { CubieCube, MoveSeq } from './CubeLib';
+import { CubieCube, Move, MoveSeq } from './CubeLib';
 import { CubeUtil } from "./CubeLib";
 
 it('loads and prints cube state successfully', () => {
@@ -16,12 +16,14 @@ it('loads and prints cube state successfully', () => {
     console.assert( moves.toString() === inv_moves.toString())
 })
 
-it('should return orientation from UF face', () => {
-    let { ori_to_color_scheme } = CubeUtil
-    let res = ori_to_color_scheme("WG")
-    let str = res.map(rgb => Number(rgb).toString(16))
-    //console.log(str)
-    console.assert(str[0] === "ffffff")
+it('should execute 1M moves in a second', () => {
+    let cubie = new CubieCube() 
+    let t = Date.now()
+    let u = Move.all["U"]
+    for (let i = 0; i < 100000; i++) {
+        cubie.apply_one(u)
+    }
+    console.log(`100k moves take ${Date.now() - t} ms`);
 })
 
 it('should find all pairs in a solved cube', () => {
