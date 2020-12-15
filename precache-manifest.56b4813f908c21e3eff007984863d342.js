@@ -1,27 +1,51 @@
 self.__precacheManifest = (self.__precacheManifest || []).concat([
   {
-    "revision": "29706f64b25c8cd3079d39b9ae7200c8",
+    "revision": "aadc689c5fbe2e9eefc0ead8baa31688",
     "url": "/roux-trainers/index.html"
   },
   {
-    "revision": "f849d8b76f2444403736",
-    "url": "/roux-trainers/static/css/2.8b2a06ee.chunk.css"
+    "revision": "4a0b0f9053c0ad25e77f",
+    "url": "/roux-trainers/static/css/2.d6dc80d2.chunk.css"
   },
   {
-    "revision": "fc0d143d9e7a9e1844ac",
+    "revision": "47af2c9d2447b2e24a60",
     "url": "/roux-trainers/static/css/main.34de6062.chunk.css"
   },
   {
-    "revision": "f849d8b76f2444403736",
-    "url": "/roux-trainers/static/js/2.c1a8cd39.chunk.js"
+    "revision": "4a0b0f9053c0ad25e77f",
+    "url": "/roux-trainers/static/js/2.2a8ea9ea.chunk.js"
   },
   {
-    "revision": "fc0d143d9e7a9e1844ac",
-    "url": "/roux-trainers/static/js/main.6b863602.chunk.js"
+    "revision": "47af2c9d2447b2e24a60",
+    "url": "/roux-trainers/static/js/main.406c1a74.chunk.js"
   },
   {
     "revision": "2ce6647bb5dd4cf52078",
     "url": "/roux-trainers/static/js/runtime-main.37981257.js"
+  },
+  {
+    "revision": "5dd81d925738f916323b991e7b55ac20",
+    "url": "/roux-trainers/static/media/public-sans-all-400-italic.5dd81d92.woff"
+  },
+  {
+    "revision": "25da437697a12404c43f0699ce1e1ebd",
+    "url": "/roux-trainers/static/media/public-sans-all-400-normal.25da4376.woff"
+  },
+  {
+    "revision": "c2d092ca0c4b967ecdd465af2e6eb286",
+    "url": "/roux-trainers/static/media/public-sans-latin-400-italic.c2d092ca.woff2"
+  },
+  {
+    "revision": "cadfa8658f7463f78ed325cdc922bf5f",
+    "url": "/roux-trainers/static/media/public-sans-latin-400-normal.cadfa865.woff2"
+  },
+  {
+    "revision": "e3c30cdde6e9c83ea4c5a697f06e86fc",
+    "url": "/roux-trainers/static/media/public-sans-latin-ext-400-italic.e3c30cdd.woff2"
+  },
+  {
+    "revision": "f079aa0782abf05fd567ada82282e79c",
+    "url": "/roux-trainers/static/media/public-sans-latin-ext-400-normal.f079aa07.woff2"
   },
   {
     "revision": "5cb7edfceb233100075dc9a1e12e8da3",
