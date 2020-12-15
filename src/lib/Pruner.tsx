@@ -1,6 +1,5 @@
-import { CubieCube, Move, CubeUtil, Mask } from './CubeLib';
+import { CubieCube, Move } from './CubeLib';
 import { cartesianProduct } from './Math';
-import { corners_coord } from './Defs';
 
 export type PrunerConfig = {
     size: number,
@@ -20,7 +19,7 @@ export type PrunerT = {
 enum PrunerPiece {
     S, O, I, X
 }; // Solved, Oriented, Include in Permutation, Exclude in Permutation (meaning the moveset will exclude this area)
-const { S, O, I, X } = PrunerPiece
+const { S, I } = PrunerPiece
 
 export type PrunerDef = {
     corner: PrunerPiece[],
@@ -114,7 +113,6 @@ let prunerFactory = function(def: PrunerDef): PrunerConfig {
     let tisize = def.edge.filter(x => x !== X).length
     let tsize = Math.pow(2, tosize) * Math.pow(tisize, tpsize)
     let tp_idx = def_to_idx(def.center, false);
-    let t_idx = def_to_idx(def.center, true);
 
     let size = esize * csize * tsize;
 

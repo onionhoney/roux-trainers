@@ -7,7 +7,7 @@ import Divider from '@material-ui/core/Divider';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
 import Box from '@material-ui/core/Box';
-import { FaceletCube, CubeUtil, Mask, MoveSeq } from '../lib/CubeLib';
+import { FaceletCube, Mask, MoveSeq } from '../lib/CubeLib';
 
 import { AppState, Action, Config } from "../Types";
 import clsx from 'clsx';
@@ -77,7 +77,6 @@ function CmllTrainerView(props: { state: AppState, dispatch: React.Dispatch<Acti
     const cmllcubemask = (c : Config) => c.cmllCubeMaskSelector;
     const cmllauf = (c: Config) => c.cmllAufSelector;
     const trigger = (c: Config) => c.triggerSelector;
-    const ori = (c: Config) => c.orientationSelector;
 
     const panel = (
       <Fragment>

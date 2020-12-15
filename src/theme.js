@@ -6,7 +6,7 @@ const theme = createMuiTheme({
   name: "bright",
   palette: {
     primary: {
-      main: '#556cd6',
+      main: '#556cd6',// '#e0e8ff'//b0c4ee', //
     },
     secondary: {
       main: '#d32f2f',
@@ -24,6 +24,15 @@ const theme = createMuiTheme({
       hint: '#556cd6'
     }
   },
+  /*
+  typography: {
+    "fontFamily": `"Public Sans", "Roboto", "Helvetica", "Arial", sans-serif`,
+    "fontSize": 14,
+    "fontWeightLight": 400,
+    "fontWeightRegular": 500,
+    "fontWeightMedium": 600
+  }
+  */
 
 });
 const themeDark = createMuiTheme({

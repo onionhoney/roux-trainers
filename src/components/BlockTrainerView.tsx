@@ -11,16 +11,15 @@ import Checkbox from '@material-ui/core/Checkbox';
 
 import FavoriteIcon from '@material-ui/icons/Favorite';
 
-import { FaceletCube, CubeUtil, Mask, Move, MoveSeq } from '../lib/CubeLib';
+import { FaceletCube, Mask, MoveSeq } from '../lib/CubeLib';
 
 import { AppState,  Action, Config, FavCase, Mode} from "../Types";
 import 'typeface-roboto-mono';
-import clsx from 'clsx';
 import { Face } from '../lib/Defs';
 import { getActiveName } from '../lib/Selector';
 
 import { SingleSelect, MultiSelect } from './Select';
-import { ColorSetter, ColorPanel } from './Input';
+import { ColorPanel } from './Input';
 import { AlgDesc } from '../lib/Algs';
 
 const useStyles = makeStyles(theme => ({
@@ -37,6 +36,8 @@ const useStyles = makeStyles(theme => ({
       display: 'flex',
       overflow: 'auto',
       flexDirection: 'column',
+      marginBottom: 3,
+      borderRadius: 0
     },
     canvasPaper: {
       padding: theme.spacing(0),
@@ -56,6 +57,24 @@ const useStyles = makeStyles(theme => ({
         minHeight: 138
       },
     },
+    setup: {
+      whiteSpace: 'pre-line',
+      fontSize: "1.4rem",
+      fontWeight: 500,
+      [theme.breakpoints.down('xs')]: {
+        fontSize: "1.0rem",
+        fontWeight: 500
+      },
+    },
+    condGap: {
+    },
+    fgap: {
+      flexShrink: 100, flexBasis: "2.5rem", minWidth: "1.5em",
+      [theme.breakpoints.down('xs')]: {
+        flexBasis: "1.0rem", 
+        minWidth: "0.1em"
+      }
+    },
     fixedHeight: {
       height: 250,
     },
@@ -66,11 +85,12 @@ const useStyles = makeStyles(theme => ({
     },
     sourceIcon : {
         color: theme.palette.text.hint,
-        fontSize: 18,
+        fontSize: 15,
         padding: 0
     },
     sourceIconWrap : {
-        height: 32,
+        //border: "1px solid " + theme.palette.text.hint,
+        //borderRadius: 3
     },
     fab: {
       position: 'absolute',
@@ -123,7 +143,7 @@ function getMask(state: AppState) : Mask {
 function getHelperTextForMode(mode: Mode) {
   if (mode === "4c" || mode === "eopair") {
     return ("Usage: Press space for next case. Enter to redo."
-      + "\n\n" + "Virtual Cube: I/K (E/D) for M'/M, J/F for U/U'")
+      + "\n\nVirtual Cube: I/K (E/D) for M'/M, J/F for U/U'")
   } else {
     return null
   }
@@ -216,11 +236,51 @@ function BlockTrainerView(props: { state: AppState, dispatch: React.Dispatch<Act
 
     return (
     <Box className={classes.container}>
+      <Paper className={classes.paper} elevation={1}>
+        <Box style={{display: "flex"}}>
+          <Box style={{display: "flex", alignItems: "center"}}> <Box className={classes.title} style={{}}>
+            Scramble
+          </Box> </Box>
+        <Box style={{}} className={classes.fgap} />
+        <Box style={{display: "flex", alignItems: "center"}}>
+            <Typography className={classes.setup}>
+                {setup}
+            </Typography>
+        </Box>
+        <Box style={{flexGrow: 1}}/>
+        <Checkbox  className={classes.sourceIconWrap}
+              icon={<FavoriteIcon />}
+              checked={favSelected}
+              onChange = {handleFav}
+              checkedIcon={<FavoriteIcon color="primary" />}
+              name="fav" />
+        </Box>
+      </Paper>
 
+      <Paper className={ classes.paper}>
       <Grid container>
-        <Grid item xs={12}>
-        <Paper className={ clsx(classes.canvasPaper, classes.fixedHeight) }>
-          <Box margin="auto">
+
+        <Grid item md={8} xs={12} sm={6} className={classes.condGap}>
+          <Box style={{display: "flex" }}>
+            <Box display="flex" >
+                <Box style={{display: "flex", alignSelf: "flex-start"}}> <Box className={classes.title} style={{}}>
+                  Solutions
+                </Box> </Box>
+            </Box>
+            <Box style={{}} className={classes.fgap} />
+            <div>
+              <Box paddingBottom={2} lineHeight={1}>
+                <Typography style={{whiteSpace: 'pre-line', fontSize: 16}} >
+                  {algText}
+                </Typography>
+              </Box>
+            </div>
+          </Box>
+        </Grid>
+
+
+        <Grid item md={4} sm={6} xs={12} style={{display: "flex", justifyContent: "center"}}>
+          <Box >
             <CubeSim
               width={250}
               height={250}
@@ -231,77 +291,15 @@ function BlockTrainerView(props: { state: AppState, dispatch: React.Dispatch<Act
               facesToReveal={ [Face.L, Face.B, Face.D]  }
             />
           </Box>
-        </Paper>
         </Grid>
       </Grid>
+      </Paper>
 
       <Paper className={classes.paper} elevation={2}>
-      <Grid container spacing={2}>
-        <Grid item xs={12} sm={6} className={classes.scrambleColumn} >
-        <Grid container spacing={2} justify="center" alignItems="center">
-          <Grid item xs={12} className={classes.infoColumn} >
-            <Box display="flex">
-              <Box>
-              <Box className={classes.title} >
-                Scramble
-              </Box> </Box>
-            <Box flexGrow={0.2}></Box>
-            <Box >
-            {/* <Checkbox  className={classes.sourceIconWrap}
-              icon={<CreateIcon />}
-              checked={sourceSelected}
-              onChange = {handleSource}
-              checkedIcon={<CreateIcon color="primary" />}
-              name="source" /> */}
-
-            <Checkbox  className={classes.sourceIconWrap}
-              icon={<FavoriteIcon />}
-              checked={favSelected}
-              onChange = {handleFav}
-              checkedIcon={<FavoriteIcon color="primary" />}
-              name="fav" />
-
-            </Box>
-
-            </Box>
-
-          </Grid>
-
-          <Grid item xs={12}  >
-            <Box paddingBottom={1} lineHeight={1} className={classes.textColumn}>
-            <Typography style={{whiteSpace: 'pre-line', fontSize: 20, fontWeight: 400}}>
-                {setup}
-              </Typography>
-
-            </Box>
-          </Grid>
 
 
-        </Grid>
-        </Grid>
 
-        <Grid item xs={12} sm={6}>
-        <Grid container spacing={2} justify="center" alignItems="center">
-          <Grid item xs={12}className={classes.infoColumn} >
-            <Box display="flex" >
-                <Box className={classes.title} >
-                  Solution
-                </Box>
-            </Box>
-          </Grid>
 
-          <Grid item xs={12} className={classes.textColumn} >
-            <Box paddingBottom={2} lineHeight={1}>
-              <Typography style={{whiteSpace: 'pre-line', fontSize: 16}} >
-                {algText}
-              </Typography>
-            </Box>
-
-          </Grid>
-        </Grid>
-        </Grid>
-
-      </Grid>
 
       <Grid container spacing={0}>
         <Grid item xs={4} sm={4} md={3}>
@@ -378,8 +376,8 @@ function ConfigPanelGroup(props: {state: AppState, dispatch: React.Dispatch<Acti
 
     return (
       <Fragment>
-      <SingleSelect {...{state, dispatch, select: select1}}> </SingleSelect>
       <SingleSelect {...{state, dispatch, select: select2}}> </SingleSelect>
+      <SingleSelect {...{state, dispatch, select: select1}}> </SingleSelect>
       <SingleSelect {...{state, dispatch, select: select3}}> </SingleSelect>
       <SingleSelect {...{state, dispatch, select: select4}}> </SingleSelect>
       <SingleSelect {...{state, dispatch, select: select5}}> </SingleSelect>

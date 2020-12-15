@@ -12,5 +12,6 @@
 
 Version Log:
 (v1.0.0) All work prior to 12/02/2020.
-(v1.0.1) 12/02/2020: Added edge position control for FB Last Pair trainer.
+(v1.0.1) 12/02/2020: Add edge position control for FB Last Pair trainer.
+(v1.1) 12/15/2020: Reworked UI. App bar now features a dropdown menu for selecting the mode. Scramble occupies its own row. Solutions are shown side by side with the sim cube in large screen.
 

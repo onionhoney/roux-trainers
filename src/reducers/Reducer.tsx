@@ -1,7 +1,7 @@
 
 import { AppState, StateT, Action, Mode, Config, FavListAction } from "../Types"
 import { CubieCube, ColorScheme } from '../lib/CubeLib';
-import { setConfig, getConfig, getFavList, setFavList} from '../lib/Local';
+import { setConfig, getConfig, getFavList, setFavList} from '../lib/LocalStorage';
 import { getActiveName } from '../lib/Selector';
 import { StateFactory } from "./StateFactory";
 import { DefaultKeyMapping, LSEKeyMapping } from "../KeyMapping";
@@ -62,7 +62,7 @@ function reduceByFavlist(state: AppState, action: FavListAction) {
             break;
         };
         case "replay": {
-            return StateFactory.create(state).replay(action.content[0])
+            return StateFactory.create(state).onReplay(action.content[0])
         }
     }
     return {
@@ -121,13 +121,13 @@ function reduceByKey(state: AppState, code: string): AppState {
     const stateM = StateFactory.create(state)
     // case match on kind of operation
     if (code[0] === "#") {
-        return stateM.control(code)
+        return stateM.onControl(code)
     } else {
-        return stateM.move(code)
+        return stateM.onMove(code)
     }
 }
 function reduceByConfig(state: AppState, conf: Config): AppState {
     const stateM = StateFactory.create(state)
     // case match on kind of operation
-    return stateM.reactToConfig(conf)
+    return stateM.onConfig(conf)
 }

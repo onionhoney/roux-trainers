@@ -12,7 +12,7 @@ export abstract class CmllStateM extends AbstractStateM {
         let m2_away = false
         if (cube.tp[0] !== 0) {
             m2_away = true
-            cube.apply("M2")
+            cube = cube.apply("M2")
         }
         console.assert(arrayEqual(cube.tp, new CubieCube().tp))
 
@@ -70,7 +70,7 @@ export abstract class CmllStateM extends AbstractStateM {
             },
         });
     }
-    control(s: string): AppState {
+    onControl(s: string): AppState {
         let state = this.state;
         if (s === "#space") {
             // SCRAMBLE
@@ -96,12 +96,12 @@ export abstract class CmllStateM extends AbstractStateM {
             throw new Error("Unrecognized control code");
         }
     }
-    reactToConfig(conf: Config): AppState {
+    onConfig(conf: Config): AppState {
         return this.state;
     }
 }
 export class SolvingStateM extends CmllStateM {
-    move(move: string): AppState {
+    onMove(move: string): AppState {
         let state = this.state;
         let moves = new MoveSeq(move).moves;
         if (moves.length > 0) {
@@ -126,7 +126,7 @@ export class SolvingStateM extends CmllStateM {
     }
 }
 export class SolvedStateM extends CmllStateM {
-    move(move: string): AppState {
+    onMove(move: string): AppState {
         return this.state;
     }
 }

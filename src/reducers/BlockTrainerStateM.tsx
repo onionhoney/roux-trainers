@@ -13,13 +13,14 @@ export abstract class BlockTrainerStateM extends AbstractStateM {
     scrambleMargin: number = 1;
     scrambleCount: number = 1;
     algDescWithMoveCount: string = "";
-    magnification = 2;
-    abstract getRandom(): [CubieCube, string[]] | [CubieCube, string[], string];
+    expansionFactor = 2;
     premoves: string[] = [""];
+
+    abstract getRandom(): [CubieCube, string[]] | [CubieCube, string[], string];
 
     _solve_with_solvers(cube: CubieCube, solverNames: string[]): AlgDesc[]{
         const state = this.state;
-        const totalSolutionCap = 0 | (+(getActiveName(state.config.solutionNumSelector) || 5) * this.magnification);
+        const totalSolutionCap = 0 | (+(getActiveName(state.config.solutionNumSelector) || 5) * this.expansionFactor);
         const selectedSolutionCap = +(getActiveName(state.config.solutionNumSelector) || 5);
         let getDesc = (solverName: string) => {
             const solver = CachedSolver.get(solverName);
@@ -50,11 +51,6 @@ export abstract class BlockTrainerStateM extends AbstractStateM {
     }) {
         const state = this.state;
         options = options || {}
-        // if ( arrayEqual(solverNames, ["min2phase"])) {
-        //     if (!options.updateSolutionOnly)
-        //         return this._solve_min2phase(cube)
-        //     return this.state
-        // }
         let algDescs = this._solve_with_solvers(cube, solverNames);
         const scrambleMargin = 1;
         let setup : string
@@ -121,7 +117,7 @@ export abstract class BlockTrainerStateM extends AbstractStateM {
             updateSolutionOnly:true
         });
     }
-    replay(case_: FavCase): AppState {
+    onReplay(case_: FavCase): AppState {
         const cube = new CubieCube().apply(case_.setup)
         const state1 = this._solve(cube, case_.solver, {scramble: case_.setup});
         return {
@@ -129,7 +125,7 @@ export abstract class BlockTrainerStateM extends AbstractStateM {
             mode: case_.mode
         };
     }
-    control(s: string): AppState {
+    onControl(s: string): AppState {
         let state = this.state;
         if (s === "#space") {
             if (state.name === "revealed") {
@@ -155,7 +151,7 @@ export abstract class BlockTrainerStateM extends AbstractStateM {
             return state;
         }
     }
-    move(movestr: string): AppState {
+    onMove(movestr: string): AppState {
         let state = this.state;
         let move = new MoveSeq(movestr);
         let cube = state.cube.state.apply(move);
@@ -167,7 +163,7 @@ export abstract class BlockTrainerStateM extends AbstractStateM {
             }
         };
     }
-    reactToConfig(conf: Config): AppState {
+    onConfig(conf: Config): AppState {
         // see if solution cap changed
         let changed = !arrayEqual(this.state.config.solutionNumSelector.flags, conf.solutionNumSelector.flags);
         if (changed) {
@@ -180,8 +176,8 @@ export abstract class BlockTrainerStateM extends AbstractStateM {
 }
 // const m_premove = [[], Move.all["M"], Move.all["M'"], Move.all["M2"]];
 export class FbdrStateM extends BlockTrainerStateM {
-    solverL: number;
-    solverR: number;
+    solverL = 8;
+    solverR = 10;
     _get_pair_solved_front() {
         let [cp, co, ep, eo] = rand_choice(FBpairPos);
         //let mask = Mask.copy(Mask.fs_front_mask)
@@ -271,15 +267,10 @@ export class FbdrStateM extends BlockTrainerStateM {
             return [rand_choice([this._get_random_fs_back, this._get_random_fs_front])(),
                 [solverName], scrambleSolver];
     }
-    constructor(state: AppState) {
-        super(state);
-        this.solverL = 8;
-        this.solverR = 10;
-    }
 }
 export class SsStateM extends BlockTrainerStateM {
-    solverL: number;
-    solverR: number;
+    solverL = 9;
+    solverR = 10;
     _get_random_fb(allowed_dr_eo_ep: [number, number][]) {
         let active = getActiveName(this.state.config.ssPairOnlySelector);
         let mask = (active === "SS") ? Mask.fb_mask : Mask.fbdr_mask;
@@ -323,18 +314,13 @@ export class SsStateM extends BlockTrainerStateM {
         }
         return [cube, [solver] ];
     }
-    constructor(state: AppState) {
-        super(state);
-        this.solverL = 9;
-        this.solverR = 10;
-    }
 }
 export class FbStateM extends BlockTrainerStateM {
-    solverL: number;
-    solverR: number;
+    solverL: number = 9;
+    solverR: number = 11;
     //premoves = ["", "x", "x'", "x2"];
     premoves = ["", "x", "x'", "x2"];
-    magnification = 1;
+    expansionFactor = 1;
 
     _find_center_connected_edges(cube: CubieCube, is_l_only: boolean) {
         let centers = is_l_only ? [ Face.L ] : [ Face.F, Face.B, Face.L, Face.R]
@@ -388,19 +374,14 @@ export class FbStateM extends BlockTrainerStateM {
         let [cube, solver] = this._get_random();
         return [cube, solver === "min2phase" ? [] : [solver], solver ];
     }
-    constructor(state: AppState) {
-        super(state);
-        this.solverL = 9;
-        this.solverR = 11;
-    }
 }
 
 
 export class FsStateM extends BlockTrainerStateM {
-    solverL: number;
-    solverR: number;
+    solverL = 7;
+    solverR = 11;
     premoves = ["", "x", "x'", "x2"];
-    magnification = 1;
+    expansionFactor = 1;
 
     getRandom(): [CubieCube, string[], string] {
         let cube = CubeUtil.get_random_with_mask(Mask.empty_mask);
@@ -412,10 +393,5 @@ export class FsStateM extends BlockTrainerStateM {
         } else {
             return [cube, ["fs-front", "fs-back"], "fb" ];
         }
-    }
-    constructor(state: AppState) {
-        super(state);
-        this.solverL = 7;
-        this.solverR = 11;
     }
 }

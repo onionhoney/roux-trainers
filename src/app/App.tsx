@@ -5,6 +5,8 @@ import CssBaseline from '@material-ui/core/CssBaseline';
 import { ThemeProvider } from '@material-ui/core/styles';
 import { theme, themeDark } from '../theme';
 import { getActiveName } from '../lib/Selector';
+import "typeface-roboto";
+import "fontsource-public-sans";
 
 window.addEventListener('keypress', function(e) {
   if(e.keyCode === 32 && e.target === document.body) {

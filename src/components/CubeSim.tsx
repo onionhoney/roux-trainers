@@ -2,8 +2,6 @@ import React, { useEffect } from 'react'
 
 import { FaceletCubeT, Face } from "../lib/Defs";
 import * as THREE from 'three';
-import { useTheme } from '@material-ui/core';
-import { getConfig } from '../lib/Local';
 
 type Config = {
     cube: FaceletCubeT, width: number, height: number, colorScheme: Array<string>, facesToReveal: Face[],

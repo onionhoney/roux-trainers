@@ -1,3 +1,4 @@
+/* eslint-disable */
 function createArray(length) {
 	const arr = Array(length);
 	for (var i=0; i<length; i++) {

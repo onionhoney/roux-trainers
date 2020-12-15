@@ -1,7 +1,7 @@
 import React from 'react'
 import { AppState, Mode, Action } from "../Types";
 
-import { Box, AppBar, Typography,Button,  Tabs, Tab, makeStyles } from '@material-ui/core';
+import { Box, Typography,Button, makeStyles } from '@material-ui/core';
 import { Dialog, DialogTitle, DialogContent, DialogActions } from '@material-ui/core';
 import { Grid, Container } from '@material-ui/core';
 
@@ -9,16 +9,12 @@ import CmllTrainerView from './CmllTrainerView';
 import BlockTrainerView from './BlockTrainerView';
 import PanoramaView from './PanoramaView';
 
-import IconButton from '@material-ui/core/IconButton';
-import Brightness6Icon from '@material-ui/icons/Brightness6';
-import InfoIcon from '@material-ui/icons/Info';
-import BookmarkIcon from '@material-ui/icons/Bookmark';
 
-import 'typeface-roboto';
+//import 'typeface-roboto';
 
 import FavListView from './FavListView';
+import TopBarView from './TopBarView';
 
-import { ENABLE_DEV } from '../settings';
 
 interface TabPanelProps {
   value: number,
@@ -54,6 +50,17 @@ const useStyles = makeStyles(theme => ({
   },
   root: {
     display: "flex"
+  },
+  bar: {
+    backgroundColor: theme.palette.primary.main,
+    color: theme.palette.background.paper,
+    //borderRadius: "5px"
+  },
+  select: {
+    backgroundColor: theme.palette.primary.main,
+    color: theme.palette.background.paper,
+    borderRadius: 4,
+    border: "1px solid " + theme.palette.background.default,
   }
 }))
 
@@ -81,7 +88,7 @@ function AppView(props: { state: AppState, dispatch: React.Dispatch<Action> } ) 
   let { state, dispatch } = props
   let classes = useStyles()
 
-  const handleChange = React.useCallback( (_:any, newValue:number) => {
+  const handleChange = React.useCallback( (newValue:number) => {
     if (newValue < modes.length) {
       setValue(newValue)
       let mode = modes[newValue]
@@ -157,29 +164,13 @@ function AppView(props: { state: AppState, dispatch: React.Dispatch<Action> } ) 
       </DialogActions>
       </Dialog>
 
-      <AppBar color="primary" position="static">
-        <Tabs value={value} onChange={handleChange} scrollButtons="on" variant="scrollable" indicatorColor="secondary" >
-          <Tab onFocus={e => e.target.blur() } label="FB Pair + DR " id='tab0' />
-          <Tab onFocus={e => e.target.blur() } label="FS " id='tab1' />
-          <Tab onFocus={e => e.target.blur() } label="Tough FB " id='tab2' />
-          <Tab onFocus={e => e.target.blur() } label="SSquare " id='tab3' />
-          <Tab onFocus={e => e.target.blur() } label="CMLL " id='tab4'/>
-          <Tab onFocus={e => e.target.blur() } label="LSE 4c" id='tab5'/>
-          <Tab onFocus={e => e.target.blur() } label="EOPair (LR/FB)" id='tab6'/>
-          { ENABLE_DEV ?
-          <Tab onFocus={e => e.target.blur() } label="..." id='tab7'/> : null }
-          <div style={{ flexGrow: 1 }}/>
+      <TopBarView onChange={handleChange} value={value}
+        handleInfoOpen={handleInfoOpen} toggleBright={toggleBright} toggleFav={toggleFav}
+      />
 
-
-          <Tab onFocus={e => e.target.blur() } id='icon2' onClick={toggleFav} icon={ <BookmarkIcon /> } className={classes.icon} />
-          <Tab onFocus={e => e.target.blur() } id='icon0' onClick={toggleBright} icon={ <Brightness6Icon /> } className={classes.icon} />
-          <Tab onFocus={e => e.target.blur() } id='icon1' onClick={handleInfoOpen} icon={ <InfoIcon /> } className={classes.icon} />
-
-        </Tabs>
-      </AppBar>
 
       <Box paddingY={2}>
-      <Container maxWidth={showFav ? "md" : "sm" }>
+      <Container maxWidth={showFav ? "lg" : "md" }>
 
       {
       value === -1?

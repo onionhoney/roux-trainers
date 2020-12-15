@@ -11,11 +11,10 @@ export abstract class AbstractStateM {
     constructor(state: AppState) {
         this.state = state;
     }
-    abstract move(s: string): AppState;
-    abstract reactToConfig(conf: Config): AppState;
-    abstract control(s: string): AppState;
-
-    replay(case_: FavCase): AppState {
+    abstract onMove(s: string): AppState;
+    abstract onConfig(conf: Config): AppState;
+    abstract onControl(s: string): AppState;
+    onReplay(case_: FavCase): AppState {
         return this.state;
     }
 }

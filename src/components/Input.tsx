@@ -48,7 +48,7 @@ export function ColorSetter(props: {state: AppState, dispatch: React.Dispatch<Ac
 export function ColorPanel(props: {state: AppState, dispatch: React.Dispatch<Action>}) {
     let { state, dispatch } = props
     let select = (config: Config) => { return config.orientationSelector }
-    let {label, content} = MultiSelectContent({state, dispatch, select})
+    let {content} = MultiSelectContent({state, dispatch, select})
 
     const [open, setOpen] = React.useState(false);
     const handleClickOpen = () => {

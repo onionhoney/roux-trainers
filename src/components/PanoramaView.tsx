@@ -1,7 +1,7 @@
 import React, { Dispatch } from 'react'
 
 import { makeStyles } from '@material-ui/core';
-import { Grid, GridList, GridListTile, Paper, Container } from '@material-ui/core';
+import { GridList, GridListTile} from '@material-ui/core';
 
 import { AlgDesc } from "../lib/Algs";
 import { AppState, Action } from '../Types';

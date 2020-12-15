@@ -1,6 +1,6 @@
 import { Config, FavCase, Mode } from "../Types"
 import { version } from "../Version"
-import { initialConfig, initialFavList } from "../Config"
+import { initialConfig, initialFavList } from "../Initialization"
 
 export type FavCaseStore = {mode: Mode, setup: string, solver: string }
 let favListManager = function() {
