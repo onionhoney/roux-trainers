@@ -76,14 +76,13 @@ function TopBarView(props: { value: number, onChange: (x: number) => void,
             Roux Trainer
         </Typography>
         <FormControl style={{flexShrink: 1}}>
-            <Typography >
             <Select
                  value={value_str}
                  className={classes.select}
                  onChange={handleChange}
             >
                 { description.map( (s, i) => <MenuItem key={i} value={s}>{s}</MenuItem> )}
-            </Select></Typography>
+            </Select>
         </FormControl>
         <Box style={{flexGrow: 10}}> </Box>
         <IconButton onClick={toggleFav}>

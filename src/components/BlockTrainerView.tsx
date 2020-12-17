@@ -21,12 +21,14 @@ import { getActiveName } from '../lib/Selector';
 import { SingleSelect, MultiSelect } from './Select';
 import { ColorPanel } from './Input';
 import { AlgDesc } from '../lib/Algs';
+import { ScrambleInputView } from './ScrambleInputView';
 
 const useStyles = makeStyles(theme => ({
     container: {
       paddingTop: theme.spacing(0),
       paddingBottom: theme.spacing(2),
       backgroundColor: theme.palette.background.default,
+      transition: "all .5s ease-in-out"
     },
     button: {
       width: "100%",
@@ -57,22 +59,14 @@ const useStyles = makeStyles(theme => ({
         minHeight: 138
       },
     },
-    setup: {
-      whiteSpace: 'pre-line',
-      fontSize: "1.4rem",
-      fontWeight: 500,
-      [theme.breakpoints.down('xs')]: {
-        fontSize: "1.0rem",
-        fontWeight: 500
-      },
-    },
+
     condGap: {
     },
     fgap: {
       flexShrink: 100, flexBasis: "2.5rem", minWidth: "1.5em",
       [theme.breakpoints.down('xs')]: {
         flexBasis: "1.0rem", 
-        minWidth: "0.1em"
+        minWidth: "0.4rem"
       }
     },
     fixedHeight: {
@@ -158,13 +152,13 @@ function BlockTrainerView(props: { state: AppState, dispatch: React.Dispatch<Act
     let facelet = FaceletCube.from_cubie(cube, getMask(state))
 
     let desc : AlgDesc[] = state.case.desc.length ? state.case.desc :
-       [ { alg: "", alt_algs: [], setup:"Press next for new case", id: "", kind: ""} ]
+       [ { algs: [""], setup:"Press next for new case", id: "", kind: ""} ]
 
     let spaceButtonText = (state.name === "hiding") ? "Reveal" : "Next"
 
 
     let describe_reveal = function(algs: AlgDesc[]) {
-      let get_algs = (d: AlgDesc) => [d.alg].concat(d.alt_algs || []);
+      let get_algs = (d: AlgDesc) => d.algs;
       if (algs.length === 1) {
         return get_algs(algs[0]).join("\n")
       } else {
@@ -176,8 +170,7 @@ function BlockTrainerView(props: { state: AppState, dispatch: React.Dispatch<Act
 
     let describe_hide = (desc: AlgDesc[]) => {
       let minMove = desc.map( d =>
-        [d.alg].concat(d.alt_algs || [])
-        .map(a => new MoveSeq(a).remove_setup().moves.length))
+        d.algs.map(a => new MoveSeq(a).remove_setup().moves.length))
         .flat()
         .reduce( (a, b) => Math.min(a, b), 100 )
       return `(Min = ${minMove} STM)`
@@ -192,6 +185,11 @@ function BlockTrainerView(props: { state: AppState, dispatch: React.Dispatch<Act
       }
     }
 
+
+    const [inputActive, setInputActive] = React.useState(false)
+    const handleInput = () => {
+      setInputActive(true)
+    }
     const setup = desc.length ? desc[0].setup! : ""
 
 
@@ -241,19 +239,18 @@ function BlockTrainerView(props: { state: AppState, dispatch: React.Dispatch<Act
           <Box style={{display: "flex", alignItems: "center"}}> <Box className={classes.title} style={{}}>
             Scramble
           </Box> </Box>
-        <Box style={{}} className={classes.fgap} />
-        <Box style={{display: "flex", alignItems: "center"}}>
-            <Typography className={classes.setup}>
-                {setup}
-            </Typography>
-        </Box>
-        <Box style={{flexGrow: 1}}/>
-        <Checkbox  className={classes.sourceIconWrap}
-              icon={<FavoriteIcon />}
-              checked={favSelected}
-              onChange = {handleFav}
-              checkedIcon={<FavoriteIcon color="primary" />}
-              name="fav" />
+          <Box style={{}} className={classes.fgap} />
+          <Box style={{display: "flex", alignItems: "center", flexGrow: 1}}>
+              <ScrambleInputView display = {setup}
+              dispatch={dispatch} scrambles={state.scrambleInput}/>
+          </Box>
+          <Box style={{}} className={classes.fgap} />
+          <Checkbox  className={classes.sourceIconWrap}
+                icon={<FavoriteIcon />}
+                checked={favSelected}
+                onChange = {handleFav}
+                checkedIcon={<FavoriteIcon color="primary" />}
+                name="fav" />
         </Box>
       </Paper>
 
@@ -280,7 +277,7 @@ function BlockTrainerView(props: { state: AppState, dispatch: React.Dispatch<Act
 
 
         <Grid item md={4} sm={6} xs={12} style={{display: "flex", justifyContent: "center"}}>
-          <Box >
+          <Box style={{backgroundColor: "rgba(0, 0, 0, 0)"}}>
             <CubeSim
               width={250}
               height={250}
@@ -297,14 +294,15 @@ function BlockTrainerView(props: { state: AppState, dispatch: React.Dispatch<Act
 
       <Paper className={classes.paper} elevation={2}>
 
-
-
-
-
       <Grid container spacing={0}>
         <Grid item xs={4} sm={4} md={3}>
-          <Button onFocus={(evt) => evt.target.blur() } className={classes.button} size="medium" variant="contained" color="primary" onClick={handleSpace}> { /* className={classes.margin}>  */ }
+          <Button onFocus={(evt) => evt.target.blur() } className={classes.button} size="medium" variant="contained" color="primary" onClick={handleSpace}>
               {spaceButtonText}
+          </Button>
+        </Grid>
+        <Grid item xs={4} sm={4} md={3}>
+          <Button onFocus={(evt) => evt.target.blur() } className={classes.button} size="medium" variant="contained" color="primary" onClick={handleInput}> { /* className={classes.margin}>  */ }
+              Input a Scramble
           </Button>
         </Grid>
       </Grid>

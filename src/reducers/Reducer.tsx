@@ -1,49 +1,11 @@
 
-import { AppState, StateT, Action, Mode, Config, FavListAction } from "../Types"
-import { CubieCube, ColorScheme } from '../lib/CubeLib';
-import { setConfig, getConfig, getFavList, setFavList} from '../lib/LocalStorage';
-import { getActiveName } from '../lib/Selector';
+import { AppState, Action, Config, FavListAction } from "../Types"
+import { setConfig, setFavList} from '../lib/LocalStorage';
 import { StateFactory } from "./StateFactory";
-import { DefaultKeyMapping, LSEKeyMapping } from "../KeyMapping";
 import { arrayEqual } from "../lib/Math";
+import { getInitialState } from "./InitialState";
 
-export const getInitialState = (mode?: Mode) : AppState => {
-    mode = mode || "fbdr"
-    let initialStateName : StateT = function() {
-        switch (mode){
-            case "cmll": return "solved"
-            case "fbdr":
-            case "ss":
-            case "fb":
-            case "4c":
-            case "eopair":
-            case "fs":
-                return "revealed"
-            case "experimental":
-                return "revealed"
-        }
-    }()
-    let ori = getActiveName(getConfig().orientationSelector) || "YR"
-    return {
-        name: initialStateName,
-        mode,
-        scrSource: "random",
-        cube: {
-            state: new CubieCube(),
-            ori,
-            history: [],
-        },
-        case: {
-            state: new CubieCube(),
-            desc: []
-        },
-        config: getConfig(),
-        favList: getFavList(),
-        keyMapping: (mode === "4c" || mode === "eopair") ? new LSEKeyMapping() : new DefaultKeyMapping(),
-        colorScheme: new ColorScheme()
-    }
-}
-
+export { getInitialState }
 function reduceByFavlist(state: AppState, action: FavListAction) {
     let favList = state.favList;
 
@@ -95,10 +57,10 @@ export function reducer(state: AppState, action: Action): AppState {
             state = getInitialState(mode)
             return state
         };
-        case "scrSource":
+        case "scrambleInput":
             return {
                 ...state,
-                scrSource: action.content
+                scrambleInput: action.content
             }
         case "favList":
             return reduceByFavlist(state, action)

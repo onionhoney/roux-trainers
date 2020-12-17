@@ -32,12 +32,10 @@ export abstract class BlockTrainerStateM extends AbstractStateM {
             solutions.sort((a, b) => a.score - b.score);
             const toString = (sol: any) =>
                 (sol.pre === "" ? "" : "(" + sol.pre + ") ") + sol.sol.toString(this.algDescWithMoveCount);
-            const alg = toString(solutions[0])
-            const alt_algs = solutions.slice(1, selectedSolutionCap).map(toString);
+            const algs = solutions.slice(0, selectedSolutionCap).map(toString);
             let algdesc: AlgDesc = {
                 id: `${solverName}`,
-                alg,
-                alt_algs,
+                algs,
                 kind: `${solverName}`
             }
             return algdesc
@@ -62,7 +60,7 @@ export abstract class BlockTrainerStateM extends AbstractStateM {
             const scramble = options.scrambleSolver === "min2phase"?
             CachedSolver.get("min2phase").solve(cube,0,0,0)[0].inv() :
             (()=>{
-            const solutionLength = new MoveSeq(algDescs[0].alg).remove_setup().moves.length;
+            const solutionLength = new MoveSeq(algDescs[0].algs[0]).remove_setup().moves.length;
             return rand_choice(
                 CachedSolver.get(options.scrambleSolver || solverNames[0])
                 .solve(cube, Math.max(this.solverL, solutionLength + scrambleMargin),
@@ -73,8 +71,7 @@ export abstract class BlockTrainerStateM extends AbstractStateM {
         if (algDescs.length === 0) {
             algDescs = [{
                 id: `min2phase`,
-                alg: "",
-                alt_algs: [],
+                algs: [],
                 setup,
                 kind: `min2phase`
             }];

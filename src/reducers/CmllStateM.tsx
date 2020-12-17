@@ -1,5 +1,5 @@
 import { AppState, StateT, Config } from "../Types";
-import { alg_generator, AlgDesc } from "../lib/Algs";
+import { alg_generator, AlgDesc, createAlg } from "../lib/Algs";
 import { CubieCube, Move, CubeUtil, MoveSeq } from '../lib/CubeLib';
 import { AbstractStateM } from "./AbstractStateM";
 import {initialize as min2phase_init, solve as min2phase_solve} from "../lib/min2phase/min2phase-wrapper"
@@ -23,11 +23,7 @@ export abstract class CmllStateM extends AbstractStateM {
         if (m2_away) {
             solution += " M2"
         }
-        const algDesc: AlgDesc = ({
-            id: `scramble`,
-            alg: solution,
-            kind: 'scramble'
-        });
+        const algDesc: AlgDesc = createAlg("scramble", solution, "scramble")
         console.log(solution);
         return algDesc;
     }
@@ -42,7 +38,7 @@ export abstract class CmllStateM extends AbstractStateM {
         let trigger_alg: AlgDesc = trig_generator();
         let cmll_alg: AlgDesc = generator();
         let u_auf_alg: AlgDesc = u_auf_generator();
-        let alg_str = trigger_alg.alg + " " + u_auf_alg.alg + " " + cmll_alg.alg;
+        let alg_str = trigger_alg.algs + " " + u_auf_alg.algs + " " + cmll_alg.algs;
         let moves: Move[] = new MoveSeq(alg_str).inv().moves;
 
         let lse_cube: CubieCube

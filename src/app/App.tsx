@@ -1,6 +1,7 @@
 import React from 'react'
 import AppView from "../components/AppView"
-import { reducer, getInitialState } from '../reducers/Reducer'
+import { reducer } from '../reducers/Reducer'
+import { getInitialState } from "../reducers/InitialState";
 import CssBaseline from '@material-ui/core/CssBaseline';
 import { ThemeProvider } from '@material-ui/core/styles';
 import { theme, themeDark } from '../theme';

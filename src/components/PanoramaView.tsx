@@ -49,7 +49,7 @@ function PanoramaTable(props: {algs: AlgDesc[]}){
     return <GridList cellHeight={160} className={classes.gridList} cols={3}>
             {algs.map((alg) => (
                 <GridListTile key={alg.id} cols={1}>
-                    <VisualCube alg={alg.alg} stage="f2b" sch="yrbwog"/>
+                    <VisualCube alg={alg.algs[0]} stage="f2b" sch="yrbwog"/>
                 </GridListTile>
             ))}
         </GridList>
@@ -61,7 +61,7 @@ export default function PanoramaView(props: { state: AppState, dispatch: Dispatc
         "RUR", "RU'R'"
     ].map( str => ({
         id: str,
-        alg: str,
+        algs: [str],
         kind: "sb"
     }))
 

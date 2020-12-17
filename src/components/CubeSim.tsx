@@ -2,6 +2,7 @@ import React, { useEffect } from 'react'
 
 import { FaceletCubeT, Face } from "../lib/Defs";
 import * as THREE from 'three';
+import { arrayEqual } from '../lib/Math';
 
 type Config = {
     cube: FaceletCubeT, width: number, height: number, colorScheme: Array<string>, facesToReveal: Face[],
@@ -32,44 +33,50 @@ const axesInfo: [THREE.Vector3, THREE.Euler][] = [
     [new THREE.Vector3(1, 0, 0), new THREE.Euler(0, TAU / 4, 0)],
 ];
 
-const setup = function (width: number, height: number, colorScheme?: Array<string>, mode?: string,
-    faces?: Face[]) {
+
+type ConfigT = {width: number, height: number, colorScheme: Array<string>, mode?: string,
+    faces?: Face[], bgColor?: string, hintDistance?: number}
+
+const redraw_cube = function (cube: FaceletCubeT, config: ConfigT ) {
+    let { width, height, colorScheme, mode, faces, bgColor,} = config
+    let hintDistance = config.hintDistance || 7
+    bgColor = bgColor || '#eeeeef';
+    mode = mode || "FRU"
     let facesToReveal = faces || [Face.L, Face.B, Face.D]
-    let hintDistance = 7
+
     const scene = new THREE.Scene()
     const camera = new THREE.PerspectiveCamera(70, width / height, 0.1, 1000)
-    const renderer = new THREE.WebGLRenderer({ antialias: true })
     const mag = 1.0
     const alpha = 0.5
     const enableBorder = true
-    const geo = new THREE.PlaneGeometry(0.89 * mag * 2, 0.89 * mag * 2)
-    const geo_border = new THREE.PlaneGeometry(1.0 * mag * 2, 1.0 * mag * 2)
-    //const geo_border = new THREE.EdgesGeometry(geo_border_0)
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true })
+    renderer.setSize(width, height, true);
+    //renderer.setViewport( 0, 0, width * window.devicePixelRatio, height * window.devicePixelRatio);
+    renderer.setClearColor(bgColor) // #70788a') //#5a606e') // '#373B43') // '#eeeeee')
     renderer.setPixelRatio(window.devicePixelRatio)
 
-    //let colorScheme_ = colorScheme || [0xffffff, 0xffff00,  0x00ff00, 0x0000ff, 0xff8800, 0xff0000]
-
-    mode = mode || "FRU"
-
-    if (mode === "FRU")
-        camera.position.copy(new THREE.Vector3(2.6 / 1.1, 3 / 1.1, 3 / 1.1))
-    else
-        camera.position.copy(new THREE.Vector3(0 / 1.1, 3 / 1.1, 3 / 1.1))
-
-    //camera.position.copy(new THREE.Vector3(2.5, 5, 5))
+    const cameraPosition = (mode === "FRU") ? new THREE.Vector3(2.6 / 1.1, 3 / 1.1, 3 / 1.1) : new THREE.Vector3(0 / 1.1, 3 / 1.1, 3 / 1.1)
+    camera.position.copy(cameraPosition)
+    camera.aspect = width / height;
     camera.lookAt(new THREE.Vector3(0, 0, 0))
-
 
     let stickers_tmpl: THREE.Mesh[], stickerwrap_tmpl: THREE.Mesh
 
-    function updateFacesToReveal(faces: Face[]) {
-        facesToReveal = faces
-    }
-    function updateColorScheme(colorScheme: Array<string>) {
-        let colorScheme_ = colorScheme
+    const geo = new THREE.PlaneGeometry(0.89 * mag * 2, 0.89 * mag * 2)
+    const geo_border = new THREE.PlaneGeometry(1.0 * mag * 2, 1.0 * mag * 2)
+
+    let materials_border = new THREE.MeshBasicMaterial({ color: 0x000000, side: THREE.FrontSide })
+    stickerwrap_tmpl = (() => {
+        let mesh = new THREE.Mesh(geo_border, materials_border)
+        mesh.setRotationFromEuler(axesInfo[0][1])
+        return mesh
+    })()
+
+    function drawCube(faces: FaceletCubeT, colorScheme: Array<string>): THREE.Group {
         //console.log("update color scheme ", colorScheme_)
         let materials = Array(7).fill(0).map((_, i) => {
-            let mat = new THREE.MeshBasicMaterial({ color: colorScheme_[i], side: THREE.DoubleSide });
+            let mat = new THREE.MeshBasicMaterial({ color: colorScheme[i], side: THREE.DoubleSide });
             mat.alphaTest = alpha;
             return mat
         })
@@ -79,16 +86,6 @@ const setup = function (width: number, height: number, colorScheme?: Array<strin
             mesh.setRotationFromEuler(axesInfo[0][1])
             return mesh
         })
-
-        let materials_border = new THREE.MeshBasicMaterial({ color: 0x000000, side: THREE.FrontSide })
-        stickerwrap_tmpl = (() => {
-            let mesh = new THREE.Mesh(geo_border, materials_border)
-            mesh.setRotationFromEuler(axesInfo[0][1])
-            return mesh
-        })()
-    }
-
-    function drawCube(faces: FaceletCubeT): THREE.Group {
         const cube = new THREE.Group();
         for (let i = 0; i < 6; i++) {
             const cubie = new THREE.Group();
@@ -126,85 +123,81 @@ const setup = function (width: number, height: number, colorScheme?: Array<strin
         return cube
     }
 
-    let cubeG = new THREE.Group();
+    let cubeG = drawCube(cube, colorScheme)
     scene.add(cubeG)
-    const updateCube = (cube: FaceletCubeT) => {
+    renderer.render(scene, camera)
+
+    const updateCubeAndColor = (cube: FaceletCubeT, colorScheme: Array<string>) => {
         scene.remove(cubeG)
-        cubeG = drawCube(cube)
+        cubeG = drawCube(cube, colorScheme)
         scene.add(cubeG)
-    }
-
-    const renderScene = () => {
         renderer.render(scene, camera)
+        return renderer
     }
-
-    const updateWidthHeight = (width: number, height: number, clearColor?: string) => {
-        const canvas = renderer.domElement;
-        const needResize = canvas.width !== width || canvas.height !== height;
-        if (needResize) {
-            renderer.setSize(width, height, true);
-            clearColor = clearColor || '#eeeeef';
-            //renderer.setViewport( 0, 0, width * window.devicePixelRatio, height * window.devicePixelRatio);
-            renderer.setClearColor(clearColor) // #70788a') //#5a606e') // '#373B43') // '#eeeeee')
-            camera.aspect = width / height;
-            camera.updateProjectionMatrix();
-        }
-    }
-
-    const updateDrawParam = (distance: number) => {
-        hintDistance = distance
-    }
-
 
     const cleanup = () => {
         geo.dispose()
-        //materials.forEach(m => m.dispose())
+        materials_border.dispose()
+        geo.dispose()
+        geo_border.dispose()
+        scene.remove(cubeG)
     }
-
-    //let defaultColorScheme = [ 0x00ff00, 0x0000ff, 0xff0000,0xff8800,0xffff00, 0xffffff]
-    updateWidthHeight(width, height)
-
     return {
-        domElement: () => { return renderer.domElement },
-        updateCube,
-        renderScene,
-        updateWidthHeight,
-        cleanup,
-        updateColorScheme,
-        updateFacesToReveal,
-        updateDrawParam
+        updateCubeAndColor,
+        getRenderer: () => renderer,
+        cleanupFunc: cleanup
     }
+    //let defaultColorScheme = [ 0x00ff00, 0x0000ff, 0xff0000,0xff8800,0xffff00, 0xffffff]
 }
 
-let cubeSim = setup(370, 370)
+let drawCube = (function(){
+    let config_cache : ConfigT | null = null
+    let painter : Painter | null = null
+    let func = (cube: FaceletCubeT, config: ConfigT) => {
+        if (config_cache === null) {
+            painter?.cleanupFunc()
+            painter = redraw_cube(cube, config)
+            config_cache = config
+            return painter
+        }
+        else if (config.width === config_cache.width && config.height === config_cache.height &&
+            arrayEqual(config.faces || [], config_cache.faces || []) && config.bgColor === config_cache.bgColor &&
+            config.hintDistance === config_cache.hintDistance) {
+            painter?.updateCubeAndColor(cube, config.colorScheme)
+            config_cache = config
+            return painter!
+        } else {
+            painter?.cleanupFunc()
+            painter = redraw_cube(cube, config)
+            config_cache = config
+            return painter!
+        }
+    }
+    return func
+})()
 
+type Painter = {
+    updateCubeAndColor: (cube: FaceletCubeT, scheme: Array<string>) => THREE.WebGLRenderer,
+    getRenderer: () => THREE.WebGLRenderer,
+    cleanupFunc: () => void
+}
 function CubeSim(props: Config) {
     const mount = React.useRef<HTMLDivElement | null>(null)
-    let { width, height } = props
+    let { width, height, colorScheme, facesToReveal, bgColor, hintDistance} = props
+    let painter = drawCube(props.cube, {
+            width, height, colorScheme, faces: facesToReveal, bgColor, hintDistance })
 
-    useEffect(() => {
-        let dom = cubeSim.domElement()
-        let current = mount.current!
-
-        current.appendChild(dom)
-        cubeSim.updateFacesToReveal(props.facesToReveal)
-        cubeSim.updateWidthHeight(width, height, props.bgColor || "#eeeeef")
-        cubeSim.updateColorScheme(props.colorScheme)
-
-        if (props.hintDistance)
-            cubeSim.updateDrawParam(props.hintDistance)
-
-        cubeSim.updateCube(props.cube)
-        cubeSim.renderScene()
-
+    useEffect( () => {
+        let dom = mount.current!
+        dom.appendChild(painter.getRenderer().domElement) //renderer.domElement)
         return () => {
-            current.removeChild(dom)
+            dom.removeChild(painter.getRenderer().domElement)
         }
     })
 
     return <div
         ref={mount}
-        style={{ width: props.width, height: props.height }}
+        style={{ width: props.width, height: props.height, zIndex: 1 }}
     />;
 }
 

@@ -54,9 +54,9 @@ type ModeChangeAction = {
     type: "mode",
     content: Mode
 }
-type ScrSourceChangeAction = {
-    type: "scrSource",
-    content: ScrambleSource
+type ScrambleInputAction = {
+    type: "scrambleInput",
+    content: string[]
 }
 type ColorSchemeAction = {
     type: "colorScheme",
@@ -72,7 +72,7 @@ type CustomAction = {
     type: "custom",
     content: (s: AppState) => AppState
 }
-export type Action = KeyAction | ConfigAction | ModeChangeAction | ScrSourceChangeAction | FavListAction | ColorSchemeAction | CustomAction
+export type Action = KeyAction | ConfigAction | ModeChangeAction | ScrambleInputAction | FavListAction | ColorSchemeAction | CustomAction
 export type ScrambleSource = "random" | "input"
 
 export type InfoT = {cube: CubieCube, desc: AlgDesc[]}
@@ -91,7 +91,7 @@ export type AppState = {
         state: CubieCube,
         desc: AlgDesc[]
     },
-    scrSource: ScrambleSource
+    scrambleInput: string[],
     config: Config,
     keyMapping: KeyMapping,
     favList: FavCase[],

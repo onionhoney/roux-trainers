@@ -112,10 +112,10 @@ function CmllTrainerView(props: { state: AppState, dispatch: React.Dispatch<Acti
     let alg = ""
     let setup = ""
     if (state.case.desc.length === 4) {
-      setup = state.case.desc[3].alg
+      setup = state.case.desc[3].algs[0]
     }
     if (reveal && state.case.desc.length >= 3) {
-      const moves = new MoveSeq(state.case.desc[1].alg +state.case.desc[2].alg)
+      const moves = new MoveSeq(state.case.desc[1].algs[0] + state.case.desc[2].algs[0] )
       let moves_c = moves.collapse()
       if (moves_c.moves.length > 0) {
         if (moves_c.moves[0].name[0] === "U") {
