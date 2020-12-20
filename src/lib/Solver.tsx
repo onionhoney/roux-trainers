@@ -1,7 +1,7 @@
 import { CubieCube, Move, MoveSeq } from './CubeLib';
 import { arrayEqual } from './Math';
 
-import { Pruner, PrunerT, fbdrPrunerConfig, fsPrunerConfig, ssPrunerConfig, fbPrunerConfig, lsePrunerConfig, PrunerConfig, eolrPrunerConfig, PrunerDef, fbPrunerConfig_old } from './Pruner';
+import { Pruner, PrunerT, fbdrPrunerConfig, fsPrunerConfig, sbPrunerConfig, ssPrunerConfig, fbPrunerConfig, lsePrunerConfig, PrunerConfig, eolrPrunerConfig, PrunerDef, fbPrunerConfig_old } from './Pruner';
 
 import { prunerFactory } from './Pruner';
 import {initialize as min2phase_init, solve as min2phase_solve} from "../lib/min2phase/min2phase-wrapper"
@@ -191,6 +191,8 @@ let FbdrSolver = () => solverFactory(fbdrPrunerConfig)
 
 let SsSolver = (is_front: boolean) => solverFactory(ssPrunerConfig(is_front))
 
+let SbSolver = () => solverFactory(sbPrunerConfig)
+
 let FsSolver = (is_front: boolean) => solverFactory(fsPrunerConfig(is_front))
 
 let LSESolver = () => solverFactory(lsePrunerConfig)
@@ -224,4 +226,4 @@ let Min2PhaseSolver : () => SolverT = function() {
 
 
 
-export { FbdrSolver, FbSolver, FsSolver, SsSolver, Min2PhaseSolver, LSESolver, EOLRSolver }
+export { FbdrSolver, FbSolver, SbSolver, FsSolver, SsSolver, Min2PhaseSolver, LSESolver, EOLRSolver }

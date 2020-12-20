@@ -57,7 +57,7 @@ const useStyles = makeStyles(theme => {
     }
 })})
 const description = [
-"FB Last Pair (+DR)", "First Square", "First Block", "Second Square", "CMLL", "LSE 4c", "EOLR / EOLRb"
+"Solve Analysis (Beta)", "FB Last Pair (+DR)", "First Square", "First Block", "Second Square", "CMLL", "LSE 4c", "EOLR / EOLRb"
 ]
 
 function TopBarView(props: { value: number, onChange: (x: number) => void,
@@ -68,6 +68,7 @@ function TopBarView(props: { value: number, onChange: (x: number) => void,
     let value_str = description[value]
     let handleChange = (event: React.ChangeEvent<{ value: unknown }>) =>  {
         onChange(description.indexOf(event.target.value as string))
+        //
     }
     return <div>
             <Box boxShadow={4} >
@@ -80,6 +81,7 @@ function TopBarView(props: { value: number, onChange: (x: number) => void,
                  value={value_str}
                  className={classes.select}
                  onChange={handleChange}
+                 onFocus={(e) => e.target.blur()}
             >
                 { description.map( (s, i) => <MenuItem key={i} value={s}>{s}</MenuItem> )}
             </Select>

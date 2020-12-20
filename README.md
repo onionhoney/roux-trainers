@@ -14,4 +14,7 @@ Version Log:
 (v1.0.0) All work prior to 12/02/2020.
 (v1.0.1) 12/02/2020: Add edge position control for FB Last Pair trainer.
 (v1.1) 12/15/2020: Reworked UI. App bar now features a dropdown menu for selecting the mode. Scramble occupies its own row. Solutions are shown side by side with the sim cube in large screen.
-
+(v1.2) 12/17/2020: Add support for scramble input for all modes. Now you can paste in a list of scrambles, and the trainer will consume them one by one in order.
+(v1.3) 12/20/2020: Solve Analysis Beta is online! It can do the following:
+    - For any random scramble, it'll recommend the best FB solutions over all orientations (e.g. x2y yellow/white). 
+    - Given a solve reconstruction, it'll analyze each stage, and compare your solution there with the solver-suggested solutions.

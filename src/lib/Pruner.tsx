@@ -18,7 +18,7 @@ export type PrunerT = {
 
 enum PrunerPiece {
     S, O, I, X
-}; // Solved, Oriented, Include in Permutation, Exclude in Permutation (meaning the moveset will exclude this area)
+}; // Solved, Oriented, Ignore, Exclude 
 const { S, I } = PrunerPiece
 
 export type PrunerDef = {
@@ -215,6 +215,8 @@ let fbdrPrunerConfig : PrunerConfig = function() {
 
 let htm_rwm = ["U", "U2", "U'", "F", "F2", "F'", "R", "R2", "R'",
     "r", "r2", "r'", "D", "D2", "D'", "M", "M'", "M2", "B", "B'", "B2"]
+let rrwmu = ["U", "U'", "U2", "R", "R'", "R2",
+    "r", "r'", "r2", "M'", "M", "M2"]
 
 let fbPrunerConfig = prunerFactory({
     corner: [I,I,I,I,S,S,I,I],
@@ -222,7 +224,7 @@ let fbPrunerConfig = prunerFactory({
     center: [I,I,I,I,S,I],
     solved_states: ["id"],
     moveset: htm_rwm,
-    max_depth: 4
+    max_depth: 5
 });
 
 let fbPrunerConfig_old : PrunerConfig = function() {
@@ -311,6 +313,15 @@ let ssPrunerConfig = (is_front: boolean) => {
         moveset
     }
 }
+let sbPrunerConfig = prunerFactory({
+    corner: [I,I,I,I,I,I,S,S],
+    edge:   [I,I,I,I,I,I,I,S,I,I,S,S],
+    center: [I,I,I,I,I,I],
+    solved_states: ["id"],
+    moveset: rrwmu,
+    max_depth: 6
+});
+
 
 let fsPrunerConfig = (is_front: boolean) => prunerFactory({
         corner: is_front ? [I,I,I,I,S,I,I,I] : [I,I,I,I,I,S,I,I] ,
@@ -404,5 +415,5 @@ function eolrPrunerConfig(center_flag: number, barbie_mode?: string): PrunerConf
     }
 }
 
-export { fbdrPrunerConfig, fsPrunerConfig, ssPrunerConfig, fbPrunerConfig, lsePrunerConfig, eolrPrunerConfig,
+export { fbdrPrunerConfig, fsPrunerConfig, sbPrunerConfig, ssPrunerConfig, fbPrunerConfig, lsePrunerConfig, eolrPrunerConfig,
     prunerFactory, fbPrunerConfig_old}

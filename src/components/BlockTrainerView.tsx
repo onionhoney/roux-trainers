@@ -10,6 +10,7 @@ import Box from '@material-ui/core/Box';
 import Checkbox from '@material-ui/core/Checkbox';
 
 import FavoriteIcon from '@material-ui/icons/Favorite';
+import CheckIcon from '@material-ui/icons/Check';
 
 import { FaceletCube, Mask, MoveSeq } from '../lib/CubeLib';
 
@@ -59,7 +60,15 @@ const useStyles = makeStyles(theme => ({
         minHeight: 138
       },
     },
-
+    setup: {
+      whiteSpace: 'pre-line',
+      fontSize: "1.4rem",
+      fontWeight:500,
+      [theme.breakpoints.down('xs')]: {
+      fontSize: "1.0rem",
+      fontWeight: 500
+      },
+  },
     condGap: {
     },
     fgap: {
@@ -232,6 +241,13 @@ function BlockTrainerView(props: { state: AppState, dispatch: React.Dispatch<Act
     // helper-text
     let helperText = getHelperTextForMode(state.mode)
 
+                // <Checkbox  className={classes.sourceIconWrap}
+            //       icon={<FavoriteIcon />}
+            //       checked={favSelected}
+            //       onChange = {handleFav}
+            //       checkedIcon={<FavoriteIcon color="primary" />}
+            //       name="fav" />
+
     return (
     <Box className={classes.container}>
       <Paper className={classes.paper} elevation={1}>
@@ -241,16 +257,30 @@ function BlockTrainerView(props: { state: AppState, dispatch: React.Dispatch<Act
           </Box> </Box>
           <Box style={{}} className={classes.fgap} />
           <Box style={{display: "flex", alignItems: "center", flexGrow: 1}}>
-              <ScrambleInputView display = {setup}
-              dispatch={dispatch} scrambles={state.scrambleInput}/>
+          <Typography className={classes.setup} >
+                {setup}
+          </Typography>
+             
           </Box>
           <Box style={{}} className={classes.fgap} />
-          <Checkbox  className={classes.sourceIconWrap}
-                icon={<FavoriteIcon />}
-                checked={favSelected}
-                onChange = {handleFav}
-                checkedIcon={<FavoriteIcon color="primary" />}
-                name="fav" />
+
+          <Box style={{display: "flex", flexWrap: "wrap", padding: 0}}>
+            <ScrambleInputView display = {setup}
+                dispatch={dispatch} scrambles={state.scrambleInput}/>
+
+            <Box>
+            <Button variant={favSelected ? "contained" : "outlined"}
+                color="primary"
+                size="small"
+                name="fav"
+                onClick={handleFav}
+                startIcon={<FavoriteIcon />} 
+                endIcon={favSelected ? null : null}
+                >
+                {favSelected ? "✓" : "ADD"}
+            </Button></Box>
+          </Box>
+          
         </Box>
       </Paper>
 
@@ -295,16 +325,12 @@ function BlockTrainerView(props: { state: AppState, dispatch: React.Dispatch<Act
       <Paper className={classes.paper} elevation={2}>
 
       <Grid container spacing={0}>
-        <Grid item xs={4} sm={4} md={3}>
+        <Grid item xs={5} sm={4} md={3}>
           <Button onFocus={(evt) => evt.target.blur() } className={classes.button} size="medium" variant="contained" color="primary" onClick={handleSpace}>
               {spaceButtonText}
           </Button>
         </Grid>
-        <Grid item xs={4} sm={4} md={3}>
-          <Button onFocus={(evt) => evt.target.blur() } className={classes.button} size="medium" variant="contained" color="primary" onClick={handleInput}> { /* className={classes.margin}>  */ }
-              Input a Scramble
-          </Button>
-        </Grid>
+
       </Grid>
 
       </Paper>
@@ -352,11 +378,13 @@ function ConfigPanelGroup(props: {state: AppState, dispatch: React.Dispatch<Acti
     ]
     return (
       <Fragment>
+
       <SingleSelect {...{state, dispatch, select: select1}}> </SingleSelect>
       <SingleSelect {...{state, dispatch, select: select2}}> </SingleSelect>
       <SingleSelect {...{state, dispatch, select: select3}}> </SingleSelect>
       <MultiSelect {...{state, dispatch, select: select4, options: {manipulators: DRManip} }}> </MultiSelect>
       <ColorPanel {...{state, dispatch}} />
+
       </Fragment>
     )
   } else if (state.mode === "fbdr") {
@@ -382,6 +410,7 @@ function ConfigPanelGroup(props: {state: AppState, dispatch: React.Dispatch<Acti
       <MultiSelect {...{state, dispatch, select: pos1, options: {manipulators: LPEdgeManip} }}> </MultiSelect>
       <MultiSelect {...{state, dispatch, select: pos3, options: {manipulators: LPEdgeManip} }}> </MultiSelect>
       <ColorPanel {...{state, dispatch}} />
+
       </Fragment>
     )
   } else if (state.mode === "fb") {
@@ -393,6 +422,8 @@ function ConfigPanelGroup(props: {state: AppState, dispatch: React.Dispatch<Acti
         <SingleSelect {...{ state, dispatch, select: select1 }}> </SingleSelect>
         <SingleSelect {...{ state, dispatch, select: select2 }}> </SingleSelect>
         <ColorPanel {...{state, dispatch}} />
+
+
       </Fragment>
     )
    } else if (state.mode === "fs") {
@@ -404,6 +435,8 @@ function ConfigPanelGroup(props: {state: AppState, dispatch: React.Dispatch<Acti
         <SingleSelect {...{ state, dispatch, select: select1 }}> </SingleSelect>
         <SingleSelect {...{ state, dispatch, select: select2 }}> </SingleSelect>
         <ColorPanel {...{state, dispatch}} />
+
+
       </Fragment>
     )
    }else if (state.mode === "4c"){

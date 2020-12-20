@@ -1,6 +1,7 @@
 export enum Face {
     U = 0, D, F, B, L, R, X
 }
+
 const U = Face.U;
 const D = Face.D;
 const F = Face.F;
@@ -39,6 +40,10 @@ let edges_coord : Array<EdgeCoord> = [
     [D,F], [D,L], [D,B], [D,R],
     [F,L], [B,L], [B,R], [F,R],
 ]
+export type CenterCoord = [Face]
+let centers_coord : Array<CenterCoord> = [
+    [U], [D], [F], [B], [L], [R]
+]
 
 let cstimer_corners_coord : Array<CornerCoord> = [
     [U,R,F],[U,F,L], [U,L,B], [U,B,R],
@@ -51,7 +56,7 @@ let cstimer_edges_coord : Array<EdgeCoord> = [
     [F, R], [F,L], [B,L], [B,R]
 ]
 
-export {corners_coord, edges_coord, cstimer_corners_coord, cstimer_edges_coord }
+export {corners_coord, edges_coord, centers_coord, cstimer_corners_coord, cstimer_edges_coord }
 
 export type FaceletMapping = [Face[], Face[]][]
 

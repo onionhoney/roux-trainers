@@ -1,7 +1,8 @@
 import { AppState, Config, FavCase } from "../Types";
 import { alg_generator, AlgDesc } from "../lib/Algs";
 import { Face, Typ, FBpairPos } from "../lib/Defs";
-import { CubieCube, CubeUtil, Mask, FaceletCube, SeqEvaluator, MoveSeq } from '../lib/CubeLib';
+import { CubieCube, CubeUtil, Mask, FaceletCube, MoveSeq } from '../lib/CubeLib';
+import { Evaluator, getEvaluator } from "../lib/Evaluator";
 import { getActiveName, getActiveNames } from '../lib/Selector';
 import { CachedSolver } from "../lib/CachedSolver";
 import { rand_choice, arrayEqual } from '../lib/Math';
@@ -15,9 +16,15 @@ export abstract class BlockTrainerStateM extends AbstractStateM {
     algDescWithMoveCount: string = "";
     expansionFactor = 2;
     premoves: string[] = [""];
+    orientations: string[] = [""];
+    evaluator : Evaluator;
 
     abstract getRandom(): [CubieCube, string[]] | [CubieCube, string[], string];
-
+    constructor(state: AppState) {
+        super(state)
+        let evalName = getActiveName(this.state.config.evaluator)
+        this.evaluator = getEvaluator(evalName)
+    }
     _solve_with_solvers(cube: CubieCube, solverNames: string[]): AlgDesc[]{
         const state = this.state;
         const totalSolutionCap = 0 | (+(getActiveName(state.config.solutionNumSelector) || 5) * this.expansionFactor);
@@ -28,7 +35,7 @@ export abstract class BlockTrainerStateM extends AbstractStateM {
             let solutions = premoves.map(pm =>
                 solver
                 .solve(cube.apply(pm), 0, this.solverR, totalSolutionCap)
-                .map(sol => ({pre: pm, sol: sol, score: SeqEvaluator.evaluate(sol)}) )).flat()
+                .map(sol => ({pre: pm, sol: sol, score: this.evaluator.evaluate(sol)}) )).flat()
             solutions.sort((a, b) => a.score - b.score);
             const toString = (sol: any) =>
                 (sol.pre === "" ? "" : "(" + sol.pre + ") ") + sol.sol.toString(this.algDescWithMoveCount);
@@ -98,11 +105,23 @@ export abstract class BlockTrainerStateM extends AbstractStateM {
         };
     }
     _updateCase(): AppState {
-        const [cube, solverName, scrambleSolver] = this.getRandom();
-        return this._solve(cube, solverName, {
+        let [cube, solverName, scrambleSolver] = this.getRandom();
+        let inputScramble : string | undefined = undefined
+        if (this.state.scrambleInput.length > 0) {
+            inputScramble = this.state.scrambleInput[0]
+            cube = new CubieCube().apply(inputScramble)
+        }
+        let state = this._solve(cube, solverName, {
             updateSolutionOnly: false,
-            scrambleSolver
+            scrambleSolver,
+            scramble: inputScramble
         });
+        if (inputScramble) {
+            state = {...state, 
+                scrambleInput: state.scrambleInput.slice(1)
+            }
+        }
+        return state
     }
     _updateCap(): AppState {
         const state = this.state;
@@ -250,7 +269,8 @@ export class FbdrStateM extends BlockTrainerStateM {
         this.allowed_dr = this.state.config.fbdrPosSelector3.flags.map( (value, i) => [value, i])
             .filter( ([value, i]) => value ).map( ([value, i]) => this.edgePositionMap[i] )
 
-
+        // decide which random scramble generator to use. but prioritize use input if there's any
+        
         if (active === "FS at back") {
             if (pairSolved)
                 return [this._get_pair_solved_front(), [solverName], scrambleSolver];

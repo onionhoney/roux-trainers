@@ -2,6 +2,7 @@ import { AlgDesc } from "./lib/Algs";
 import { Selector } from "./lib/Selector";
 import { KeyMapping } from "./KeyMapping";
 import { CubieCube, Move, ColorScheme } from "./lib/CubeLib";
+import { Evaluator } from "./lib/Evaluator";
 
 export type Slider = {
     l: number, r: number, step: number, value: number
@@ -9,6 +10,7 @@ export type Slider = {
 
 export type Config = {
     theme: Selector,
+    evaluator: Selector,
     cmllSelector: Selector,
     cmllAufSelector: Selector,
     cmllCubeMaskSelector: Selector,
@@ -40,7 +42,7 @@ export type Config = {
 
 export type StateT = "solving" | "solved" | "hiding" | "revealed" | "revealed_all"
 
-export type Mode = "cmll" | "fs" | "fbdr" | "ss" | "fb" | "experimental" | "4c" | "eopair"
+export type Mode = "cmll" | "fs" | "fbdr" | "ss" | "fb" | "experimental" | "4c" | "eopair" | "analyzer"
 
 type KeyAction = {
     type: "key",
@@ -95,5 +97,6 @@ export type AppState = {
     config: Config,
     keyMapping: KeyMapping,
     favList: FavCase[],
-    colorScheme: ColorScheme
+    colorScheme: ColorScheme,
+
 }

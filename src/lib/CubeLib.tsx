@@ -1,4 +1,4 @@
-import { MoveT, OriChg, PermChg, StickerT, StickerExtT, CornerCoord, EdgeCoord, cstimer_corners_coord, cstimer_edges_coord } from "./Defs";
+import { MoveT, OriChg, PermChg, StickerT, StickerExtT, CornerCoord, EdgeCoord, cstimer_corners_coord, cstimer_edges_coord, CenterCoord, centers_coord } from "./Defs";
 import { u, d, f, b, l, r, m, e, s} from "./Defs";
 import { FaceletT, FaceletCubeT, corners_coord, edges_coord, u_face, f_face, color_map } from "./Defs";
 import { Typ, Face, C, E, T, U, D, F, B, L, R } from "./Defs";
@@ -15,6 +15,15 @@ export class CubieCube {
     eo: number[] = [];
     tp: number[] = [];
     // The addition of tp is not necessary, but helps us deal with slice moves in Roux during search and simcube.
+    deserialize(s: string) {
+        let obj = JSON.parse(s)
+        this.set(obj);
+        return this
+    }
+    serialize() {
+        let {cp, co, ep, eo, tp} = this
+        return JSON.stringify({cp, co, ep, eo, tp});
+    }
 
     Id() : CubieCube {
         this.set({
@@ -116,7 +125,8 @@ export class CubieCube {
         return faces
     }
 
-    _to_facelet_mapping(corners_coord: CornerCoord[], edges_coord: EdgeCoord[]) {
+    // facelet mapping: from position to piece
+    _to_facelet_mapping(corners_coord: CornerCoord[], edges_coord: EdgeCoord[], centers_coord: CenterCoord[]) {
         let facelet_mapping : [Face[], Face[]][]= []
 
         for (let i = 0; i < 8; i++) {
@@ -136,52 +146,63 @@ export class CubieCube {
             }
             facelet_mapping.push([pos, piece])
         }
+        for (let i = 0; i<6;i++) {
+            let pos = centers_coord[i]
+            let piece = centers_coord[this.tp[i]] as Face[]
+            facelet_mapping.push([ pos, piece])
+        }
         return facelet_mapping
     }
 
-    _from_facelet_mapping (fm: [Face[], Face[]][], custom_corners_coord: CornerCoord[], custom_edges_coord: EdgeCoord[]) {
+    _from_facelet_mapping (fm: [Face[], Face[]][], custom_corners_coord: CornerCoord[], custom_edges_coord: EdgeCoord[], custom_centers_coord: CenterCoord[] ) {
         let cube = new CubieCube()
-        let idxOf = (a_: CornerCoord[] | EdgeCoord[], target: Face[]) => {
-            let a = a_ as Face[][]
-            for (let i = 0; i < a.length; i++) {
-                if (arrayEqual(a[i], target)) return i;
-            }
-            return -1;
-        }
-        let getOriPerm =(a_: CornerCoord[] | EdgeCoord[], target: Face[]): [number, number]  => {
-            let ori = 0;
-            let perm = idxOf(a_, target)
 
-            while (perm === -1) {
+        let match_pos_piece = (pos: Face[], piece: Face[], coord: Face[][], parity: number) : [number, number, number]=> {
+            let expected = new Map(coord.map( (x, i) => [x.toString(), i]))
+            let ori = 0
+            while (!expected.has(pos.toString())) {
+                pos = CubieCube._backward_rotate_coord(pos)
+                ori--;
+                if (ori <= -parity) break;
+            }
+            while (!expected.has(piece.toString())) {
+                piece = CubieCube._backward_rotate_coord(piece)
+     
                 ori++;
-                target = CubieCube._backward_rotate_coord(target) as any
-                perm = idxOf(a_, target)
-
-                if (ori > 3) break;
+                if (ori >= 10) {
+                    console.warn("can't match piece", piece, expected)
+                    break
+                }
             }
-            return [ori, perm]
+
+            ori = (ori + parity) % parity;
+            return [ori, expected.get(pos.toString())!, expected.get(piece.toString())! ]
         }
 
         for (let coord_pair of fm) {
             let pos = coord_pair[0], piece = coord_pair[1]
+            let coord : Face[][] = (pos.length === 2) ? custom_edges_coord : 
+                        (pos.length === 3) ? custom_corners_coord :
+                         custom_centers_coord ;
+            let [newOri,newpos,newPerm] = match_pos_piece(pos, piece, coord, pos.length);
+
+            //console.log( pp([pos, piece]), [newOri, newpos,newPerm])
             if (pos.length === 2) {
-                let newpos = idxOf(custom_edges_coord, pos);
-                let [newOri, newPerm] = getOriPerm(custom_edges_coord, piece);
                 cube.eo[newpos] = newOri;
                 cube.ep[newpos] = newPerm;
-            } else {
-                let newpos = idxOf(custom_corners_coord, pos);
-                let [newOri, newPerm] = getOriPerm(custom_corners_coord, piece);
+            } else if (pos.length === 3){
                 cube.co[newpos] = newOri;
                 cube.cp[newpos] = newPerm;
+            } else {
+                cube.tp[newpos] = newPerm;
             }
         }
         return cube
     }
 
     to_cstimer_cube() {
-        let facelet_mapping = this._to_facelet_mapping(corners_coord, edges_coord)
-        let cube = this._from_facelet_mapping(facelet_mapping, cstimer_corners_coord, cstimer_edges_coord)
+        let facelet_mapping = this._to_facelet_mapping(corners_coord, edges_coord, centers_coord)
+        let cube = this._from_facelet_mapping(facelet_mapping, cstimer_corners_coord, cstimer_edges_coord, centers_coord)
         return cube
     }
 
@@ -192,6 +213,27 @@ export class CubieCube {
         let perm_correct = (getParity(this.cp) + getParity(this.ep)) % 2 === 0
         let ori_correct = (this.co.reduce((x, y) => x + y, 0) % 3 === 0) && (this.eo.reduce((x, y) => x + y, 0) % 2 === 0)
         return perm_correct && ori_correct
+    }
+
+    changeBasis(s: MoveSeq) {
+        // only take x and y for now
+        let facelet_mapping = this._to_facelet_mapping(corners_coord, edges_coord, centers_coord)
+
+        let transformed_mapping = s.moves.reduce( (mapping, move) : [Face[], Face[]][] => {
+            let face_mapping = Object.fromEntries(move.tpc)
+            //console.log("applying face mapping for ", move.name, face_mapping)
+            //console.log("before", pp(mapping))
+            let result = mapping.map( ([face_pos, face_target]) => 
+                [face_pos.map(f => face_mapping[f] ?? f ),
+                 face_target.map(f => face_mapping[f] ?? f) ]
+            )
+            //console.log('after', pp(result))
+            return result as any 
+        } , facelet_mapping)
+        //console.log(s.toString(), facelet_mapping, transformed_mapping)
+        let cube = this._from_facelet_mapping(transformed_mapping, corners_coord, edges_coord, centers_coord)
+        return cube
+        //let cube = this._from_facelet_mapping(facelet_mapping, corners_coord, edges_coord, centers_coord)
     }
 }
 
@@ -350,9 +392,11 @@ export class MoveSeq {
         return this
     }
 
-    parse(str: string) {
+    parse_line(str: string) {
         let tokens = []
         let token = ""
+        let comment_idx = str.search(/\/\//)
+        if (comment_idx > -1) str = str.slice(0, comment_idx)
         for (let i = 0; i < str.length; i++) {
             let ch = str[i]
             if (ch === '2' || ch === '\'') {
@@ -376,18 +420,18 @@ export class MoveSeq {
                 }
             }
         }
+        let moves = []
         if (token.length > 0) tokens.push(token);
-
-        this.moves = []
         for (let token of tokens) {
             let move = Move.all[token]
             if (move) {
-                this.moves.push(move)
-            } else {
-                return this
-                //throw Error("Invalid move sequence " + move)
+                moves.push(move)
             }
         }
+        return moves
+    }
+    parse(str: string) {
+        this.moves = str.split("\n").map(x => this.parse_line(x)).flat()
         return this
     }
 
@@ -425,35 +469,6 @@ export class MoveSeq {
 
     toString(useMetric?: string) {
         return this.moves.map(m => m.toString()).join(" ") + " " + (useMetric ? "(" + this.moves.length + ")" : "")
-    }
-}
-
-export class SeqEvaluator {
-    static moveCost_gen() {
-    let pairs : [string, number][]= [
-        ["U", 1], ["U'", 1], ["U2", 1.4],
-        ["R", 1], ["R'", 1], ["R2", 1.4],
-        ["r", 1], ["r'", 1], ["r2", 1.5],
-        ["L", 1], ["L'", 1], ["L2", 1.4],
-        ["F", 1.4], ["F'", 1.4], ["F2", 1.8],
-        ["B", 1.6], ["B'", 1.6], ["B2", 2.2],
-        ["D", 1.4], ["D'", 1.4], ["D2", 1.7],
-        ["M", 1.5], ["M'", 1.2], ["M2", 1.8],
-        ["S", 1.7], ["S'", 1.7], ["S2", 3.0],
-        ["E", 1.5], ["E'", 1.5], ["E2", 2.4],
-    ]
-    let costMap = new Map(pairs)
-    return costMap
-    }
-    static moveCost = SeqEvaluator.moveCost_gen()
-
-    static evaluate(moves : MoveSeq) {
-        let sum = 0
-        for (let m of moves.moves) {
-            const value = (SeqEvaluator.moveCost.get(m.name)) || 1.4
-            sum += value
-        }
-        return sum
     }
 }
 
@@ -688,6 +703,21 @@ let CubeUtil = (() => {
                arrayEqual(cube.ep, id.ep)
     }
 
+    let is_solved = (cube: CubieCube, mask: Mask) => {
+        let {co: co_, cp, eo: eo_, ep, tp: tp_} = mask
+        let co = co_ || cp
+        let eo = eo_ || ep
+        let tp = tp_ || Array(6).fill(1)
+        let c_true = co.every( (_, i) =>  (cp[i] === 0 || cube.cp[i] === i) 
+                        && (co[i] === 0 || cube.co[i] === 0) )
+        if (!c_true) return false
+        let e_true = eo.every( (_, i) =>  (ep[i] === 0 || cube.ep[i] === i) 
+        && (eo[i] === 0 || cube.eo[i] === 0) )
+        if (!e_true) return false
+        let t_true = tp.every( (_, i) =>  (tp[i] === 0 || cube.tp[i] === i) )
+        return t_true
+    }
+
     function ext(stickers: StickerT[], f: Face) : StickerExtT[] {
         return stickers.map(x => {
             let [a, b, c] = x;
@@ -751,7 +781,7 @@ let CubeUtil = (() => {
         return func
     }()
 
-    let is_mask_solved = (cube: CubieCube, { co, eo, cp, ep }: Mask, premove: (Move | Move[])[]) => {
+    let is_mask_solved2 = (cube: CubieCube, { co, eo, cp, ep }: Mask, premove: (Move | Move[])[]) => {
         //let moves = [ [], Move.all["U"], Move.all["U'"], Move.all["U2"] ]
         co = co || cp
         eo = eo || ep
@@ -779,7 +809,7 @@ let CubeUtil = (() => {
     const m2_premove = [[], Move.all["M2"]]
 
     let is_cmll_solved = (cube: CubieCube) => {
-        return is_mask_solved(cube, lse_mask, u_premove)
+        return is_mask_solved2(cube, lse_mask, u_premove)
     }
 
     let get_random_with_mask = ({ co, eo, cp, ep }: Mask): CubieCube => {
@@ -843,6 +873,7 @@ let CubeUtil = (() => {
 
     return {
         is_cmll_solved,
+        is_solved,
         get_random_lse,
         get_random_with_mask,
         is_cube_solved,
@@ -889,7 +920,7 @@ export class ColorScheme extends Storage {
         "WYROGB",
         "WYORBG",
         "YWGBRO",
-        "YEBGOR",
+        "YWBGOR",
         "YWROBG",
         "YWORGB",
 

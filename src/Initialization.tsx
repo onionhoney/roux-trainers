@@ -10,6 +10,12 @@ export const initialConfig : Config = (() => {
             flags: [1,0],
             kind: "theme"
         },
+        evaluator: {
+            label: "solution sorting metrics",
+            names: ["sequential", "two-gram", "QTM", "default"],
+            flags: [1,0, 0, 0],
+            kind: "evaluator"
+        },
         cmllSelector: {
             names: ["o", "s", "as", "t", "l", "u", "pi", "h"],
             flags: [1, 1, 1, 1, 1, 1, 1, 1],

@@ -19,6 +19,8 @@ export const getInitialState = (mode?: Mode): AppState => {
                 return "revealed";
             case "experimental":
                 return "revealed";
+            case "analyzer":
+                return "revealed"
         }
     }();
     let ori = getActiveName(getConfig().orientationSelector) || "YR";

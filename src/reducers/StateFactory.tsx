@@ -28,6 +28,8 @@ StateFactory.create = function(state: AppState) {
                 return new EOLRStateM(state);
             case "experimental":
                 return new FbStateM(state);
+            case "analyzer":
+                return new FbStateM(state)
         }
         ;
     }

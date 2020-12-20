@@ -156,6 +156,7 @@ let drawCube = (function(){
     let func = (cube: FaceletCubeT, config: ConfigT) => {
         if (config_cache === null) {
             painter?.cleanupFunc()
+
             painter = redraw_cube(cube, config)
             config_cache = config
             return painter
@@ -163,6 +164,7 @@ let drawCube = (function(){
         else if (config.width === config_cache.width && config.height === config_cache.height &&
             arrayEqual(config.faces || [], config_cache.faces || []) && config.bgColor === config_cache.bgColor &&
             config.hintDistance === config_cache.hintDistance) {
+
             painter?.updateCubeAndColor(cube, config.colorScheme)
             config_cache = config
             return painter!
@@ -174,7 +176,7 @@ let drawCube = (function(){
         }
     }
     return func
-})()
+})
 
 type Painter = {
     updateCubeAndColor: (cube: FaceletCubeT, scheme: Array<string>) => THREE.WebGLRenderer,
@@ -184,7 +186,8 @@ type Painter = {
 function CubeSim(props: Config) {
     const mount = React.useRef<HTMLDivElement | null>(null)
     let { width, height, colorScheme, facesToReveal, bgColor, hintDistance} = props
-    let painter = drawCube(props.cube, {
+    let cubePainter = React.useMemo(drawCube, [])
+    let painter = cubePainter(props.cube, {
             width, height, colorScheme, faces: facesToReveal, bgColor, hintDistance })
 
     useEffect( () => {

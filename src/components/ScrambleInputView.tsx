@@ -17,15 +17,7 @@ import RootRef from '@material-ui/core/RootRef';
 
 import { AppState, Config, Action } from '../Types'
 const useStyles = makeStyles(theme => ({
-    setup: {
-        whiteSpace: 'pre-line',
-        fontSize: "1.4rem",
-        fontWeight:500,
-        [theme.breakpoints.down('xs')]: {
-        fontSize: "1.0rem",
-        fontWeight: 500
-        },
-    },
+
     setupEdit: {
         whiteSpace: 'pre-line',
         fontSize: "1.2rem",
@@ -44,7 +36,7 @@ const useStyles = makeStyles(theme => ({
 export function ScrambleInputView(props: { display: string, scrambles: string[], dispatch: React.Dispatch<Action>}) {
     let classes = useStyles()
     let [editing, setEditing] = React.useState(false)
-    let [value, setValue] = React.useState(props.display)
+    let [value, setValue] = React.useState(props.scrambles.join("\n"))
     let textField = React.useRef<HTMLInputElement | null>(null)
     let container = React.useRef<HTMLInputElement | null>(null)
     let editButton = React.useRef<HTMLElement | null>(null)
@@ -58,13 +50,15 @@ export function ScrambleInputView(props: { display: string, scrambles: string[],
     const toggleEdit = () => {
         setEditing(!editing)
     }
-    React.useEffect(  () => {
-        setValue(props.display)
-    }, [props.display])
-
-    const onBlur = () => {
-        if (editing) setEditing(false)
+    const handleClose = () => {
+        setEditing(false)
+        props.dispatch({type: "scrambleInput", content: value.split("\n").filter(s => s.trim())})
     }
+    React.useEffect(  () => {
+        setValue(props.scrambles.join("\n"))
+    }, [props.scrambles])
+
+    /*
     React.useEffect( ()=> {
         if (editing) {
             textField.current && textField.current.focus()
@@ -72,54 +66,59 @@ export function ScrambleInputView(props: { display: string, scrambles: string[],
             textField.current && textField.current.blur()
             editButton.current && editButton.current.blur()
         }
-    }, [editing])
-    return <RootRef rootRef={container}>
-    <Box style={{width: "100%"}}>
-        <Box onKeyPress={onKeyPress} onKeyDown={onKeyPress} onKeyUp={onKeyPress}>
-            <Box display={editing ? "none" : "block"}>
-                <Typography className={classes.setup} >
-                    {props.display}
-                </Typography>
-            </Box>
-            <Box display={editing ? "block" : "none"} style={{minWidth: 300}} >
+    }, [editing]*/
+
+    const onEntered = () => {
+        textField.current && textField.current.focus()
+    }
+    return <>
+    <Box>
+            <Button variant={editing ? "contained" : "outlined"}
+                color="primary"
+                size="small"
+                onClick={toggleEdit}
+                className={classes.button}
+                startIcon={<EditIcon />}
+            >
+                {"INPUT"}
+            </Button>
+
+    </Box>
+
+    <Dialog open={editing} 
+            onClose={handleClose}  
+            onKeyPress={onKeyPress} 
+            onKeyDown={onKeyPress} 
+            onKeyUp={onKeyPress}
+            onEntered={onEntered}
+            >
+          <DialogTitle> Input your own scrambles (one per line) </DialogTitle>
+          <DialogContent>
                 <TextField
                     inputRef={textField}
                     multiline
                     size="medium"
                     fullWidth
-                    rowsMax={5}
+                    rowsMax={10}
+                    rows={3}
                     InputProps={{
                         className:classes.setupEdit
                     }}
+                
                     value={value}
                     onChange={onChange}
-                    variant="standard">
+                    variant="outlined">
                 </TextField>
-            </Box>
-            <Box style={{marginTop: 10}}>
-            <Button variant={editing ? "contained" : "outlined"}
-                color="primary"
-                size="small"
-                onClick={toggleEdit}
-                ref={editButton}
-                className={classes.button}
-                startIcon={<EditIcon />}
-            >
-                {editing ? "Finish": "Edit"}
-            </Button>
-            <Button
-                variant="outlined"
-                color="primary"
-                size="small"
-                className={classes.button}
-                startIcon={<SaveAltIcon />}
-            >
-                Export
-            </Button>
-            </Box>
-        </Box>
-    </Box>
-    </RootRef>
+          </DialogContent>
+          <DialogActions>
+              <Box padding={1}>
+              <Button onClick={handleClose} color="primary" variant="outlined" fullWidth >
+                  Confirm
+              </Button>
+              </Box>
+          </DialogActions>
+    </Dialog>
+    </>
     /*
     return <Dialog open={props.open} onClose={handleClose}>
           <DialogTitle> Input your own scrambles  </DialogTitle>

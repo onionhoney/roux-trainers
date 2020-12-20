@@ -1,5 +1,6 @@
 import { FbdrSolver, FbSolver } from './Solver'
-import { CubeUtil, CubieCube, FaceletCube, Move, SeqEvaluator } from './CubeLib'
+import { CubeUtil, CubieCube, FaceletCube, Move } from './CubeLib'
+import { SeqEvaluator } from "./Evaluator"
 import { CachedSolver } from './CachedSolver'
 import { cartesianProduct } from './Math'
 import { SwapCalls } from '@material-ui/icons'
@@ -62,7 +63,7 @@ it('gens sb wrong slot', () => {
                 cc.ep[EDGE] = ep
                 cc.eo[ep] = eo
                 let sol = CachedSolver.get("ss-back").solve(cc, 1, 13, 10)
-                    .map(sol => ({sol, score: SeqEvaluator.evaluate(sol)}))
+                    .map(sol => ({sol, score: new SeqEvaluator().evaluate(sol)}))
                     .sort((a, b) => a.score - b.score)
                     .slice(0, 3)
                 let sols = sol.map(s => s.sol.toString()).join(" , ")
@@ -86,7 +87,7 @@ it('gens sb wrong slot', () => {
                 cc.cp[CORNER] = cp
                 cc.co[cp] = co
                 let sol = CachedSolver.get("ss-back").solve(cc, 1, 13, 10)
-                    .map(sol => ({sol, score: SeqEvaluator.evaluate(sol)}))
+                    .map(sol => ({sol, score: new SeqEvaluator().evaluate(sol)}))
                     .sort((a, b) => a.score - b.score)
                     .slice(0, 3)
                 let sols = sol.map(s => s.sol.toString()).join(" , ")
