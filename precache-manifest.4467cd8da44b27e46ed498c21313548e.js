@@ -1,27 +1,27 @@
 self.__precacheManifest = (self.__precacheManifest || []).concat([
   {
-    "revision": "cafb795583fe981b6e302f21855bc448",
+    "revision": "b855844864f0a2fccbc51ede7774d830",
     "url": "/roux-trainers/index.html"
   },
   {
-    "revision": "c1ca2fe77a9d4e7dd686",
+    "revision": "7214f2b615e35848aa17",
     "url": "/roux-trainers/static/css/2.d6dc80d2.chunk.css"
   },
   {
-    "revision": "cf8407c5d72be291028c",
+    "revision": "ecbb9d437fb8d6f994bd",
     "url": "/roux-trainers/static/css/main.34de6062.chunk.css"
   },
   {
-    "revision": "c1ca2fe77a9d4e7dd686",
-    "url": "/roux-trainers/static/js/2.08eae280.chunk.js"
+    "revision": "7214f2b615e35848aa17",
+    "url": "/roux-trainers/static/js/2.fd81f732.chunk.js"
   },
   {
     "revision": "cc64ee54b892d5335ff611babd06ac39",
     "url": "/roux-trainers/static/js/Worker.10e3feeb.worker.js"
   },
   {
-    "revision": "cf8407c5d72be291028c",
-    "url": "/roux-trainers/static/js/main.d2dc1883.chunk.js"
+    "revision": "ecbb9d437fb8d6f994bd",
+    "url": "/roux-trainers/static/js/main.d63ddd92.chunk.js"
   },
   {
     "revision": "2ce6647bb5dd4cf52078",

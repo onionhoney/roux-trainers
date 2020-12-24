@@ -14,7 +14,7 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/4.3.1/workbox-sw.js");
 
 importScripts(
-  "/roux-trainers/precache-manifest.5d052292f8dc3917603d56643dffd64a.js"
+  "/roux-trainers/precache-manifest.4467cd8da44b27e46ed498c21313548e.js"
 );
 
 self.addEventListener('message', (event) => {
