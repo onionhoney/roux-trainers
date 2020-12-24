@@ -18,3 +18,4 @@ Version Log:
 (v1.3) 12/20/2020: Solve Analysis Beta is online! It can do the following:
     - For any random scramble, it'll recommend the best FB solutions over all orientations (e.g. x2y yellow/white). 
     - Given a solve reconstruction, it'll analyze each stage, and compare your solution there with the solver-suggested solutions.
+(v1.4) 12/23/2020: Refine the appearance of the virtual cube and enable camera control with mouse dragging. 

@@ -45,6 +45,7 @@ import EditIcon from '@material-ui/icons/Edit';
 
 import SearchIcon from '@material-ui/icons/Search';
 import { createNonNullChain } from 'typescript';
+import useMediaQuery from '@material-ui/core/useMediaQuery';
 
 // web work solution: worker-loader + comlink interface
 // https://dev.to/nicolasrannou/web-workers-in-create-react-app-cra-without-unmounting-4865
@@ -141,7 +142,9 @@ const useStyles = makeStyles(theme => ({
     stage: {
       paddingTop: 5,
       paddingLeft: 5,
-
+    },
+    configItem: {
+      paddingRight: 15
     },
     stageText: {
       color: theme.palette.text.primary,
@@ -165,7 +168,7 @@ const useStyles = makeStyles(theme => ({
       color: theme.palette.text.secondary,
     },
     formControl: {
-      margin: theme.spacing(1),
+      margin: theme.spacing(0),
       minWidth: 120,
     },
   }))
@@ -202,15 +205,14 @@ function ScrambleView(props: { state: AnalyzerState, setState: (newState: Analyz
 
     return (
     <Box style={{display: "flex"}}>
-      <Box style={{display: "flex", alignItems: "center"}}> 
-        <Box className={classes.title} style={{}}>
-        Scramble
-      </Box> </Box>
-      <Box style={{}} className={classes.fgap} />          
+    
       <Box style={{display: "flex", alignItems: "center", flexGrow: 1}}>
         <TextField
-          size="medium"
+          size="small"
           fullWidth
+          multiline
+          rowsMax={3}
+          label={"Scramble"}
           value={value}
           onChange={onScrambleChange}
           variant="filled"
@@ -247,23 +249,26 @@ function ConfigView(props: { state: AnalyzerState, setState: (newState: Analyzer
     setState({...state, num_solution: value || state.num_solution})
   }
   return (
-  <Box style={{display: "flex"}}>
-    <FormControl className={classes.formControl}>
-      <InputLabel id="demo-simple-select-helper-label">FB Orientation</InputLabel>
-      <Select
-        labelId="demo-simple-select-helper-label"
-        id="demo-simple-select-helper"
-        value={fb_ori_str}
-        onChange={handleFBOri}
-      >
-        <MenuItem value={"x2y,"}>x2y on White/Yellow</MenuItem>
-        <MenuItem value={"x2y,x"}>x2y on Blue/Green</MenuItem>
-        <MenuItem value={"x2y,z"}>x2y on Red/Orange</MenuItem>
-        <MenuItem value={"cn,"}>Color Neutral</MenuItem>
-      </Select>
-      <FormHelperText></FormHelperText>
-    </FormControl>
-    <FormControl className={classes.formControl}>
+  <Box display="flex">
+    <Box className={classes.configItem}>
+      <FormControl className={classes.formControl}>
+        <InputLabel id="demo-simple-select-helper-label">FB Orientation</InputLabel>
+        <Select
+          labelId="demo-simple-select-helper-label"
+          id="demo-simple-select-helper"
+          value={fb_ori_str}
+          onChange={handleFBOri}
+        >
+          <MenuItem value={"x2y,"}>x2y on White/Yellow</MenuItem>
+          <MenuItem value={"x2y,x"}>x2y on Blue/Green</MenuItem>
+          <MenuItem value={"x2y,z"}>x2y on Red/Orange</MenuItem>
+          <MenuItem value={"cn,"}>Color Neutral</MenuItem>
+        </Select>
+        <FormHelperText></FormHelperText>
+      </FormControl>
+    </Box>
+    <Box className={classes.configItem}>
+      <FormControl className={classes.formControl}>
       <InputLabel id="demo-simple-select-helper-label">Display Mode</InputLabel>
       <Select
         labelId="demo-simple-select-helper-label"
@@ -275,7 +280,9 @@ function ConfigView(props: { state: AnalyzerState, setState: (newState: Analyzer
         <MenuItem value={"combined"}>Combined </MenuItem>
       </Select>
       <FormHelperText></FormHelperText>
-    </FormControl>
+     </FormControl>
+    </Box>
+    <Box  className={classes.configItem}>
     <FormControl className={classes.formControl}>
       <InputLabel id="demo-simple-select-helper-label"># Solutions</InputLabel>
       <Select
@@ -292,6 +299,7 @@ function ConfigView(props: { state: AnalyzerState, setState: (newState: Analyzer
       </Select>
       <FormHelperText></FormHelperText>
     </FormControl>
+    </Box>
 
   </Box>)
 }
@@ -340,7 +348,7 @@ function SolutionInputView(props: { state: AnalyzerState, setState: (newState: A
             maxWidth="sm"
             fullWidth
             >
-          <DialogTitle> Input your own solution </DialogTitle>
+          <DialogTitle> Input your reconstructed solution </DialogTitle>
           <DialogContent>
                 <TextField
                     inputRef={textField}
@@ -366,7 +374,6 @@ function SolutionInputView(props: { state: AnalyzerState, setState: (newState: A
 }
 
 
-
 function StageSolutionView(props: { solution: SolutionDesc }) {
   let { solution, stage, premove, orientation } = props.solution
   let getTags = () => {
@@ -390,23 +397,15 @@ function StageSolutionView(props: { solution: SolutionDesc }) {
 }
 
 
-
 function StageSolutionListView(props: { solutions: SolutionDesc[], state: AnalyzerState, setState: (newState: AnalyzerState) => void} ) {
   let { solutions, state, setState } = props
 
-
   return (
     <Box lineHeight={1}>
-
-                
-      
       { solutions.map( (s, i) => <StageSolutionView solution={s} key={i}/>) }
     </Box>
-  )
-  
+  ) 
 }
-
-
 
 function FullSolutionView(props: { state: AnalyzerState, setState: (newState: AnalyzerState) => void} ) {
   let { state, setState } = props
@@ -423,7 +422,6 @@ function FullSolutionView(props: { state: AnalyzerState, setState: (newState: An
     return (
       <Box display="flex" key={i} className={classes.stage} 
         onMouseLeave={ () => setShow(-1)} onMouseEnter={() => setShow(i)} onClick={() => setShow(show === i ? -1 : i)}>
-
         <Button variant={"text"}
               color="primary"
               size="small"
@@ -432,11 +430,7 @@ function FullSolutionView(props: { state: AnalyzerState, setState: (newState: An
             }} >
         <Typography variant="subtitle1" className={classes.stageText}>{sol.solution.toString()} // {sol.stage}
         </Typography>        
-
-    
-
         <SearchIcon fontSize="small"/>
-
         </Button>
 
       </Box>
@@ -455,7 +449,6 @@ function FullSolutionView(props: { state: AnalyzerState, setState: (newState: An
   
 }
 
-
 const worker_raw = new Worker()
 const worker = Comlink.wrap(worker_raw)
 
@@ -463,7 +456,6 @@ function AnalyzerView(props: { state: AppState, dispatch: React.Dispatch<Action>
     let { state: appState, dispatch: appDispatch } = props
     
     const theme = useTheme()
-    const simBackground = getActiveName(appState.config.theme) === "bright" ? "#eeeeef" : theme.palette.background.paper
     let [ state, setState ] = React.useState(initialState)
 
     let [ solutions, setSolutions ] = React.useState<SolutionDesc[]>([])
@@ -475,7 +467,6 @@ function AnalyzerView(props: { state: AppState, dispatch: React.Dispatch<Action>
     let faceletCube = FaceletCube.from_cubie(cubieCube, mask)
 
     let ycube = FaceletCube.from_cubie(cubieCube.changeBasis(new MoveSeq("y")))
-
 
     let solutions_to_display = solutions.slice()
     if (state.show_mode === "combined") {
@@ -497,6 +488,10 @@ function AnalyzerView(props: { state: AppState, dispatch: React.Dispatch<Action>
       }
       effect()
     }, [state.scramble, state.stage, state.post_scramble, state.num_solution, state.orientation, state.pre_orientation])
+
+    const gt_md = useMediaQuery(theme.breakpoints.up('md'));
+    const gt_sm = useMediaQuery(theme.breakpoints.up('sm'));
+    const canvas_wh = (gt_md) ? [400, 350] : (gt_sm) ? [400, 350] : [320, 280]
 
     return (
     <Box className={classes.container}>
@@ -530,7 +525,7 @@ function AnalyzerView(props: { state: AppState, dispatch: React.Dispatch<Action>
 
       <Paper className={ classes.paper}>
       <Grid container>
-        <Grid item md={8} xs={12} sm={6} className={classes.condGap}>
+        <Grid item md={6} sm={12} className={classes.condGap}>
           <Box style={{display: "flex" }}>
             <Box display="flex" >
                 <Box style={{display: "flex", flexDirection: "column", alignSelf: "flex-start"}}> 
@@ -552,15 +547,16 @@ function AnalyzerView(props: { state: AppState, dispatch: React.Dispatch<Action>
         </Grid>
 
 
-        <Grid item md={4} sm={6} xs={12} style={{display: "flex", justifyContent: "center"}}>
+        <Grid item md={6} xs={12} style={{display: "flex", justifyContent: "center"}}>
           <Box style={{backgroundColor: "rgba(0, 0, 0, 0)"}}>
             <CubeSim
-              width={250}
-              height={250}
+              width={canvas_wh[0]}
+              height={canvas_wh[1]}
               cube={faceletCube}
               colorScheme={appState.colorScheme.getColorsForOri(appState.cube.ori)}
-              hintDistance={ 5 }
-              bgColor={simBackground}
+              hintDistance={ 6 }
+              theme={getActiveName(appState.config.theme)}
+
               facesToReveal={ [Face.L, Face.B, Face.D]  }
             />
           </Box>

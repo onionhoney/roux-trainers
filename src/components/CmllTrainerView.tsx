@@ -30,7 +30,7 @@ const useStyles = makeStyles(theme => ({
       flexDirection: 'column',
     },
     fixedHeight: {
-      height: 300,
+      height: 350,
     },
     canvasPaper: {
       padding: theme.spacing(0),
@@ -71,7 +71,6 @@ function CmllTrainerView(props: { state: AppState, dispatch: React.Dispatch<Acti
       _getMask(getActiveName( state.config.cmllCubeMaskSelector) || "Show"))
 
     const theme = useTheme()
-    const simBackground = getActiveName(state.config.theme) === "bright" ? "#eeeeef" : theme.palette.background.paper
 
     const cmll = (c: Config) => c.cmllSelector;
     const cmllcubemask = (c : Config) => c.cmllCubeMaskSelector;
@@ -132,11 +131,11 @@ function CmllTrainerView(props: { state: AppState, dispatch: React.Dispatch<Acti
             <Paper className={canvasPaper}>
               <Box margin="auto">
               <CubeSim
-                width={300}
-                height={300}
+                width={400}
+                height={350}
                 cube={facelet}
                 colorScheme={state.colorScheme.getColorsForOri(state.cube.ori)}
-                bgColor={simBackground}
+                theme={getActiveName(state.config.theme)}
                 facesToReveal={[Face.L]}
               />
               </Box>
