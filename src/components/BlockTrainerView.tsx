@@ -24,6 +24,7 @@ import { ColorPanel } from './Input';
 import { AlgDesc } from '../lib/Algs';
 import { ScrambleInputView } from './ScrambleInputView';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
+import { config } from 'process';
 
 const useStyles = makeStyles(theme => ({
     container: {
@@ -312,6 +313,7 @@ function BlockTrainerView(props: { state: AppState, dispatch: React.Dispatch<Act
 
         <Grid item md={6} sm={12} xs={12} style={{display: "flex", justifyContent: "center"}}>
           <Box style={{backgroundColor: "rgba(0, 0, 0, 0)"}}>
+            { getActiveName(props.state.config.showCube) === "Show" ?
             <CubeSim
               width={canvas_wh[0]}
               height={canvas_wh[1]}
@@ -321,7 +323,7 @@ function BlockTrainerView(props: { state: AppState, dispatch: React.Dispatch<Act
               hintDistance={ (state.mode === "4c" || state.mode === "eopair") ? 3 : 7 }
               theme={getActiveName(state.config.theme)}
               facesToReveal={ [Face.L, Face.B, Face.D]  }
-            />
+            /> : null }
           </Box>
         </Grid>
       </Grid>
@@ -387,6 +389,8 @@ function ConfigPanelGroup(props: {state: AppState, dispatch: React.Dispatch<Acti
       <SingleSelect {...{state, dispatch, select: select1}}> </SingleSelect>
       <SingleSelect {...{state, dispatch, select: select2}}> </SingleSelect>
       <SingleSelect {...{state, dispatch, select: select3}}> </SingleSelect>
+      
+      <SingleSelect {...{state, dispatch, select: (c) => c.showCube}}> </SingleSelect>
       <MultiSelect {...{state, dispatch, select: select4, options: {manipulators: DRManip} }}> </MultiSelect>
       <ColorPanel {...{state, dispatch}} />
 
@@ -412,6 +416,8 @@ function ConfigPanelGroup(props: {state: AppState, dispatch: React.Dispatch<Acti
       <SingleSelect {...{state, dispatch, select: select3}}> </SingleSelect>
       <SingleSelect {...{state, dispatch, select: select4}}> </SingleSelect>
       <SingleSelect {...{state, dispatch, select: select5}}> </SingleSelect>
+      <SingleSelect {...{state, dispatch, select: (c) => c.showCube}}> </SingleSelect>
+
       <MultiSelect {...{state, dispatch, select: pos1, options: {manipulators: LPEdgeManip} }}> </MultiSelect>
       <MultiSelect {...{state, dispatch, select: pos3, options: {manipulators: LPEdgeManip} }}> </MultiSelect>
       <ColorPanel {...{state, dispatch}} />
@@ -426,6 +432,8 @@ function ConfigPanelGroup(props: {state: AppState, dispatch: React.Dispatch<Acti
       <Fragment>
         <SingleSelect {...{ state, dispatch, select: select1 }}> </SingleSelect>
         <SingleSelect {...{ state, dispatch, select: select2 }}> </SingleSelect>
+        <SingleSelect {...{state, dispatch, select: (c) => c.showCube}}> </SingleSelect>
+
         <ColorPanel {...{state, dispatch}} />
 
 
@@ -439,6 +447,8 @@ function ConfigPanelGroup(props: {state: AppState, dispatch: React.Dispatch<Acti
       <Fragment>
         <SingleSelect {...{ state, dispatch, select: select1 }}> </SingleSelect>
         <SingleSelect {...{ state, dispatch, select: select2 }}> </SingleSelect>
+        <SingleSelect {...{state, dispatch, select: (c) => c.showCube}}> </SingleSelect>
+
         <ColorPanel {...{state, dispatch}} />
 
 
@@ -456,6 +466,8 @@ function ConfigPanelGroup(props: {state: AppState, dispatch: React.Dispatch<Acti
         <SingleSelect {...{ state, dispatch, select: select2 }}> </SingleSelect>
         <SingleSelect {...{ state, dispatch, select: select3 }}> </SingleSelect>
         <SingleSelect {...{ state, dispatch, select: select4 }}> </SingleSelect>
+        <SingleSelect {...{state, dispatch, select: (c) => c.showCube}}> </SingleSelect>
+
         <ColorPanel {...{state, dispatch}} />
       </Fragment>
     )
@@ -473,6 +485,8 @@ function ConfigPanelGroup(props: {state: AppState, dispatch: React.Dispatch<Acti
         <SingleSelect {...{ state, dispatch, select: select3 }}> </SingleSelect>
         <SingleSelect {...{ state, dispatch, select: select4 }}> </SingleSelect>
         <SingleSelect {...{ state, dispatch, select: select5 }}> </SingleSelect>
+        <SingleSelect {...{state, dispatch, select: (c) => c.showCube}}> </SingleSelect>
+
         <ColorPanel {...{state, dispatch}} />
       </Fragment>
     )

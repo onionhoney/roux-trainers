@@ -592,6 +592,7 @@ let FaceletCube = function () {
         return color_cube;
     }
 
+
     return {
         from_cubie,
         to_unfolded_cube_str,

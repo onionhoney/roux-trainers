@@ -9,12 +9,14 @@ export type Slider = {
 }
 
 export type Config = {
+    showCube: Selector,
     theme: Selector,
     evaluator: Selector,
     cmllSelector: Selector,
     cmllAufSelector: Selector,
     cmllCubeMaskSelector: Selector,
     triggerSelector: Selector,
+    hyperOriSelector: Selector,
     orientationSelector: Selector
     fbdrSelector: Selector,
     fsSelector: Selector,
