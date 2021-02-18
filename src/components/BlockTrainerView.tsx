@@ -439,7 +439,23 @@ function ConfigPanelGroup(props: {state: AppState, dispatch: React.Dispatch<Acti
 
       </Fragment>
     )
-   }else if (state.mode === "4c"){
+   } else if (state.mode === "fbss") {
+    let select1 = (config: Config) => { return config.fbssLpSelector }
+    let select2 = (config: Config) => { return config.fbssSsSelector }
+    let select3 = (config: Config) => { return config.solutionNumSelector }
+
+    return (
+      <Fragment>
+        <SingleSelect {...{ state, dispatch, select: select1 }}> </SingleSelect>
+        <SingleSelect {...{ state, dispatch, select: select2 }}> </SingleSelect>
+        <SingleSelect {...{ state, dispatch, select: select3 }}> </SingleSelect>
+        <ColorPanel {...{state, dispatch}} />
+
+
+      </Fragment>
+    )
+   }
+   else if (state.mode === "4c"){
     let select1 = (config: Config) => { return config.lseStageSelector }
     let select2 = (config: Config) => { return config.lseMCSelector }
     let select3 = (config: Config) => { return config.lseBarSelector }

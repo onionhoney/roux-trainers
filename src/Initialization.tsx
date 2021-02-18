@@ -137,6 +137,18 @@ export const initialConfig : Config = (() => {
             flags: [1, 0, 0, 0, 0],
             kind: "fb-piece-solved"
         },
+        fbssLpSelector: {
+            label: "fbss-lp",
+            names: ["FBLP at front", "FBLP at back"],
+            flags: [1, 0],
+            kind: "fbss"
+        },
+        fbssSsSelector: {
+            label: "fbss-ss",
+            names: ["SS at front", "SS at back"],
+            flags: [1, 0],
+            kind: "fbss"
+        },
         lseMCSelector: {
             label: "Center",
             names: ["Aligned", "Misaligned"],

@@ -56,8 +56,16 @@ const useStyles = makeStyles(theme => {
       //borderBottom: "1px solid " + theme.palette.background.default,
     }
 })})
-const description = [
-"Solve Analysis (Beta)", "FB Last Pair (+DR)", "First Square", "First Block", "Second Square", "CMLL", "LSE 4c", "EOLR / EOLRb"
+const description : [string, number][] = [
+["Solve Analysis (Beta)", 0],
+["Tracking Trainer (Beta)", 1],
+["FB Last Pair (+DR)", 2],
+["First Square", 3],
+["First Block", 4],
+[ "Second Square", 5],
+["CMLL", 7],
+["LSE 4c", 8],
+["EOLR / EOLRb", 9]
 ]
 
 function TopBarView(props: { value: number, onChange: (x: number) => void,
@@ -65,9 +73,12 @@ function TopBarView(props: { value: number, onChange: (x: number) => void,
 {
     let classes = useStyles()
     let { value, onChange, toggleFav, toggleBright, handleInfoOpen } = props
-    let value_str = description[value]
+    let value_str_ = description.find(x => x[1] === value)
+    let value_str = value_str_ ? value_str_[0]: ""
     let handleChange = (event: React.ChangeEvent<{ value: unknown }>) =>  {
-        onChange(description.indexOf(event.target.value as string))
+        let idx = description.findIndex(x => x[0] === (event.target.value as string))
+        let tab_idx = description[idx][1]
+        onChange(tab_idx)
         //
     }
     return <div>
@@ -83,7 +94,7 @@ function TopBarView(props: { value: number, onChange: (x: number) => void,
                  onChange={handleChange}
                  onFocus={(e) => e.target.blur()}
             >
-                { description.map( (s, i) => <MenuItem key={i} value={s}>{s}</MenuItem> )}
+                { description.map( (s, i) => <MenuItem key={i} value={s[0]}>{s[0]}</MenuItem> )}
             </Select>
         </FormControl>
         <Box style={{flexGrow: 10}}> </Box>

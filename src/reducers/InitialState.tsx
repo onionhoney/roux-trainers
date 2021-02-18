@@ -15,11 +15,13 @@ export const getInitialState = (mode?: Mode): AppState => {
             case "fb":
             case "4c":
             case "eopair":
+            case "fbss":
             case "fs":
                 return "revealed";
             case "experimental":
                 return "revealed";
             case "analyzer":
+            case "tracking":
                 return "revealed"
         }
     }();

@@ -115,43 +115,45 @@ it('gens all ss cases', () => {
     let result = []
 
     console.log(`Perms length = ${perms.length}`);
-    // for (let perm of perms) {
-    //     let [ep1, ep2, cp1, eo1, eo2, co1] = perm;
-    //     let [ep1_src, ep2_src, cp1_src] = [7, 11, 7] // front
-    //     let cc = cube.clone()
-    //     cc.ep[ep1] = ep1_src
-    //     cc.eo[ep1] = eo1
-    //     cc.ep[ep2] = ep2_src
-    //     cc.eo[ep2] = eo2
-    //     cc.cp[cp1] = cp1_src
-    //     cc.co[cp1] = co1
+    for (let perm of perms) {
+        let [ep1, ep2, cp1, eo1, eo2, co1] = perm;
+        let [ep1_src, ep2_src, cp1_src] = [7, 11, 7] // front
+        let cc = cube.clone()
+        cc.ep[ep1] = ep1_src
+        cc.eo[ep1] = eo1
+        cc.ep[ep2] = ep2_src
+        cc.eo[ep2] = eo2
+        cc.cp[cp1] = cp1_src
+        cc.co[cp1] = co1
 
-    //     let sol = CachedSolver.get("ss-front").solve(cc, 0, 13, 3)
-    //     let sols = sol.map(s => s.toString()).join(" , ")
-    //     let desc = `${sols}, ss-front, dr=${edge_desc(eo1, ep1)}, `+
-    //         `fr=${edge_desc(eo2, ep2)}, dfr=${corner_desc(co1, cp1)}`
-    //     result.push(desc)
-    // }
+        let sol = CachedSolver.get("ss-front").solve(cc, 0, 13, 3)
+        sol.push(sol[0].inv())
+        let sols = sol.map(s => s.toString()).join(" , ")
+        let desc = `${sols}, ss-front, dr=${edge_desc(eo1, ep1)}, `+
+            `fr=${edge_desc(eo2, ep2)}, dfr=${corner_desc(co1, cp1)}`
+        result.push(desc)
+    }
 
-    // for (let perm of perms) {
-    //     let [ep1, ep2, cp1, eo1, eo2, co1] = perm;
-    //     let [ep1_src, ep2_src, cp1_src] = [7, 10, 6] // front
-    //     let cc = cube.clone()
-    //     cc.ep[ep1] = ep1_src
-    //     cc.eo[ep1] = eo1
-    //     cc.ep[ep2] = ep2_src
-    //     cc.eo[ep2] = eo2
-    //     cc.cp[cp1] = cp1_src
-    //     cc.co[cp1] = co1
+    for (let perm of perms) {
+        let [ep1, ep2, cp1, eo1, eo2, co1] = perm;
+        let [ep1_src, ep2_src, cp1_src] = [7, 10, 6] // front
+        let cc = cube.clone()
+        cc.ep[ep1] = ep1_src
+        cc.eo[ep1] = eo1
+        cc.ep[ep2] = ep2_src
+        cc.eo[ep2] = eo2
+        cc.cp[cp1] = cp1_src
+        cc.co[cp1] = co1
 
-    //     let sol = CachedSolver.get("ss-back").solve(cc, 0, 13, 3)
-    //     let sols = sol.map(s => s.toString()).join(" , ")
-    //     let desc = `${sols}, ss-back, dr=${edge_desc(eo1, ep1)}, `+
-    //         `fr=${edge_desc(eo2, ep2)}, dfr=${corner_desc(co1, cp1)}`
-    //     result.push(desc)
-    // }
+        let sol = CachedSolver.get("ss-back").solve(cc, 0, 13, 3)
+        sol.push(sol[0].inv())
+        let sols = sol.map(s => s.toString()).join(" , ")
+        let desc = `${sols}, ss-back, dr=${edge_desc(eo1, ep1)}, `+
+            `fr=${edge_desc(eo2, ep2)}, dfr=${corner_desc(co1, cp1)}`
+        result.push(desc)
+    }
 
 
-    // console.log(result.join("\n"))
-    // console.log("Done")
+    console.log(result.join("\n"))
+    console.log("Done")
 })

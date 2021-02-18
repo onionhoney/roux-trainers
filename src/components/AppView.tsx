@@ -15,6 +15,7 @@ import PanoramaView from './PanoramaView';
 import FavListView from './FavListView';
 import TopBarView from './TopBarView';
 import AnalyzerView from './AnalyzerView';
+import TrackerView from './TrackerView';
 
 
 interface TabPanelProps {
@@ -66,7 +67,7 @@ const useStyles = makeStyles(theme => ({
 }))
 
 
-const modes : Mode[] = ["analyzer", "fbdr", "fs", "fb", "ss", "cmll", "4c", "eopair"]
+const modes : Mode[] = ["analyzer", "tracking", "fbdr", "fs", "fb", "ss", "fbss", "cmll", "4c", "eopair"]
 
 function _getInitialHashLocation() {
   if (window.location.hash) {
@@ -196,7 +197,7 @@ function AppView(props: { state: AppState, dispatch: React.Dispatch<Action> } ) 
           <AnalyzerView {...{state, dispatch}} />
         </TabPanel>
         <TabPanel value={value} index={1} className={classes.page}>
-          <BlockTrainerView {...{state, dispatch}} />
+          <TrackerView {...{state, dispatch}} />
         </TabPanel>
         <TabPanel value={value} index={2} className={classes.page}>
           <BlockTrainerView {...{state, dispatch}} />
@@ -208,12 +209,18 @@ function AppView(props: { state: AppState, dispatch: React.Dispatch<Action> } ) 
           <BlockTrainerView {...{state, dispatch}} />
         </TabPanel>
         <TabPanel value={value} index={5} className={classes.page}>
-          <CmllTrainerView {...{state, dispatch}} />
+          <BlockTrainerView {...{state, dispatch}} />
         </TabPanel>
         <TabPanel value={value} index={6} className={classes.page}>
           <BlockTrainerView {...{state, dispatch}} />
         </TabPanel>
         <TabPanel value={value} index={7} className={classes.page}>
+          <CmllTrainerView {...{state, dispatch}} />
+        </TabPanel>
+        <TabPanel value={value} index={8} className={classes.page}>
+          <BlockTrainerView {...{state, dispatch}} />
+        </TabPanel>
+        <TabPanel value={value} index={9} className={classes.page}>
           <BlockTrainerView {...{state, dispatch}} />
         </TabPanel>
         </Grid>

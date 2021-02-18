@@ -412,3 +412,26 @@ export class FsStateM extends BlockTrainerStateM {
         }
     }
 }
+
+
+export class FbssStateM extends BlockTrainerStateM {
+    solverL = 6;
+    solverR = 10;
+
+    getRandom(): [CubieCube, string[] ] {
+        let active_lp = getActiveName(this.state.config.fbssLpSelector)
+        let active_ss = getActiveName(this.state.config.fbssSsSelector)
+        let cube, solver
+        if (active_lp === "FBLP at front") {
+            cube = CubeUtil.get_random_with_mask(Mask.fs_back_mask)
+        } else {
+            cube = CubeUtil.get_random_with_mask(Mask.fs_front_mask)
+        }
+        if (active_ss === "SS at front") {
+            solver = "fbss-front";
+        } else {
+            solver = "fbss-back";
+        }
+        return [cube, [solver] ];
+    }
+}

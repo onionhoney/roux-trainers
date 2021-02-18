@@ -103,14 +103,14 @@ let prunerFactory = function(def: PrunerDef): PrunerConfig {
 
     let cosize = def.corner.filter(x => x === S || x === O).length
     let cpsize = def.corner.filter(x => x === S).length
-    let cisize = def.edge.filter(x => x !== X).length
+    let cisize = def.corner.filter(x => x !== X).length
     let csize = Math.pow(2, cosize) * Math.pow(cisize, cpsize)
     let cp_idx = def_to_idx(def.corner, false);
     let c_idx = def_to_idx(def.corner, true);
 
     let tosize = def.center.filter(x => x === O).length
     let tpsize = def.center.filter(x => x === S).length
-    let tisize = def.edge.filter(x => x !== X).length
+    let tisize = def.center.filter(x => x !== X).length
     let tsize = Math.pow(2, tosize) * Math.pow(tisize, tpsize)
     let tp_idx = def_to_idx(def.center, false);
 
@@ -213,6 +213,9 @@ let fbdrPrunerConfig : PrunerConfig = function() {
     }
 }()
 
+
+
+
 let htm_rwm = ["U", "U2", "U'", "F", "F2", "F'", "R", "R2", "R'",
     "r", "r2", "r'", "D", "D2", "D'", "M", "M'", "M2", "B", "B'", "B2"]
 let rrwmu = ["U", "U'", "U2", "R", "R'", "R2",
@@ -226,60 +229,6 @@ let fbPrunerConfig = prunerFactory({
     moveset: htm_rwm,
     max_depth: 5
 });
-
-let fbPrunerConfig_old : PrunerConfig = function() {
-    const esize = Math.pow(24, 3)
-    const csize = Math.pow(24, 2)
-    const size = esize * csize * 6
-
-    function encode(cube:CubieCube) {
-      let c1 = 0, c2 = 0
-      for (let i = 0; i < 8; i++) {
-        if (cube.cp[i] === 4) {
-          c1 = i * 3 + cube.co[i]
-        } else if (cube.cp[i] === 5) {
-          c2 = i * 3 + cube.co[i];
-        }
-      }
-      const enc_c = c1 * 24 + c2
-      let e1 = 0, e2 = 0, e3 = 0
-      for (let i = 0; i < 12; i++) {
-          switch (cube.ep[i]) {
-              case 5 : e1 = i * 2 + cube.eo[i]; break;
-              case 8 : e2 = i * 2 + cube.eo[i]; break;
-              case 9 : e3 = i * 2 + cube.eo[i]; break;
-          }
-      }
-      const enc_e = e1 * (24 * 24 ) + e2 * (24 ) + e3
-      const enc_ce = enc_c + 24 * 24 * enc_e
-
-      let t1 = 0
-      for (let i = 0; i < 5; i++) {
-          if (cube.tp[i] === 4) { t1 = i }
-      }
-      const enc = enc_ce * 6 + t1
-      return enc
-    }
-
-    const moves = ["id"]
-    const solved_states = moves.map( move => new CubieCube().apply(move))
-
-    const max_depth = 4
-    const moveset : Move[] = ["U", "U2", "U'", "F", "F2", "F'", "R", "R2", "R'",
-    "r", "r2", "r'", "D", "D2", "D'", "M", "M'", "M2", "B", "B'", "B2"] /* "E", "E'", "E2", "S", "S'", "S2" ]*/
-    .map(s => Move.all[s])
-
-    return {
-        size,
-        encode,
-        solved_states,
-        max_depth,
-        moveset
-    }
-}()
-
-
-
 
 let ssPrunerConfig = (is_front: boolean) => {
     const size = Math.pow(24, 3)
@@ -322,7 +271,6 @@ let sbPrunerConfig = prunerFactory({
     max_depth: 6
 });
 
-
 let fsPrunerConfig = (is_front: boolean) => prunerFactory({
         corner: is_front ? [I,I,I,I,S,I,I,I] : [I,I,I,I,I,S,I,I] ,
         edge:   is_front ? [I,I,I,I,I,S,I,I,S,I,I,I] : [I,I,I,I,I,S,I,I,I,S,I,I] ,
@@ -330,8 +278,26 @@ let fsPrunerConfig = (is_front: boolean) => prunerFactory({
         solved_states: ["id"],
         moveset: htm_rwm,
         max_depth: 4
-    });
+});
 
+let fbssPrunerConfig =(is_front: boolean) => [
+    prunerFactory({
+        corner: is_front ? [I,I,I,I,S,S,I,S]: [I,I,I,I,S,S,S,I],
+        edge:   [I,I,I,I,I,I,I,I,I,I,I,I],
+        center: [I,I,I,I,I,I],
+        solved_states: ["id"],
+        moveset: htm_rwm,
+        max_depth: 5
+    }),
+    prunerFactory({
+        corner: [I,I,I,I,I,I,I,I],
+        edge:   [I,I,I,I,I,S,I,S,S,S,is_front ? I : S,is_front ? S : I],
+        center: [I,I,I,I,I,I],
+        solved_states: ["id"],
+        moveset: htm_rwm,
+        max_depth: 5
+    }),
+]
 
 let lsePrunerConfig : PrunerConfig = function() {
     const size = Math.pow(12, 6) * 4 * 4 // TODO: optimize this plz
@@ -416,4 +382,4 @@ function eolrPrunerConfig(center_flag: number, barbie_mode?: string): PrunerConf
 }
 
 export { fbdrPrunerConfig, fsPrunerConfig, sbPrunerConfig, ssPrunerConfig, fbPrunerConfig, lsePrunerConfig, eolrPrunerConfig,
-    prunerFactory, fbPrunerConfig_old}
+    prunerFactory, fbssPrunerConfig }

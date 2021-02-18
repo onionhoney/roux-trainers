@@ -1,6 +1,6 @@
 import { StateFactory} from './AbstractStateM';
 import { AppState, Mode } from '../Types';
-import { FbdrStateM, SsStateM, FbStateM, FsStateM} from './BlockTrainerStateM';
+import { FbdrStateM, SsStateM, FbStateM, FsStateM, FbssStateM} from './BlockTrainerStateM';
 import { LSEStateM, EOLRStateM } from './LSETrainerStateM';
 import { SolvingStateM, SolvedStateM } from './CmllStateM';
 
@@ -11,6 +11,8 @@ StateFactory.create = function(state: AppState) {
                 return new FbdrStateM(state);
             case "ss":
                 return new SsStateM(state);
+            case "fbss":
+                return new FbssStateM(state);
             case "fs":
                 return new FsStateM(state);
             case "fb":
@@ -29,6 +31,8 @@ StateFactory.create = function(state: AppState) {
             case "experimental":
                 return new FbStateM(state);
             case "analyzer":
+                return new FbStateM(state)
+            case "tracking":
                 return new FbStateM(state)
         }
         ;

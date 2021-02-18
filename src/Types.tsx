@@ -21,6 +21,8 @@ export type Config = {
     fbdrPosSelector1: Selector,
     fbdrPosSelector2: Selector,
     fbdrPosSelector3: Selector,
+    fbssLpSelector: Selector,
+    fbssSsSelector: Selector,
     ssSelector: Selector,
     ssEOSelector: Selector,
     ssPosSelector: Selector,
@@ -42,7 +44,7 @@ export type Config = {
 
 export type StateT = "solving" | "solved" | "hiding" | "revealed" | "revealed_all"
 
-export type Mode = "cmll" | "fs" | "fbdr" | "ss" | "fb" | "experimental" | "4c" | "eopair" | "analyzer"
+export type Mode = "cmll" | "fs" | "fbdr" | "ss" | "fb" | "fbss" | "experimental" | "4c" | "eopair" | "analyzer" | "tracking"
 
 type KeyAction = {
     type: "key",

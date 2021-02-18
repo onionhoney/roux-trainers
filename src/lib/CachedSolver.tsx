@@ -1,4 +1,4 @@
-import { FbdrSolver, SolverT, FsSolver, SsSolver, SbSolver, FbSolver, Min2PhaseSolver, LSESolver, EOLRSolver} from './Solver';
+import { FbdrSolver, SolverT, FsSolver, SsSolver, SbSolver, FbSolver, FbssSolver, Min2PhaseSolver, LSESolver, EOLRSolver} from './Solver';
 
 let all_solvers = [
 "fbdr","fb", "fs-front", "fs-back", "ss-front", "ss-back", "min2phase",
@@ -15,6 +15,8 @@ let CachedSolver = function() {
                 case "fs-back": cache.set(s, FsSolver(false)); break
                 case "ss-front": cache.set(s, SsSolver(true)); break
                 case "ss-back": cache.set(s, SsSolver(false)); break
+                case "fbss-front": cache.set(s, FbssSolver(true)); break
+                case "fbss-back": cache.set(s,FbssSolver(false)); break
                 case "sb": cache.set(s, SbSolver()); break
 
                 case "min2phase": cache.set(s, Min2PhaseSolver()); break
