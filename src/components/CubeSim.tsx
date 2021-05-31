@@ -3,7 +3,6 @@ import React, { useEffect } from 'react'
 import { FaceletCubeT, Face } from "../lib/Defs";
 import * as THREE from 'three';
 import { arrayEqual } from '../lib/Math';
-import { Vector3 } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import * as chroma from 'chroma-js';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
@@ -15,6 +14,7 @@ type Config = {
     hintDistance?: number,
     enableControl? : boolean
 }
+let { Vector3 } = THREE
 
 /*
 How to propagate control of keypress ..? maybe not here, in the app.
@@ -48,7 +48,7 @@ type ConfigT = {width: number, height: number, colorScheme: Array<string>, mode?
 const roundedFace = ((rounded?: number[], cornerRadius?: number, ) => {
     cornerRadius = cornerRadius || 0.1
     rounded = rounded || [1, 1, 1, 1]
-    let geo = new THREE.Geometry()
+    let geo = new THREE.BufferGeometry()
     let cornerVertices = []
     let cornerCenter = new THREE.Vector3(1 - cornerRadius, 1 - cornerRadius, 0)
     let squareCorner = new THREE.Vector3(1, 1, 0)
@@ -58,22 +58,29 @@ const roundedFace = ((rounded?: number[], cornerRadius?: number, ) => {
             cornerCenter.clone().add(new THREE.Vector3(Math.cos(degree), Math.sin(degree), 0).multiplyScalar(cornerRadius))
         )
     }
+    let vertices = []
     for (let i = 0; i < 4; i++) {
         if (rounded[i]) {
-            geo.vertices.push(...cornerVertices)
+            vertices.push(...cornerVertices)
         } else {
-            geo.vertices.push(squareCorner.clone())
+            vertices.push(squareCorner.clone())
         }
         cornerVertices = cornerVertices.map(x => x.clone().applyAxisAngle(new Vector3(0, 0, 1), 0.5 * Math.PI))
         squareCorner.applyAxisAngle(new Vector3(0, 0, 1), 0.5 * Math.PI)
     }
-    for (let i = 0; i< geo.vertices.length; i++) {
-        let i1 = (i + 1) % geo.vertices.length;
-        let face = new THREE.Face3(geo.vertices.length, i, i1)
-        geo.faces.push(face)
-    }
+    //vertices.push(new Vector3(0, 0, 0))
 
-    geo.vertices.push(new Vector3(0, 0, 0));
+    let vertices_float32 = new Float32Array( vertices.length * 3)
+    let vertices_attr = new THREE.BufferAttribute(vertices_float32, 3).copyVector3sArray( vertices)
+    console.log(vertices_attr)
+    let faces = []
+    for (let i = 0; i< vertices.length; i++) {
+        let i1 = (i + 1) % vertices.length;
+        faces.push(vertices[vertices.length - 1])
+        faces.push(vertices[i])
+        faces.push(vertices[i1])
+    }
+    geo.setFromPoints(faces)
 
     return geo
 })
@@ -114,7 +121,7 @@ const redraw_cube = function (cube: FaceletCubeT, config: ConfigT ) {
 
     let stickers_tmpl: THREE.Mesh[], stickerwrap_tmpl: THREE.Mesh
 
-    const geos : THREE.Geometry[] = []; // new THREE.PlaneGeometry(0.89 * mag * 2, 0.89 * mag * 2)
+    const geos : THREE.BufferGeometry[] = []; // new THREE.PlaneGeometry(0.89 * mag * 2, 0.89 * mag * 2)
     const geo_border = new THREE.PlaneGeometry(2.0, 2.0)//1.0 * mag * 2, 1.0 * mag * 2)
 
     let materials_border = new THREE.MeshBasicMaterial({ color: 0x000000, side: THREE.FrontSide })
@@ -142,7 +149,7 @@ const redraw_cube = function (cube: FaceletCubeT, config: ConfigT ) {
     function drawCube(faces: FaceletCubeT, colorScheme: Array<string>): THREE.Group {
         //console.log("update color scheme ", colorScheme_)
         let materials = Array(7).fill(0).map((_, i) => {
-            let mat = new THREE.MeshBasicMaterial({ color: colorScheme[i], side: THREE.DoubleSide, vertexColors: THREE.FaceColors });
+            let mat = new THREE.MeshBasicMaterial({ color: colorScheme[i], side: THREE.DoubleSide });
             mat.alphaTest = alpha;
             return mat
         })
@@ -166,7 +173,7 @@ const redraw_cube = function (cube: FaceletCubeT, config: ConfigT ) {
                // 
             //chroma.default(colorScheme[i]).brighten(0.7).hex()
                   //desaturate(2).hex() //darken(0.5).hex()
-            let mat = new THREE.MeshBasicMaterial({ color, side: THREE.DoubleSide, vertexColors: THREE.FaceColors });
+            let mat = new THREE.MeshBasicMaterial({ color, side: THREE.DoubleSide });
 
             let geo = roundedFace([1,1,1,1], corner_radius)
             geos.push(geo)
