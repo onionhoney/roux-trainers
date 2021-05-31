@@ -1,27 +1,27 @@
 {
   "files": {
     "main.css": "/roux-trainers/static/css/main.34de6062.chunk.css",
-    "main.js": "/roux-trainers/static/js/main.2e2e4a56.chunk.js",
-    "main.js.map": "/roux-trainers/static/js/main.2e2e4a56.chunk.js.map",
+    "main.js": "/roux-trainers/static/js/main.f14e0eb5.chunk.js",
+    "main.js.map": "/roux-trainers/static/js/main.f14e0eb5.chunk.js.map",
     "runtime-main.js": "/roux-trainers/static/js/runtime-main.37981257.js",
     "runtime-main.js.map": "/roux-trainers/static/js/runtime-main.37981257.js.map",
     "static/css/2.d6dc80d2.chunk.css": "/roux-trainers/static/css/2.d6dc80d2.chunk.css",
-    "static/js/2.c8593af7.chunk.js": "/roux-trainers/static/js/2.c8593af7.chunk.js",
-    "static/js/2.c8593af7.chunk.js.map": "/roux-trainers/static/js/2.c8593af7.chunk.js.map",
+    "static/js/2.6ee65b67.chunk.js": "/roux-trainers/static/js/2.6ee65b67.chunk.js",
+    "static/js/2.6ee65b67.chunk.js.map": "/roux-trainers/static/js/2.6ee65b67.chunk.js.map",
     "index.html": "/roux-trainers/index.html",
-    "precache-manifest.21c496f5766eb9d3647ab4e2503c7063.js": "/roux-trainers/precache-manifest.21c496f5766eb9d3647ab4e2503c7063.js",
+    "precache-manifest.8ac4abc0e10b4ea440f7e19aae02ab3a.js": "/roux-trainers/precache-manifest.8ac4abc0e10b4ea440f7e19aae02ab3a.js",
     "service-worker.js": "/roux-trainers/service-worker.js",
     "static/css/2.d6dc80d2.chunk.css.map": "/roux-trainers/static/css/2.d6dc80d2.chunk.css.map",
     "static/css/main.34de6062.chunk.css.map": "/roux-trainers/static/css/main.34de6062.chunk.css.map",
-    "static/js/Worker.4f7f0f4c.worker.js": "/roux-trainers/static/js/Worker.4f7f0f4c.worker.js",
-    "static/js/Worker.4f7f0f4c.worker.js.map": "/roux-trainers/static/js/Worker.4f7f0f4c.worker.js.map",
+    "static/js/Worker.cde5f07b.worker.js": "/roux-trainers/static/js/Worker.cde5f07b.worker.js",
+    "static/js/Worker.cde5f07b.worker.js.map": "/roux-trainers/static/js/Worker.cde5f07b.worker.js.map",
     "static/media/index.css": "/roux-trainers/static/media/roboto-mono-latin-700italic.b933305e.woff"
   },
   "entrypoints": [
     "static/js/runtime-main.37981257.js",
     "static/css/2.d6dc80d2.chunk.css",
-    "static/js/2.c8593af7.chunk.js",
+    "static/js/2.6ee65b67.chunk.js",
     "static/css/main.34de6062.chunk.css",
-    "static/js/main.2e2e4a56.chunk.js"
+    "static/js/main.f14e0eb5.chunk.js"
   ]
 }
