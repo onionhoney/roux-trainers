@@ -35,7 +35,7 @@ const useStyles = makeStyles(theme => {
       display: "flex"
     },
     bar: {
-      backgroundColor: theme.palette.primary.main,
+      backgroundColor: is_bright ? theme.palette.primary.main : '#6e728a', // ,
       color: theme.palette.background.paper,
       //borderRadius: "5px"
       display: "flex",

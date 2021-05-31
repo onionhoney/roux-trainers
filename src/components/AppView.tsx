@@ -70,7 +70,7 @@ const useStyles = makeStyles(theme => ({
 const modes : Mode[] = ["analyzer", "tracking", "fbdr", "fs", "fb", "ss", "fbss", "cmll", "4c", "eopair"]
 
 function _getInitialHashLocation() {
-  const default_idx = 1
+  const default_idx = 2
   if (window.location.hash) {
     let idx = (modes as string[]).indexOf(window.location.hash.slice(1))
     if (idx === -1) {

@@ -43,4 +43,4 @@
 - (v1.5) 2/18/2021: Introduced Tracking Trainer Beta.
 =======
 
-If you have a nice idea on how to improve the app don't hesitate to let me know. <3
+If you have ideas on how to improve the app just shoot a message and let me know. <3
