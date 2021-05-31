@@ -80,7 +80,11 @@ let trigger_algs: AlgDesc[] = [
     createAlg("R'U'R_1", "R' U' R", "trigger"),
     createAlg("R'U'R_2", "r' U' r", "trigger"),
     createAlg("R'UR_1", "R' U R", "trigger"),
-    createAlg("R'UR_2", "r' U r", "trigger")
+    createAlg("R'UR_2", "r' U r", "trigger"),
+    createAlg("RU2R'_1", "R U2 R'", "trigger"),
+    createAlg("RU2R'_2", "r U2 r'", "trigger"),
+    createAlg("R'U2R_1", "R' U2 R", "trigger"),
+    createAlg("R'U2R_2", "r' U2 r", "trigger"),
 ]
 
 let u_auf_algs: AlgDesc[] = [

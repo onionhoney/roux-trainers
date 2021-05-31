@@ -38,8 +38,8 @@ export const initialConfig : Config = (() => {
             kind: "cube_mask"
         },
         triggerSelector: {
-            names: ["RUR'", "RU'R'", "R'U'R", "R'UR"],
-            flags: [0, 0, 0, 0],
+            names: ["RUR'", "RU'R'", "R'U'R", "R'UR", "RU2R'", "R'U2R"],
+            flags: [0, 0, 0, 0, 0, 0],
             kind: "trigger"
         },
         hyperOriSelector: {
