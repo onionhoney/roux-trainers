@@ -43,7 +43,7 @@ const useStyles = makeStyles(theme => {
       justifyContent: "space-between",
     },
     select: {
-      backgroundColor: is_bright ? "#657ce9" : "#bfc4e2",
+      backgroundColor: is_bright ? "#657ce9" : "#9297b3", //9FA4C2",
       color: theme.palette.background.paper,
       paddingLeft: 12,
       marginRight: 15,
