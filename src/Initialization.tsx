@@ -5,6 +5,12 @@ export const initialConfig : Config = (() => {
     let arr_ori_flag = Array(24).fill(0)
     arr_ori_flag[7] = 1 // YR
     return {
+        showCube: {
+            label: "Virtual Cube",
+            names:["Show", "Hide"],
+            flags: [1,0],
+            kind: "virtual-cube"
+        },
         theme: {
             names: ["bright", "dark"],
             flags: [1,0],
@@ -36,6 +42,11 @@ export const initialConfig : Config = (() => {
             flags: [0, 0, 0, 0],
             kind: "trigger"
         },
+        hyperOriSelector: {
+            names: ["off", "L/R", "F/B"],
+            flags: [1 ,0, 0],
+            kind: "hyperori"
+        },
         orientationSelector: {
             label: "Color Scheme (U-F)",
             names: [
@@ -64,7 +75,7 @@ export const initialConfig : Config = (() => {
         fbOnlySelector: {
             label: "Pieces to solve",
             names: ["FB Last Pair + DR", "FB Last Pair Only"],
-            flags: [1, 0],
+            flags: [0, 1],
             kind: "fb-only"
         },
         fbPairSolvedSelector: {

@@ -367,6 +367,28 @@ export class MoveSeq {
         }
     }
 
+    static quarterMap : {[key: string]: string} = ({
+        "U2": "U'",
+        "R2": "R'",
+        "r2": "r'",
+        "M2": "M'",
+        "L2": "L",
+    });
+    toQuarter() {
+        let nm : Move[] = []
+        for (let i = 0 ; i < this.moves.length; i++) {
+            let m = this.moves[i]
+            if (m.name[1] === "2") {
+                let k = MoveSeq.quarterMap[m.name] || m.name[0]
+                nm.push(Move.all[ k ])
+                nm.push(Move.all[ k ])
+            } else {
+                nm.push(m)
+            }
+        }
+        return new MoveSeq(nm)
+    }
+
     static _combine(move1: Move, move2: Move) : MoveSeq {
         const getCnt = (name : string) => {
             if (name.length === 1) return 1
@@ -454,6 +476,11 @@ export class MoveSeq {
 
     inv() {
         let moves: Move[] = this.moves.slice(0).reverse().map(x => x.inv()).flat()
+        return new MoveSeq(moves)
+    }
+
+    slice(n: number) {
+        let moves: Move[] = this.moves.slice(0, n)
         return new MoveSeq(moves)
     }
 
@@ -592,6 +619,7 @@ let FaceletCube = function () {
         return color_cube;
     }
 
+
     return {
         from_cubie,
         to_unfolded_cube_str,
@@ -609,6 +637,7 @@ type Mask = {
     cp: number[],
     ep: number[],
 }
+export type MaskT = Mask;
 function mask_copy (m: Mask) {
     return {
         co: m.co && [...m.co],

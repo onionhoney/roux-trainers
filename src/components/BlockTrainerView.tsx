@@ -23,6 +23,8 @@ import { SingleSelect, MultiSelect } from './Select';
 import { ColorPanel } from './Input';
 import { AlgDesc } from '../lib/Algs';
 import { ScrambleInputView } from './ScrambleInputView';
+import useMediaQuery from '@material-ui/core/useMediaQuery';
+import { config } from 'process';
 
 const useStyles = makeStyles(theme => ({
     container: {
@@ -238,6 +240,9 @@ function BlockTrainerView(props: { state: AppState, dispatch: React.Dispatch<Act
       }
     }
 
+    const gt_sm = useMediaQuery(theme.breakpoints.up('sm'));
+    const canvas_wh = (gt_sm) ? [400, 350] : [320, 280]
+
     // helper-text
     let helperText = getHelperTextForMode(state.mode)
 
@@ -287,7 +292,7 @@ function BlockTrainerView(props: { state: AppState, dispatch: React.Dispatch<Act
       <Paper className={ classes.paper}>
       <Grid container>
 
-        <Grid item md={8} xs={12} sm={6} className={classes.condGap}>
+        <Grid item md={6} sm={12} xs={12} className={classes.condGap}>
           <Box style={{display: "flex" }}>
             <Box display="flex" >
                 <Box style={{display: "flex", alignSelf: "flex-start"}}> <Box className={classes.title} style={{}}>
@@ -306,17 +311,19 @@ function BlockTrainerView(props: { state: AppState, dispatch: React.Dispatch<Act
         </Grid>
 
 
-        <Grid item md={4} sm={6} xs={12} style={{display: "flex", justifyContent: "center"}}>
+        <Grid item md={6} sm={12} xs={12} style={{display: "flex", justifyContent: "center"}}>
           <Box style={{backgroundColor: "rgba(0, 0, 0, 0)"}}>
+            { getActiveName(props.state.config.showCube) === "Show" ?
             <CubeSim
-              width={250}
-              height={250}
+              width={canvas_wh[0]}
+              height={canvas_wh[1]}
               cube={facelet}
+
               colorScheme={state.colorScheme.getColorsForOri(state.cube.ori)}
-              hintDistance={ (state.mode === "4c" || state.mode === "eopair") ? 1.1 : 7 }
-              bgColor={simBackground}
+              hintDistance={ (state.mode === "4c" || state.mode === "eopair") ? 3 : 7 }
+              theme={getActiveName(state.config.theme)}
               facesToReveal={ [Face.L, Face.B, Face.D]  }
-            />
+            /> : null }
           </Box>
         </Grid>
       </Grid>
@@ -382,6 +389,8 @@ function ConfigPanelGroup(props: {state: AppState, dispatch: React.Dispatch<Acti
       <SingleSelect {...{state, dispatch, select: select1}}> </SingleSelect>
       <SingleSelect {...{state, dispatch, select: select2}}> </SingleSelect>
       <SingleSelect {...{state, dispatch, select: select3}}> </SingleSelect>
+      
+      <SingleSelect {...{state, dispatch, select: (c) => c.showCube}}> </SingleSelect>
       <MultiSelect {...{state, dispatch, select: select4, options: {manipulators: DRManip} }}> </MultiSelect>
       <ColorPanel {...{state, dispatch}} />
 
@@ -407,6 +416,8 @@ function ConfigPanelGroup(props: {state: AppState, dispatch: React.Dispatch<Acti
       <SingleSelect {...{state, dispatch, select: select3}}> </SingleSelect>
       <SingleSelect {...{state, dispatch, select: select4}}> </SingleSelect>
       <SingleSelect {...{state, dispatch, select: select5}}> </SingleSelect>
+      <SingleSelect {...{state, dispatch, select: (c) => c.showCube}}> </SingleSelect>
+
       <MultiSelect {...{state, dispatch, select: pos1, options: {manipulators: LPEdgeManip} }}> </MultiSelect>
       <MultiSelect {...{state, dispatch, select: pos3, options: {manipulators: LPEdgeManip} }}> </MultiSelect>
       <ColorPanel {...{state, dispatch}} />
@@ -421,6 +432,8 @@ function ConfigPanelGroup(props: {state: AppState, dispatch: React.Dispatch<Acti
       <Fragment>
         <SingleSelect {...{ state, dispatch, select: select1 }}> </SingleSelect>
         <SingleSelect {...{ state, dispatch, select: select2 }}> </SingleSelect>
+        <SingleSelect {...{state, dispatch, select: (c) => c.showCube}}> </SingleSelect>
+
         <ColorPanel {...{state, dispatch}} />
 
 
@@ -434,6 +447,8 @@ function ConfigPanelGroup(props: {state: AppState, dispatch: React.Dispatch<Acti
       <Fragment>
         <SingleSelect {...{ state, dispatch, select: select1 }}> </SingleSelect>
         <SingleSelect {...{ state, dispatch, select: select2 }}> </SingleSelect>
+        <SingleSelect {...{state, dispatch, select: (c) => c.showCube}}> </SingleSelect>
+
         <ColorPanel {...{state, dispatch}} />
 
 
@@ -467,6 +482,8 @@ function ConfigPanelGroup(props: {state: AppState, dispatch: React.Dispatch<Acti
         <SingleSelect {...{ state, dispatch, select: select2 }}> </SingleSelect>
         <SingleSelect {...{ state, dispatch, select: select3 }}> </SingleSelect>
         <SingleSelect {...{ state, dispatch, select: select4 }}> </SingleSelect>
+        <SingleSelect {...{state, dispatch, select: (c) => c.showCube}}> </SingleSelect>
+
         <ColorPanel {...{state, dispatch}} />
       </Fragment>
     )
@@ -484,6 +501,8 @@ function ConfigPanelGroup(props: {state: AppState, dispatch: React.Dispatch<Acti
         <SingleSelect {...{ state, dispatch, select: select3 }}> </SingleSelect>
         <SingleSelect {...{ state, dispatch, select: select4 }}> </SingleSelect>
         <SingleSelect {...{ state, dispatch, select: select5 }}> </SingleSelect>
+        <SingleSelect {...{state, dispatch, select: (c) => c.showCube}}> </SingleSelect>
+
         <ColorPanel {...{state, dispatch}} />
       </Fragment>
     )

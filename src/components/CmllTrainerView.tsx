@@ -7,7 +7,7 @@ import Divider from '@material-ui/core/Divider';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
 import Box from '@material-ui/core/Box';
-import { FaceletCube, Mask, MoveSeq } from '../lib/CubeLib';
+import { CubeUtil, FaceletCube, Mask, MoveSeq } from '../lib/CubeLib';
 
 import { AppState, Action, Config } from "../Types";
 import clsx from 'clsx';
@@ -15,6 +15,7 @@ import { Face } from '../lib/Defs';
 import { getActiveName } from '../lib/Selector';
 import { MultiSelect, SingleSelect } from './Select';
 import { ColorPanel } from './Input';
+import { rand_int } from '../lib/Math';
 
 
 const useStyles = makeStyles(theme => ({
@@ -30,7 +31,7 @@ const useStyles = makeStyles(theme => ({
       flexDirection: 'column',
     },
     fixedHeight: {
-      height: 300,
+      height: 350,
     },
     canvasPaper: {
       padding: theme.spacing(0),
@@ -70,13 +71,21 @@ function CmllTrainerView(props: { state: AppState, dispatch: React.Dispatch<Acti
     let facelet = FaceletCube.from_cubie(cube,
       _getMask(getActiveName( state.config.cmllCubeMaskSelector) || "Show"))
 
+    let hyperori = getActiveName(state.config.hyperOriSelector) || "off"
+    if (hyperori !== "off") {
+      if (hyperori === "F/B") {
+        facelet = facelet.map( face => face.map(f => f === Face.L || f === Face.R ? Face.X : f) )
+      } else
+        facelet = facelet.map( face => face.map(f => f === Face.F || f === Face.B ? Face.X : f) )
+    }
     const theme = useTheme()
-    const simBackground = getActiveName(state.config.theme) === "bright" ? "#eeeeef" : theme.palette.background.paper
 
     const cmll = (c: Config) => c.cmllSelector;
     const cmllcubemask = (c : Config) => c.cmllCubeMaskSelector;
     const cmllauf = (c: Config) => c.cmllAufSelector;
     const trigger = (c: Config) => c.triggerSelector;
+    const hyperorisel = (c: Config) => c.hyperOriSelector;
+
 
     const panel = (
       <Fragment>
@@ -84,6 +93,8 @@ function CmllTrainerView(props: { state: AppState, dispatch: React.Dispatch<Acti
         <MultiSelect {...{state, dispatch, select: cmll, options: { label: "CMLL Case", noDialog: true} }} />
         <MultiSelect {...{state, dispatch, select: cmllauf, options: { label: "CMLL Auf", noDialog: true} }} />
         <MultiSelect {...{state, dispatch, select: trigger, options: { label: "SB Last Pair Trigger (Uncheck all for pure CMLL)", noDialog: true} } } />
+        <SingleSelect {...{state, dispatch, select: hyperorisel, label: "Hyperorientation" } } />
+
         <ColorPanel {...{state, dispatch}} />
       </Fragment>
     )
@@ -132,11 +143,11 @@ function CmllTrainerView(props: { state: AppState, dispatch: React.Dispatch<Acti
             <Paper className={canvasPaper}>
               <Box margin="auto">
               <CubeSim
-                width={300}
-                height={300}
+                width={400}
+                height={350}
                 cube={facelet}
                 colorScheme={state.colorScheme.getColorsForOri(state.cube.ori)}
-                bgColor={simBackground}
+                theme={getActiveName(state.config.theme)}
                 facesToReveal={[Face.L]}
               />
               </Box>

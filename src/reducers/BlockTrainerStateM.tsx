@@ -281,7 +281,7 @@ export class FbdrStateM extends BlockTrainerStateM {
             return [this._get_random_fs_front(), [solverName], scrambleSolver];
         }
         else
-            return [rand_choice([this._get_random_fs_back, this._get_random_fs_front])(),
+            return [ rand_choice([ () => this._get_random_fs_back(), () => this._get_random_fs_front()])(),
                 [solverName], scrambleSolver];
     }
 }
