@@ -11,9 +11,13 @@ export abstract class AbstractStateM {
     constructor(state: AppState) {
         this.state = state;
     }
+    /* when new moves arrive (from virtual cube control) */
     abstract onMove(s: string): AppState;
+    /* when global config changes */
     abstract onConfig(conf: Config): AppState;
+    /* when user clicks a button or presses a key */
     abstract onControl(s: string): AppState;
+    /* when user replays an item from the favlist */
     onReplay(case_: FavCase): AppState {
         return this.state;
     }

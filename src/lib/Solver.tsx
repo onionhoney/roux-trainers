@@ -50,8 +50,8 @@ function Solver(config: SolverConfig) : SolverT{
         return accum
     }
 
-    let Moveable = Object.create({})
-    function prepareNextMoveable() {
+    let nextMoves = Object.create({})
+    function generateNextMoveTable() {
         function getAvailableMove(name : string) {
             switch (name[0]) {
                 case "U": return moveset.filter(k => k.name[0] !== "U");
@@ -74,13 +74,13 @@ function Solver(config: SolverConfig) : SolverT{
             }
         }
         for (let move of moveset) {
-            Moveable[move.name] = getAvailableMove(move.name)
+            nextMoves[move.name] = getAvailableMove(move.name)
         }
     }
-    prepareNextMoveable()
+    generateNextMoveTable()
 
     function expand(cube: CubieCube, depth: number, solution: Move[]) : SState{
-        const availableMoves = solution.length > 0 ? Moveable[solution[solution.length - 1].name] : moveset
+        const availableMoves = solution.length > 0 ? nextMoves[solution[solution.length - 1].name] : moveset
         let seen_encodings : Set<number> | null = null
         let prune = config.pruneSeenEncodings
         if (prune) {
@@ -90,11 +90,11 @@ function Solver(config: SolverConfig) : SolverT{
         for (let move of availableMoves) {
             let new_cube = cube.apply(move)
             let enc = pruners[0].encode(new_cube)
-            if (!prune || !seen_encodings!.has(enc)) {
-                prune && seen_encodings!.add(enc)
-                solution.push(move);
-                let st : SState = search(new_cube, depth + 1, solution);
-                solution.pop();
+            if (seen_encodings == null || !seen_encodings.has(enc)) {
+                seen_encodings?.add(enc)
+                solution.push(move)
+                let st : SState = search(new_cube, depth + 1, solution)
+                solution.pop()
                 if (st === SState.STOP) {
                     return SState.STOP
                 }

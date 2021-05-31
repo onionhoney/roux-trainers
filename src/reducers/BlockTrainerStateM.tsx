@@ -14,7 +14,7 @@ export abstract class BlockTrainerStateM extends AbstractStateM {
     scrambleMargin: number = 1;
     scrambleCount: number = 1;
     algDescWithMoveCount: string = "";
-    expansionFactor = 2;
+    expansionFactor = 5;
     premoves: string[] = [""];
     orientations: string[] = [""];
     evaluator : Evaluator;
@@ -337,7 +337,6 @@ export class FbStateM extends BlockTrainerStateM {
     solverR: number = 11;
     //premoves = ["", "x", "x'", "x2"];
     premoves = ["", "x", "x'", "x2"];
-    expansionFactor = 1;
 
     _find_center_connected_edges(cube: CubieCube, is_l_only: boolean) {
         let centers = is_l_only ? [ Face.L ] : [ Face.F, Face.B, Face.L, Face.R]
@@ -398,7 +397,6 @@ export class FsStateM extends BlockTrainerStateM {
     solverL = 7;
     solverR = 11;
     premoves = ["", "x", "x'", "x2"];
-    expansionFactor = 1;
 
     getRandom(): [CubieCube, string[], string] {
         let cube = CubeUtil.get_random_with_mask(Mask.empty_mask);
