@@ -1,6 +1,0 @@
-
-> cmll-trainer@0.1.0 test /Users/i_love_bianka/Workspace/Twisty/roux-trainers
-> react-scripts test "solver" "--verbose=false"
-
-
-
