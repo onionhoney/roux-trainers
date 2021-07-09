@@ -29,7 +29,6 @@ export function ColorSetter(props: {state: AppState, dispatch: React.Dispatch<Ac
         <Box>
         <TextField
             label="Color"
-            defaultValue="Default Value"
             helperText="G,B,R,O,Y,W,Gray"
             onChange={handleChange}
             fullWidth
@@ -54,8 +53,9 @@ export function ColorPanel(props: {state: AppState, dispatch: React.Dispatch<Act
     const handleClickOpen = () => {
       setOpen(true);
     };
-    const handleClose = () => {
-      setOpen(false);
+    const handleClose = (e: any, reason: string) => {
+      if (reason !== "backdropClick") 
+        setOpen(false);
     }
     return (
         <div>
@@ -66,7 +66,7 @@ export function ColorPanel(props: {state: AppState, dispatch: React.Dispatch<Act
           Edit
         </Button>
         <Box height={8}/>
-        <Dialog disableBackdropClick disableEscapeKeyDown open={open} onClose={handleClose}>
+        <Dialog disableEscapeKeyDown open={open} onClose={handleClose}>
           <DialogTitle> Set Orientation (U-F) and Color Scheme  </DialogTitle>
           <DialogContent>
             {content}
@@ -77,7 +77,7 @@ export function ColorPanel(props: {state: AppState, dispatch: React.Dispatch<Act
 
           </DialogContent>
           <DialogActions>
-              <Button onClick={handleClose} color="primary">
+              <Button onClick={() => setOpen(false)} color="primary">
                   Close
               </Button>
           </DialogActions>

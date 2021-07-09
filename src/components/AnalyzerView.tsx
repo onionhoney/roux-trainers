@@ -210,7 +210,7 @@ function ScrambleView(props: { state: AnalyzerState, setState: (newState: Analyz
           size="small"
           fullWidth
           multiline
-          rowsMax={3}
+          maxRows={3}
           label={"Scramble"}
           value={value}
           onChange={onScrambleChange}
@@ -343,7 +343,7 @@ function SolutionInputView(props: { state: AnalyzerState, setState: (newState: A
 
     <Dialog open={editing} 
             onClose={handleClose}  
-            onEntered={onEntered}
+            /*onEntered={onEntered}*/
             maxWidth="sm"
             fullWidth
             >
@@ -354,7 +354,7 @@ function SolutionInputView(props: { state: AnalyzerState, setState: (newState: A
                     multiline
                     size="medium"
                     fullWidth
-                    rowsMax={10}
+                    maxRows={10}
                     rows={5}
                     value={value}
                     onChange={onChange}

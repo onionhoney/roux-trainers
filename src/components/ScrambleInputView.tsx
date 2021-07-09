@@ -90,7 +90,7 @@ export function ScrambleInputView(props: { display: string, scrambles: string[],
             onKeyPress={onKeyPress} 
             onKeyDown={onKeyPress} 
             onKeyUp={onKeyPress}
-            onEntered={onEntered}
+            /* onEntered={onEntered} */
             >
           <DialogTitle> Input your own scrambles (one per line) </DialogTitle>
           <DialogContent>
@@ -99,7 +99,7 @@ export function ScrambleInputView(props: { display: string, scrambles: string[],
                     multiline
                     size="medium"
                     fullWidth
-                    rowsMax={10}
+                    maxRows={10}
                     rows={3}
                     InputProps={{
                         className:classes.setupEdit

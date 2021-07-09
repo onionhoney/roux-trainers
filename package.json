@@ -23,8 +23,7 @@
     "min2phase": "git+https://github.com/cubing/min2phase.js.git",
     "react": "^16.12.0",
     "react-dom": "^16.12.0",
-    "react-refresh-webpack-plugin": "^0.1.0",
-    "react-scripts": "^4.0.3",
+    "react-scripts": "4.0.3",
     "sr-visualizer": "^1.0.8",
     "three": "^0.125.0",
     "typeface-roboto": "0.0.75",
@@ -57,7 +56,9 @@
   },
   "homepage": "https://onionhoney.github.io/roux-trainers",
   "devDependencies": {
+    "@pmmmwh/react-refresh-webpack-plugin": "^0.4.3",
     "gh-pages": "^2.2.0",
+    "react-refresh": "^0.8.3",
     "worker-loader": "^3.0.6",
     "workerize-loader": "^1.3.0"
   }

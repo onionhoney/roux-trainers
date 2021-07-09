@@ -217,7 +217,7 @@ function MultiSelect(props: {state: AppState, dispatch: React.Dispatch<Action>, 
       Edit
     </Button>
     <Box height={8}/>
-    <Dialog disableBackdropClick disableEscapeKeyDown open={open} onClose={handleClose}>
+    <Dialog disableEscapeKeyDown open={open} onClose={handleClose}>
       <DialogTitle> {label} </DialogTitle>
       <DialogContent>
         {content}

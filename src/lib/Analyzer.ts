@@ -3,6 +3,7 @@ import { CubeUtil, CubieCube, Mask, Move, MoveSeq } from './CubeLib';
 import { CachedSolver } from '../lib/CachedSolver';
 import { getEvaluator } from '../lib/Evaluator';
 
+
 export type AnalyzerState = {
     scramble: string,
     post_scramble: string, // the part of solution leading up to the stage under analysis
