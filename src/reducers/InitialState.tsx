@@ -1,7 +1,6 @@
 import { AppState, StateT, Mode } from "../Types";
 import { CubieCube, ColorScheme } from '../lib/CubeLib';
 import { getConfig, getFavList } from '../lib/LocalStorage';
-import { getActiveName } from '../lib/Selector';
 import { DefaultKeyMapping, LSEKeyMapping } from "../KeyMapping";
 
 
@@ -25,7 +24,7 @@ export const getInitialState = (mode?: Mode): AppState => {
                 return "revealed"
         }
     }();
-    let ori = getActiveName(getConfig().orientationSelector) || "YR";
+    let ori = getConfig().orientationSelector.getActiveName() || "YR";
     return {
         name: initialStateName,
         mode,

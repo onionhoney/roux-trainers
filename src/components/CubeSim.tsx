@@ -72,7 +72,7 @@ const roundedFace = ((rounded?: number[], cornerRadius?: number, ) => {
 
     let vertices_float32 = new Float32Array( vertices.length * 3)
     let vertices_attr = new THREE.BufferAttribute(vertices_float32, 3).copyVector3sArray( vertices)
-    console.log(vertices_attr)
+    // console.log(vertices_attr)
     let faces = []
     for (let i = 0; i< vertices.length; i++) {
         let i1 = (i + 1) % vertices.length;

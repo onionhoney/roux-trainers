@@ -1,7 +1,8 @@
 // source: "https://sites.google.com/view/kianroux/cmll" and https://github.com/AshleyF/briefcubing/blob/master/algs.js
 
 //type oll_case = "o"|"h"|"pi"|"u"|"t"|"s"|"as"|"l"
-import { Selector } from "../lib/Selector";
+import zIndex from "@material-ui/core/styles/zIndex";
+import Selector from "../lib/Selector";
 import { rand_choice } from "./Math";
 
 const get_active_names = (sel : Selector) => {
@@ -27,50 +28,52 @@ export let createAlg = (id: string, alg: string | string[], kind:string, setup?:
 
 const empty_alg = createAlg("empty", "", "any")
 
-const cmll_algs : AlgDesc[] = [
-    createAlg("o_adjacent_swap", "R U R' F' R U R' U' R' F R2 U' R'", "cmll" ),
-    createAlg("o_diagonal_swap", "F R U' R' U' R U R' F' R U R' U' R' F R F'", "cmll" ),
-    createAlg("h_columns", "R U R' U R U' R' U R U2 R'", "cmll" ),
-    createAlg("h_rows", "F R U R' U' R U R' U' R U R' U' F'", "cmll" ),
-    createAlg("h_column", "U R U2' R2' F R F' U2 R' F R F'", "cmll" ),
-    createAlg("h_row", "r U' r2' D' r U' r' D r2 U r'", "cmll" ),
-    createAlg("pi_right_bar", "F R U R' U' R U R' U' F'", "cmll" ),
-    createAlg("pi_back_slash", "U F R' F' R U2 R U' R' U R U2' R'", "cmll" ),
-    createAlg("pi_x_checkerboard", "U' R' F R U F U' R U R' U' F'", "cmll" ),
-    createAlg("pi_forward_slash", "R U2 R' U' R U R' U2' R' F R F'", "cmll" ),
-    createAlg("pi_columns", "U' r U' r2' D' r U r' D r2 U r'", "cmll" ),
-    createAlg("pi_left_bar", "U' R' U' R' F R F' R U' R' U2 R", "cmll" ),
-    createAlg("u_forward_slash", "U2 R2 D R' U2 R D' R' U2 R'", "cmll" ),
-    createAlg("u_back_slash", "R2' D' R U2 R' D R U2 R", "cmll" ),
-    createAlg("u_front_row", "R2' F U' F U F2 R2 U' R' F R", "cmll" ),
-    createAlg("u_rows", "U' F R2 D R' U R D' R2' U' F'", "cmll" ),
-    createAlg("u_x_checkerboard", "U2 r U' r' U r' D' r U' r' D r", "cmll" ),
-    createAlg("u_back_row", "U' F R U R' U' F'", "cmll" ),
-    createAlg("t_left_bar", "U' R U R' U' R' F R F'", "cmll" ),
-    createAlg("t_right_bar", "U L' U' L U L F' L' F", "cmll" ),
-    createAlg("t_rows", "F R' F R2 U' R' U' R U R' F2", "cmll" ),
-    createAlg("t_front_row", "r' U r U2' R2' F R F' R", "cmll" ),
-    createAlg("t_back_row", "r' D' r U r' D r U' r U r'", "cmll" ),
-    createAlg("t_columns", "U2 r2' D' r U r' D r2 U' r' U' r", "cmll" ),
-    createAlg("s_left_bar", "U R U R' U R U2 R'", "cmll" ),
-    createAlg("s_x_checkerboard", "U L' U2 L U2' L F' L' F", "cmll" ),
-    createAlg("s_forward_slash", "U F R' F' R U2 R U2' R'", "cmll" ),
-    createAlg("s_columns", "U2 R' U' R U' R2' F' R U R U' R' F U2' R", "cmll" ),
-    createAlg("s_right_bar", "U' R U R' U R' F R F' R U2' R'", "cmll" ),
-    createAlg("s_back_slash", "U R U' L' U R' U' L", "cmll" ),
-    createAlg("as_right_bar", "U R' U' R U' R' U2' R", "cmll" ),
-    createAlg("as_columns", "U' R2 D R' U R D' R' U R' U' R U' R'", "cmll" ),
-    createAlg("as_back_slash", "U' F' L F L' U2' L' U2 L", "cmll" ),
-    createAlg("as_x_checkerboard", "U' R U2' R' U2 R' F R F'", "cmll" ),
-    createAlg("as_forward_slash", "U' L' U R U' L U R'", "cmll" ),
-    createAlg("as_left_bar", "U R U2' R' F R' F' R U' R U' R'", "cmll" ),
-    createAlg("l_mirror", "F R U' R' U' R U R' F'", "cmll" ),
-    createAlg("l_inverse", "F R' F' R U R U' R'", "cmll" ),
-    createAlg("l_pure", "U2 R U2 R' U' R U R' U' R U R' U' R U' R'", "cmll" ),
-    createAlg("l_front_commutator", "R U2 R D R' U2 R D' R2'", "cmll" ),
-    createAlg("l_diag", "U2 R' U' R U R' F' R U R' U' R' F R2", "cmll" ),
-    createAlg("l_back_commutator", "U' R' U2 R' D' R U2 R' D R2", "cmll" )
+export const cmll_algs_raw : string[][] = [
+    ["o_adjacent_swap", "R U R' F' R U R' U' R' F R2 U' R'", "cmll" ],
+    ["o_diagonal_swap", "F R U' R' U' R U R' F' R U R' U' R' F R F'", "cmll" ],
+    ["h_columns", "U' R U R' U R U' R' U R U2 R'", "cmll" ],
+    ["h_rows", "F R U R' U' R U R' U' R U R' U' F'", "cmll" ],
+    ["h_column", "U' R U2' R2' F R F' U2 R' F R F'", "cmll" ],
+    ["h_row", "r U' r2' D' r U' r' D r2 U r'", "cmll" ],
+    ["pi_right_bar", "F R U R' U' R U R' U' F'", "cmll" ],
+    ["pi_back_slash", "U F R' F' R U2 R U' R' U R U2' R'", "cmll" ],
+    ["pi_x_checkerboard", "U' R' F R U F U' R U R' U' F'", "cmll" ],
+    ["pi_forward_slash", "R U2 R' U' R U R' U2' R' F R F'", "cmll" ],
+    ["pi_columns", "U' r U' r2' D' r U r' D r2 U r'", "cmll" ],
+    ["pi_left_bar", "U' R' U' R' F R F' R U' R' U2 R", "cmll" ],
+    ["u_forward_slash", "U2 R2 D R' U2 R D' R' U2 R'", "cmll" ],
+    ["u_back_slash", "R2' D' R U2 R' D R U2 R", "cmll" ],
+    ["u_front_row", "R' U' R U' R' U2 R2 U R' U R U2 R'", "cmll" ],
+    ["u_rows", "U' F R2 D R' U R D' R2' U' F'", "cmll" ],
+    ["u_x_checkerboard", "U2 r U' r' U r' D' r U' r' D r", "cmll" ],
+    ["u_back_row", "U' F R U R' U' F'", "cmll" ],
+    ["t_left_bar", "U' R U R' U' R' F R F'", "cmll" ],
+    ["t_right_bar", "U L' U' L U L F' L' F", "cmll" ],
+    ["t_rows", "R U2 R' U' R U' R2' U2' R U R' U R", "cmll" ],
+    ["t_front_row", "r' U r U2' R2' F R F' R", "cmll" ],
+    ["t_back_row", "r' D' r U r' D r U' r U r'", "cmll" ],
+    ["t_columns", "U2 r2' D' r U r' D r2 U' r' U' r", "cmll" ],
+    ["s_left_bar", "R U R' U R U2 R'", "cmll" ],
+    ["s_x_checkerboard", "L' U2 L U2' L F' L' F", "cmll" ],
+    ["s_forward_slash", "F R' F' R U2 R U2' R'", "cmll" ],
+    ["s_columns", "R U R' U' R' F R F' R U R' U R U2' R'", "cmll" ],
+    ["s_right_bar", "U2' R U R' U R' F R F' R U2' R'", "cmll" ],
+    ["s_back_slash", "R U' L' U R' U' L", "cmll" ],
+    ["as_right_bar", "U' R U2' R' U' R U' R", "cmll" ],
+    ["as_columns", "R2 D R' U R D' R' U R' U' R U' R'", "cmll" ],
+    ["as_back_slash", "F' r U r' U2' r' F2 r", "cmll" ],
+    ["as_x_checkerboard", "R U2' R' U2' R' F R F'", "cmll" ],
+    ["as_forward_slash", "L' U R U' L U R'", "cmll" ],
+    ["as_left_bar", "U2' R U2' R' F R' F' R U' R U' R'", "cmll" ],
+    ["l_mirror", "F R U' R' U' R U R' F'", "cmll" ],
+    ["l_inverse", "F R' F' R U R U' R'", "cmll" ],
+    ["l_pure", "U2 R U R' U R U' R' U R U' R' U R U2' R'", "cmll" ],
+    ["l_front_commutator", "R U2 R D R' U2 R D' R2'", "cmll" ],
+    ["l_diag", "U2 R' U' R U R' F' R U R' U' R' F R2", "cmll" ],
+    ["l_back_commutator", "U' R' U2 R' D' R U2 R' D R2", "cmll" ]
 ]
+
+const cmll_algs : AlgDesc[] = cmll_algs_raw.map( ([x, y, z]) => createAlg(x, y, z))
 
 let trigger_algs: AlgDesc[] = [
     createAlg("RUR'_1", "R U R'", "trigger"),

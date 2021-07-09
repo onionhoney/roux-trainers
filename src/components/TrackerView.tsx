@@ -14,8 +14,6 @@ import InputLabel from '@material-ui/core/InputLabel';
 import Select from '@material-ui/core/Select';
 import MenuItem from '@material-ui/core/MenuItem'
 
-
-import { getActiveName } from '../lib/Selector';
 import classes from '*.module.css';
 import { Face, FaceletCubeT } from '../lib/Defs';
 import { rand_choice, rand_int, rand_shuffle } from '../lib/Math';
@@ -222,7 +220,7 @@ function getInitialState() {
 function TrackerView(props: { state: AppState, dispatch: React.Dispatch<Action> } ) {
     let { state: globalState, dispatch: globalDispatch } = props
     const theme = useTheme()
-    const simBackground = getActiveName(globalState.config.theme) === "bright" ? "#eeeeef" : theme.palette.background.paper
+    const simBackground = globalState.config.theme.getActiveName() === "bright" ? "#eeeeef" : theme.palette.background.paper
 
     let [ state, setState ] = React.useState(getInitialState)
     let classes = useStyles()
@@ -395,7 +393,7 @@ function TrackerView(props: { state: AppState, dispatch: React.Dispatch<Action> 
               cube={cube1}
               colorScheme={globalState.colorScheme.getColorsForOri(globalState.cube.ori)}
               hintDistance={ 5 }
-              theme={getActiveName(globalState.config.theme)}
+              theme={globalState.config.theme.getActiveName()}
               facesToReveal={ [Face.L, Face.B, Face.D]  }
             />
           </Box>
@@ -409,7 +407,7 @@ function TrackerView(props: { state: AppState, dispatch: React.Dispatch<Action> 
               cube={state.display === "revealed" ? cube2: FaceletCube.from_cubie(new CubieCube(), Mask.empty_mask) }
               colorScheme={globalState.colorScheme.getColorsForOri(globalState.cube.ori)}
               hintDistance={ 5 }
-              theme={getActiveName(globalState.config.theme)}
+              theme={globalState.config.theme.getActiveName()}
               facesToReveal={ [Face.L, Face.B, Face.D]  }
             />
           </Box>

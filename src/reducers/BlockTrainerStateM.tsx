@@ -3,7 +3,6 @@ import { alg_generator, AlgDesc } from "../lib/Algs";
 import { Face, Typ, FBpairPos } from "../lib/Defs";
 import { CubieCube, CubeUtil, Mask, FaceletCube, MoveSeq } from '../lib/CubeLib';
 import { Evaluator, getEvaluator } from "../lib/Evaluator";
-import { getActiveName, getActiveNames } from '../lib/Selector';
 import { CachedSolver } from "../lib/CachedSolver";
 import { rand_choice, arrayEqual } from '../lib/Math';
 import { AbstractStateM, StateFactory } from "./AbstractStateM";
@@ -22,13 +21,13 @@ export abstract class BlockTrainerStateM extends AbstractStateM {
     abstract getRandom(): [CubieCube, string[]] | [CubieCube, string[], string];
     constructor(state: AppState) {
         super(state)
-        let evalName = getActiveName(this.state.config.evaluator)
+        let evalName = this.state.config.evaluator.getActiveName()
         this.evaluator = getEvaluator(evalName)
     }
     _solve_with_solvers(cube: CubieCube, solverNames: string[]): AlgDesc[]{
         const state = this.state;
-        const totalSolutionCap = 0 | (+(getActiveName(state.config.solutionNumSelector) || 5) * this.expansionFactor);
-        const selectedSolutionCap = +(getActiveName(state.config.solutionNumSelector) || 5);
+        const totalSolutionCap = 0 | (+(state.config.solutionNumSelector.getActiveName() || 5) * this.expansionFactor);
+        const selectedSolutionCap = +(state.config.solutionNumSelector.getActiveName() || 5);
         let getDesc = (solverName: string) => {
             const solver = CachedSolver.get(solverName);
             const premoves = this.premoves || [""]
@@ -256,13 +255,13 @@ export class FbdrStateM extends BlockTrainerStateM {
     allowed_pedge : [number, number][] = []
     allowed_dr : [number, number][] = []
     getRandom(): [CubieCube, string[], string] {
-        const fbOnly = getActiveName(this.state.config.fbOnlySelector) === "FB Last Pair Only";
-        const pairSolved = getActiveName(this.state.config.fbPairSolvedSelector) !== "Random";
-        const scrambleType = getActiveName(this.state.config.fbdrScrambleSelector) || "Short";
+        const fbOnly = this.state.config.fbOnlySelector.getActiveName() === "FB Last Pair Only";
+        const pairSolved = this.state.config.fbPairSolvedSelector.getActiveName() !== "Random";
+        const scrambleType = this.state.config.fbdrScrambleSelector.getActiveName() || "Short";
         const useMin2PhaseScramble = !scrambleType.startsWith("Short");
         const solverName = fbOnly ? "fb" : "fbdr";
         const scrambleSolver = useMin2PhaseScramble ? "min2phase" : solverName
-        let active = getActiveNames(this.state.config.fbdrSelector)[0];
+        let active = this.state.config.fbdrSelector.getActiveNames()[0];
         //console.log("active", active)
         this.allowed_pedge = this.state.config.fbdrPosSelector1.flags.map( (value, i) => [value, i])
             .filter( ([value, i]) => value ).map( ([value, i]) => this.edgePositionMap[i] )
@@ -289,7 +288,7 @@ export class SsStateM extends BlockTrainerStateM {
     solverL = 9;
     solverR = 10;
     _get_random_fb(allowed_dr_eo_ep: [number, number][]) {
-        let active = getActiveName(this.state.config.ssPairOnlySelector);
+        let active = this.state.config.ssPairOnlySelector.getActiveName();
         let mask = (active === "SS") ? Mask.fb_mask : Mask.fbdr_mask;
         let cube : CubieCube;
         while (true) {
@@ -304,7 +303,7 @@ export class SsStateM extends BlockTrainerStateM {
         return cube
     }
     getRandom(): [CubieCube, string[] ] {
-        let active = getActiveNames(this.state.config.ssSelector)[0];
+        let active = this.state.config.ssSelector.getActiveNames()[0];
         const drPositionMap : [number, number][] = [
             [0, 0], [1, 0],
             [0, 1], [1, 1],
@@ -345,7 +344,7 @@ export class FbStateM extends BlockTrainerStateM {
         return edges;
     }
     _get_random(): [CubieCube, string] {
-        let active = getActiveName(this.state.config.fbPieceSolvedSelector);
+        let active = this.state.config.fbPieceSolvedSelector.getActiveName();
         let mask;
         if (active === "Random")
             mask = Mask.empty_mask;
@@ -400,7 +399,7 @@ export class FsStateM extends BlockTrainerStateM {
 
     getRandom(): [CubieCube, string[], string] {
         let cube = CubeUtil.get_random_with_mask(Mask.empty_mask);
-        let name = getActiveName(this.state.config.fsSelector)
+        let name = this.state.config.fsSelector.getActiveName()
         if (name === "Front FS") {
             return [cube, ["fs-front"], "fb"]
         } else if (name === "Back FS") {
@@ -417,8 +416,8 @@ export class FbssStateM extends BlockTrainerStateM {
     solverR = 10;
 
     getRandom(): [CubieCube, string[] ] {
-        let active_lp = getActiveName(this.state.config.fbssLpSelector)
-        let active_ss = getActiveName(this.state.config.fbssSsSelector)
+        let active_lp = this.state.config.fbssLpSelector.getActiveName()
+        let active_ss = this.state.config.fbssSsSelector.getActiveName()
         let cube, solver
         if (active_lp === "FBLP at front") {
             cube = CubeUtil.get_random_with_mask(Mask.fs_back_mask)

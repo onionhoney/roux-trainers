@@ -12,8 +12,7 @@ import { CubeUtil, FaceletCube, Mask, MoveSeq } from '../lib/CubeLib';
 import { AppState, Action, Config } from "../Types";
 import clsx from 'clsx';
 import { Face } from '../lib/Defs';
-import { getActiveName } from '../lib/Selector';
-import { MultiSelect, SingleSelect } from './Select';
+import { MultiSelect, SingleSelect } from './SelectorViews';
 import { ColorPanel } from './Input';
 import { rand_int } from '../lib/Math';
 
@@ -69,9 +68,9 @@ function CmllTrainerView(props: { state: AppState, dispatch: React.Dispatch<Acti
     let classes = useStyles()
     const canvasPaper = clsx(classes.canvasPaper, classes.fixedHeight);
     let facelet = FaceletCube.from_cubie(cube,
-      _getMask(getActiveName( state.config.cmllCubeMaskSelector) || "Show"))
+      _getMask( state.config.cmllCubeMaskSelector.getActiveName() || "Show"))
 
-    let hyperori = getActiveName(state.config.hyperOriSelector) || "off"
+    let hyperori = state.config.hyperOriSelector.getActiveName() || "off"
     if (hyperori !== "off") {
       if (hyperori === "F/B") {
         facelet = facelet.map( face => face.map(f => f === Face.L || f === Face.R ? Face.X : f) )
@@ -80,12 +79,11 @@ function CmllTrainerView(props: { state: AppState, dispatch: React.Dispatch<Acti
     }
     const theme = useTheme()
 
-    const cmll = (c: Config) => c.cmllSelector;
-    const cmllcubemask = (c : Config) => c.cmllCubeMaskSelector;
-    const cmllauf = (c: Config) => c.cmllAufSelector;
-    const trigger = (c: Config) => c.triggerSelector;
-    const hyperorisel = (c: Config) => c.hyperOriSelector;
-
+    const cmll = "cmllSelector";
+    const cmllcubemask = "cmllCubeMaskSelector";
+    const cmllauf = "cmllAufSelector";
+    const trigger = "triggerSelector";
+    const hyperorisel = "hyperOriSelector";
 
     const panel = (
       <Fragment>
@@ -147,7 +145,7 @@ function CmllTrainerView(props: { state: AppState, dispatch: React.Dispatch<Acti
                 height={350}
                 cube={facelet}
                 colorScheme={state.colorScheme.getColorsForOri(state.cube.ori)}
-                theme={getActiveName(state.config.theme)}
+                theme={state.config.theme.getActiveName()}
                 facesToReveal={[Face.L]}
               />
               </Box>

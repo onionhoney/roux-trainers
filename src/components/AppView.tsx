@@ -171,10 +171,8 @@ function AppView(props: { state: AppState, dispatch: React.Dispatch<Action> } ) 
     theme_flag[0] = 1 - theme_flag[0]
     theme_flag[1] = 1 - theme_flag[1]
     dispatch({ type: "config", content: {
-      theme: {
-        ...state.config.theme,
-        flags: theme_flag
-    }}})
+      theme: state.config.theme.setFlags(theme_flag)
+    }})
   }
   const toggleFav = () => {
     setFav(!showFav)

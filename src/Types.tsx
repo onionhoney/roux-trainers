@@ -1,5 +1,5 @@
 import { AlgDesc } from "./lib/Algs";
-import { Selector } from "./lib/Selector";
+import Selector from "./lib/Selector";
 import { KeyMapping } from "./KeyMapping";
 import { CubieCube, Move, ColorScheme } from "./lib/CubeLib";
 import { Evaluator } from "./lib/Evaluator";

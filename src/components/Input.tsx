@@ -12,7 +12,7 @@ import SettingsIcon from '@material-ui/icons/Settings';
 import { AppState, Config, Action } from '../Types';
 import { ColorScheme } from '../lib/CubeLib';
 
-import { MultiSelectContent } from './Select';
+import { MultiSelectContent } from './SelectorViews';
 
 export function ColorSetter(props: {state: AppState, dispatch: React.Dispatch<Action>}) {
     const [text, setText] = React.useState(props.state.colorScheme.toUserInput().join(","))
@@ -47,7 +47,7 @@ export function ColorSetter(props: {state: AppState, dispatch: React.Dispatch<Ac
 
 export function ColorPanel(props: {state: AppState, dispatch: React.Dispatch<Action>}) {
     let { state, dispatch } = props
-    let select = (config: Config) => { return config.orientationSelector }
+    let select = "orientationSelector"
     let {content} = MultiSelectContent({state, dispatch, select})
 
     const [open, setOpen] = React.useState(false);

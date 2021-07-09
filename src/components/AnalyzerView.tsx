@@ -17,9 +17,8 @@ import { CubeUtil, CubieCube, FaceletCube, Mask, MoveSeq } from '../lib/CubeLib'
 import { AppState,  Action, Config, FavCase, Mode} from "../Types";
 import 'typeface-roboto-mono';
 import { Face } from '../lib/Defs';
-import { getActiveName } from '../lib/Selector';
 
-import { SingleSelect, MultiSelect } from './Select';
+import { SingleSelect, MultiSelect } from './SelectorViews';
 import { ColorPanel } from './Input';
 import { AlgDesc } from '../lib/Algs';
 import TextField from '@material-ui/core/TextField';
@@ -28,7 +27,7 @@ import { AnalyzerState, SolverConfig, SolutionDesc, initialState, analyze_roux_s
 
 import * as Comlink from 'comlink';
 /* eslint-disable import/no-webpack-loader-syntax */
-import Worker from "worker-loader!../lib/Worker";
+import MyWorker from "worker-loader!../lib/Worker";
 import InputLabel from '@material-ui/core/InputLabel';
 import Select from '@material-ui/core/Select';
 import MenuItem from '@material-ui/core/MenuItem';
@@ -449,7 +448,7 @@ function FullSolutionView(props: { state: AnalyzerState, setState: (newState: An
   
 }
 
-const worker_raw = new Worker()
+const worker_raw = new MyWorker()
 const worker = Comlink.wrap(worker_raw)
 
 function AnalyzerView(props: { state: AppState, dispatch: React.Dispatch<Action> } ) {
@@ -555,7 +554,7 @@ function AnalyzerView(props: { state: AppState, dispatch: React.Dispatch<Action>
               cube={faceletCube}
               colorScheme={appState.colorScheme.getColorsForOri(appState.cube.ori)}
               hintDistance={ 6 }
-              theme={getActiveName(appState.config.theme)}
+              theme={appState.config.theme.getActiveName()}
 
               facesToReveal={ [Face.L, Face.B, Face.D]  }
             />

@@ -5,7 +5,6 @@ import { getInitialState } from "../reducers/InitialState";
 import CssBaseline from '@material-ui/core/CssBaseline';
 import { ThemeProvider } from '@material-ui/core/styles';
 import { theme, themeDark } from '../theme';
-import { getActiveName } from '../lib/Selector';
 import "typeface-roboto";
 import "fontsource-public-sans";
 
@@ -18,9 +17,7 @@ window.addEventListener('keypress', function(e) {
 function App(props: {}) {
   const [state, dispatch] = React.useReducer( reducer, getInitialState() )
 
-
-
-  const appTheme = getActiveName(state.config.theme) === "bright" ? theme : themeDark
+  const appTheme = state.config.theme.getActiveName() === "bright" ? theme : themeDark
   return (
     <ThemeProvider theme={appTheme}>
       {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}

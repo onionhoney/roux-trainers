@@ -17,9 +17,8 @@ import { FaceletCube, Mask, MoveSeq } from '../lib/CubeLib';
 import { AppState,  Action, Config, FavCase, Mode} from "../Types";
 import 'typeface-roboto-mono';
 import { Face } from '../lib/Defs';
-import { getActiveName } from '../lib/Selector';
 
-import { SingleSelect, MultiSelect } from './Select';
+import { SingleSelect, MultiSelect } from './SelectorViews';
 import { ColorPanel } from './Input';
 import { AlgDesc } from '../lib/Algs';
 import { ScrambleInputView } from './ScrambleInputView';
@@ -115,7 +114,7 @@ function getMask(state: AppState) : Mask {
       return fbOnly ? Mask.fb_mask : Mask.fbdr_mask
     }
     else if (state.mode === "fs") {
-      let name = getActiveName(state.config.fsSelector)
+      let name = state.config.fsSelector.getActiveName()
       return ({
         "Front FS": Mask.fs_front_mask,
         "Back FS": Mask.fs_back_mask,
@@ -205,7 +204,7 @@ function BlockTrainerView(props: { state: AppState, dispatch: React.Dispatch<Act
 
 
     const theme = useTheme()
-    const simBackground = getActiveName(state.config.theme) === "bright" ? "#eeeeef" : theme.palette.background.paper
+    const simBackground = state.config.theme.getActiveName() === "bright" ? "#eeeeef" : theme.palette.background.paper
 
     // source
     // Add event listeners
@@ -313,7 +312,7 @@ function BlockTrainerView(props: { state: AppState, dispatch: React.Dispatch<Act
 
         <Grid item md={6} sm={12} xs={12} style={{display: "flex", justifyContent: "center"}}>
           <Box style={{backgroundColor: "rgba(0, 0, 0, 0)"}}>
-            { getActiveName(props.state.config.showCube) === "Show" ?
+            { props.state.config.showCube.getActiveName() === "Show" ?
             <CubeSim
               width={canvas_wh[0]}
               height={canvas_wh[1]}
@@ -321,7 +320,7 @@ function BlockTrainerView(props: { state: AppState, dispatch: React.Dispatch<Act
 
               colorScheme={state.colorScheme.getColorsForOri(state.cube.ori)}
               hintDistance={ (state.mode === "4c" || state.mode === "eopair") ? 3 : 7 }
-              theme={getActiveName(state.config.theme)}
+              theme={state.config.theme.getActiveName()}
               facesToReveal={ [Face.L, Face.B, Face.D]  }
             /> : null }
           </Box>
@@ -372,11 +371,6 @@ function BlockTrainerView(props: { state: AppState, dispatch: React.Dispatch<Act
 function ConfigPanelGroup(props: {state: AppState, dispatch: React.Dispatch<Action> }) {
   let { state, dispatch } = props
   if (state.mode === "ss") {
-    let select1 = (config: Config) => { return config.ssSelector }
-    let select2 = (config: Config) => { return config.ssPairOnlySelector }
-    let select3 = (config: Config) => { return config.solutionNumSelector }
-    let select4 = (config: Config) => { return config.ssPosSelector }
-
     let DRManip = [
       // names: ["UF", "FU", "UL", "LU", "UB", "BU", "UR", "RU", "DF", "FD", "DB", "BD",
       // "DR", "RD", "BR", "RB", "FR", "RF"],
@@ -386,28 +380,28 @@ function ConfigPanelGroup(props: {state: AppState, dispatch: React.Dispatch<Acti
     return (
       <Fragment>
 
-      <SingleSelect {...{state, dispatch, select: select1}}> </SingleSelect>
-      <SingleSelect {...{state, dispatch, select: select2}}> </SingleSelect>
-      <SingleSelect {...{state, dispatch, select: select3}}> </SingleSelect>
+      <SingleSelect {...{state, dispatch, select: "ssSelector"}}> </SingleSelect>
+      <SingleSelect {...{state, dispatch, select: "ssPairOnlySelector"}}> </SingleSelect>
+      <SingleSelect {...{state, dispatch, select: "solutionNumSelector"}}> </SingleSelect>
       
-      <SingleSelect {...{state, dispatch, select: (c) => c.showCube}}> </SingleSelect>
-      <MultiSelect {...{state, dispatch, select: select4, options: {manipulators: DRManip} }}> </MultiSelect>
+      <SingleSelect {...{state, dispatch, select: "showCube"}}> </SingleSelect>
+      <MultiSelect {...{state, dispatch, select: "ssPosSelector", options: {manipulators: DRManip} }}> </MultiSelect>
       <ColorPanel {...{state, dispatch}} />
 
       </Fragment>
     )
   } else if (state.mode === "fbdr") {
-    let select1 = (config: Config) => { return config.fbdrSelector }
-    let select2 = (config: Config) => { return config.fbOnlySelector }
-    let select3 = (config: Config) => { return config.fbPairSolvedSelector }
-    let select4 = (config: Config) => { return config.fbdrScrambleSelector }
-    let select5 = (config: Config) => { return config.solutionNumSelector }
+    let select1 = "fbdrSelector"
+    let select2 = "fbOnlySelector"
+    let select3 = "fbPairSolvedSelector"
+    let select4 = "fbdrScrambleSelector"
+    let select5 = "solutionNumSelector"
 
     let LPEdgeManip = [
       { name: "Toggle Select All", enableIdx: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17] },
     ]
-    let pos1 = (config: Config) => { return config.fbdrPosSelector1 }
-    let pos3 = (config: Config) => { return config.fbdrPosSelector3 }
+    let pos1 = "fbdrPosSelector1"
+    let pos3 = "fbdrPosSelector3"
 
     return (
       <Fragment>
@@ -416,7 +410,7 @@ function ConfigPanelGroup(props: {state: AppState, dispatch: React.Dispatch<Acti
       <SingleSelect {...{state, dispatch, select: select3}}> </SingleSelect>
       <SingleSelect {...{state, dispatch, select: select4}}> </SingleSelect>
       <SingleSelect {...{state, dispatch, select: select5}}> </SingleSelect>
-      <SingleSelect {...{state, dispatch, select: (c) => c.showCube}}> </SingleSelect>
+      <SingleSelect {...{state, dispatch, select: "showCube"}}> </SingleSelect>
 
       <MultiSelect {...{state, dispatch, select: pos1, options: {manipulators: LPEdgeManip} }}> </MultiSelect>
       <MultiSelect {...{state, dispatch, select: pos3, options: {manipulators: LPEdgeManip} }}> </MultiSelect>
@@ -425,14 +419,14 @@ function ConfigPanelGroup(props: {state: AppState, dispatch: React.Dispatch<Acti
       </Fragment>
     )
   } else if (state.mode === "fb") {
-    let select1 = (config: Config) => { return config.fbPieceSolvedSelector }
-    let select2 = (config: Config) => { return config.solutionNumSelector }
+    let select1 = "fbPieceSolvedSelector"
+    let select2 = "solutionNumSelector"
 
     return (
       <Fragment>
         <SingleSelect {...{ state, dispatch, select: select1 }}> </SingleSelect>
         <SingleSelect {...{ state, dispatch, select: select2 }}> </SingleSelect>
-        <SingleSelect {...{state, dispatch, select: (c) => c.showCube}}> </SingleSelect>
+        <SingleSelect {...{state, dispatch, select: "showCube"}}> </SingleSelect>
 
         <ColorPanel {...{state, dispatch}} />
 
@@ -440,14 +434,14 @@ function ConfigPanelGroup(props: {state: AppState, dispatch: React.Dispatch<Acti
       </Fragment>
     )
    } else if (state.mode === "fs") {
-    let select1 = (config: Config) => { return config.fsSelector }
-    let select2 = (config: Config) => { return config.solutionNumSelector }
+    let select1 = "fsSelector"
+    let select2 = "solutionNumSelector"
 
     return (
       <Fragment>
         <SingleSelect {...{ state, dispatch, select: select1 }}> </SingleSelect>
         <SingleSelect {...{ state, dispatch, select: select2 }}> </SingleSelect>
-        <SingleSelect {...{state, dispatch, select: (c) => c.showCube}}> </SingleSelect>
+        <SingleSelect {...{state, dispatch, select: "showCube" }}> </SingleSelect>
 
         <ColorPanel {...{state, dispatch}} />
 
@@ -455,9 +449,9 @@ function ConfigPanelGroup(props: {state: AppState, dispatch: React.Dispatch<Acti
       </Fragment>
     )
    } else if (state.mode === "fbss") {
-    let select1 = (config: Config) => { return config.fbssLpSelector }
-    let select2 = (config: Config) => { return config.fbssSsSelector }
-    let select3 = (config: Config) => { return config.solutionNumSelector }
+    let select1 = "fbssLpSelector"
+    let select2 = "fbssSsSelector"
+    let select3 = "solutionNumSelector"
 
     return (
       <Fragment>
@@ -471,10 +465,10 @@ function ConfigPanelGroup(props: {state: AppState, dispatch: React.Dispatch<Acti
     )
    }
    else if (state.mode === "4c"){
-    let select1 = (config: Config) => { return config.lseStageSelector }
-    let select2 = (config: Config) => { return config.lseMCSelector }
-    let select3 = (config: Config) => { return config.lseBarSelector }
-    let select4 = (config: Config) => { return config.solutionNumSelector }
+    let select1 = "lseStageSelector"
+    let select2 = "lseMCSelector"
+    let select3 = "lseBarSelector"
+    let select4 = "solutionNumSelector"
 
     return (
       <Fragment>
@@ -482,17 +476,17 @@ function ConfigPanelGroup(props: {state: AppState, dispatch: React.Dispatch<Acti
         <SingleSelect {...{ state, dispatch, select: select2 }}> </SingleSelect>
         <SingleSelect {...{ state, dispatch, select: select3 }}> </SingleSelect>
         <SingleSelect {...{ state, dispatch, select: select4 }}> </SingleSelect>
-        <SingleSelect {...{state, dispatch, select: (c) => c.showCube}}> </SingleSelect>
+        <SingleSelect {...{state, dispatch, select: "showCube"}}> </SingleSelect>
 
         <ColorPanel {...{state, dispatch}} />
       </Fragment>
     )
    } else if (state.mode === "eopair"){
-    let select1 = (config: Config) => { return config.lseEOSelector }
-    let select2 = (config: Config) => { return config.lseEOLRMCSelector }
-    let select3 = (config: Config) => { return config.lseBarbieSelector }
-    let select4 = (config: Config) => { return config.lseEOLRScrambleSelector }
-    let select5 = (config: Config) => { return config.solutionNumSelector }
+    let select1 = "lseEOSelector"
+    let select2 = "lseEOLRMCSelector"
+    let select3 = "lseBarbieSelector"
+    let select4 = "lseEOLRScrambleSelector"
+    let select5 = "solutionNumSelector"
 
     return (
       <Fragment>
@@ -501,7 +495,7 @@ function ConfigPanelGroup(props: {state: AppState, dispatch: React.Dispatch<Acti
         <SingleSelect {...{ state, dispatch, select: select3 }}> </SingleSelect>
         <SingleSelect {...{ state, dispatch, select: select4 }}> </SingleSelect>
         <SingleSelect {...{ state, dispatch, select: select5 }}> </SingleSelect>
-        <SingleSelect {...{state, dispatch, select: (c) => c.showCube}}> </SingleSelect>
+        <SingleSelect {...{state, dispatch, select: "showCube"}}> </SingleSelect>
 
         <ColorPanel {...{state, dispatch}} />
       </Fragment>

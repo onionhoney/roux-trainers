@@ -1,7 +1,6 @@
 
 import { BlockTrainerStateM } from "./BlockTrainerStateM";
 import { Mask, CubeUtil, CubieCube, Move } from "../lib/CubeLib";
-import { getActiveName, getActiveNames } from "../lib/Selector";
 import { rand_choice } from "../lib/Math";
 import { CachedSolver } from "../lib/CachedSolver";
 
@@ -17,7 +16,7 @@ export class LSEStateM extends BlockTrainerStateM {
         M2 to 4c (same as above)
         */
 
-        let bars = getActiveName(this.state.config.lseBarSelector)
+        let bars = this.state.config.lseBarSelector.getActiveName()
 
         let cube = CubeUtil.get_random_with_mask(Mask.lse_4c_mask);
 
@@ -29,11 +28,11 @@ export class LSEStateM extends BlockTrainerStateM {
             cube = new CubieCube().apply(move)
         }
 
-        let is_mc = getActiveName(this.state.config.lseMCSelector) === "Misaligned";
+        let is_mc = this.state.config.lseMCSelector.getActiveName() === "Misaligned";
         let lse_premove = is_mc ? [Move.all["M"], Move.all["M'"]] : [ [], Move.all["M2"] ]
         cube = cube.apply(rand_choice(lse_premove))
 
-        let stage = getActiveName(this.state.config.lseStageSelector)
+        let stage = this.state.config.lseStageSelector.getActiveName()
         if (stage === "M2 to 4c")  {
             cube = cube.apply(rand_choice(["U M2", "U' M2"])).apply(rand_choice(["U", "U'", "U2", "id"]))
             return [cube, ["lse"]];
@@ -98,14 +97,14 @@ export class EOLRStateM extends BlockTrainerStateM {
         M2 to 4c (same as above)
         */
 
-        let targetEO = rand_choice(getActiveNames(this.state.config.lseEOSelector))
+        let targetEO = rand_choice(this.state.config.lseEOSelector.getActiveNames())
 
         let cube: CubieCube
         let count = 0;
-        let eolrMCMode = getActiveName(this.state.config.lseEOLRMCSelector)
+        let eolrMCMode = this.state.config.lseEOLRMCSelector.getActiveName()
         let compare = eolrMCMode === "Filter by Non-MC shorter" || eolrMCMode === "Filter by MC shorter"
-        let useBarbie = getActiveName(this.state.config.lseBarbieSelector) === "EOLRb"
-        let useFullScramble = getActiveName(this.state.config.lseEOLRScrambleSelector) === "Random State"
+        let useBarbie = this.state.config.lseBarbieSelector.getActiveName() === "EOLRb"
+        let useFullScramble = this.state.config.lseEOLRScrambleSelector.getActiveName() === "Random State"
 
         while (true) {
             cube = CubeUtil.get_random_with_mask(Mask.lse_mask);
