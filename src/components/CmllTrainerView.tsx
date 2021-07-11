@@ -13,9 +13,13 @@ import { AppState, Action, Config } from "../Types";
 import clsx from 'clsx';
 import { Face } from '../lib/Defs';
 import { MultiSelect, SingleSelect } from './SelectorViews';
+import CaseSelect from './CaseSelectView';
 import { ColorPanel } from './Input';
 import { rand_int } from '../lib/Math';
+import CaseSelectDialog from './CaseSelectView';
+import { cmll_algs_raw, nmcll_display_parity, nmcll_to_cmll_mapping } from '../lib/Algs';
 
+import {Face as VFace} from 'sr-visualizer';
 
 const useStyles = makeStyles(theme => ({
     container: {
@@ -52,7 +56,36 @@ const useStyles = makeStyles(theme => ({
     },
 }))
 
+const cmll_name_to_alg = Object.fromEntries(cmll_algs_raw)
+const nmcll_display_algs = nmcll_to_cmll_mapping.map( ([x, y], i) => {
+  let parity = nmcll_display_parity[i]
+  let alg = cmll_name_to_alg[y[0]]
+  alg = parity[2] + " " + alg + " " + parity[1]
+  return [x, alg] as [string, string]
+})
 
+function NMCLLSelect(props:  { state: AppState, dispatch: React.Dispatch<Action> } ) {
+  const {state, dispatch} = props
+  const groups = ["o", "s", "as", "t", "u", "l", "pi", "h"]
+  return <CaseSelectDialog {...{state, dispatch, settings: {
+    selector: "nmcllSelector",
+    groups,
+    algs: nmcll_display_algs,
+    cubeOptions: {
+      colorScheme: {
+        0: '#ffffff', // URFDLB. U = white
+        1: '#ee0000', // R = red
+        2: '#404040', // F = green
+        3: '#404040', // D = yellow
+        4: '#ffa100', // L = orange
+        5: '#404040', // B = blue
+      }
+    }
+    }, 
+    title: "Select cases by NMCLL recog (this is a separate selection from above, only activated when you're in L/R or F/B mode)",
+    label: "Select by NMCLL"
+  } }/>
+}
 
 function _getMask(name: string) {
   switch (name) {
@@ -86,19 +119,41 @@ function CmllTrainerView(props: { state: AppState, dispatch: React.Dispatch<Acti
     const hyperorisel = "hyperOriSelector";
 
     const panel = (
-      <Fragment>
-        <SingleSelect {...{state, dispatch, select: cmllcubemask, label: "Virtual Cube"}} />
-        <MultiSelect {...{state, dispatch, select: cmll, options: { label: "CMLL Case", noDialog: true} }} />
+      <Box> 
+        { /* <MultiSelect {...{state, dispatch, select: cmll, options: { label: "CMLL Case", noDialog: true} }} /> */ }
+        <CaseSelectDialog {...{state, dispatch, settings: {
+          selector: "cmllCaseSelector",
+          algs: cmll_algs_raw,
+          groups: ["o", "s", "as", "t", "u", "l", "pi", "h"],
+          cubeOptions: {
+            colorScheme: {
+              0: '#FEFE00', // URFDLB. U = yellow
+              1: '#ffa100', // R = o
+              2: '#00b800', // F = g
+              3: '#404040', // D = w
+              4: '#ee0000', // L = r
+              5: '#0000f2', // B = blue
+            }
+          }
+          }, 
+          label: "Select CMLL Cases"
+        } }/>
+        <Box width={8}></Box>
         <MultiSelect {...{state, dispatch, select: cmllauf, options: { label: "CMLL Auf", noDialog: true} }} />
         <MultiSelect {...{state, dispatch, select: trigger, options: { label: "SB Last Pair Trigger (Uncheck all for pure CMLL)", noDialog: true} } } />
-        <SingleSelect {...{state, dispatch, select: hyperorisel, label: "Hyperorientation" } } />
 
+        <br/>
+        <NMCLLSelect {...{state, dispatch}}/>
+        <Box width={8}></Box>
+        <SingleSelect {...{state, dispatch, select: hyperorisel, label: "NMCLL Recog Mode" } } />
+
+        <SingleSelect {...{state, dispatch, select: cmllcubemask, label: "Virtual Cube"}} />
         <ColorPanel {...{state, dispatch}} />
-      </Fragment>
+      </Box>
     )
 
     React.useEffect( () =>  {
-      setReveal(false)
+      setReveal(false) // todo: drive this from props. now there's a delay which causes the answer to leak for a split second
     }, [ state ])
     const [reveal, setReveal] = React.useState(false)
     const handleClick = () => {
@@ -111,6 +166,10 @@ function CmllTrainerView(props: { state: AppState, dispatch: React.Dispatch<Acti
     React.useEffect(() => {
       function downHandler(event: KeyboardEvent) {
         state.keyMapping.handle(event, dispatch);
+        // intercept keyboard event for local control
+        if (event.key === "/") {
+          setReveal(true)
+        }
       }
       window.addEventListener('keydown', downHandler);
       return () => {
@@ -227,7 +286,7 @@ function CmllTrainerView(props: { state: AppState, dispatch: React.Dispatch<Acti
     <Box>
     <FormControl component="fieldset" className={classes.prompt}>
       <FormLabel component="legend">
-         Usage: Press space for next case. Enter to redo.
+         Usage: Press space for next case. Enter to redo. / to reveal.
       </FormLabel>
       </FormControl>
     </Box>

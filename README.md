@@ -41,6 +41,9 @@
     - Given a solve reconstruction, it'll analyze each stage, and compare your solution there with the solver-suggested solutions.
 - (v1.4) 12/23/2020: Refine the appearance of the virtual cube and enable camera control with mouse dragging. 
 - (v1.5) 2/18/2021: Introduced Tracking Trainer Beta.
+- (v1.6) 7/11/2021: You can train CMLL by case now. And by NMCLL case too if you want.
+    - We added a case selection menu to help you pick cases conveniently.
+    - We also let you select cases based on the L/R face shape, to assist users of NMCLL-based recognition methods. As usual, we're the first ever trainer to do so. 
 =======
 
 If you have ideas on how to improve the app just shoot a message and let me know. <3

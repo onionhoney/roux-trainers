@@ -57,15 +57,15 @@ const useStyles = makeStyles(theme => {
     }
 })})
 const description : [string, number][] = [
-["Solve Analysis (Beta)", 0],
-["Tracking Trainer (Beta)", 1],
-["FB Last Pair (+DR)", 2],
-["First Square", 3],
-["First Block", 4],
-[ "Second Square", 5],
-["CMLL", 7],
-["LSE 4c", 8],
-["EOLR / EOLRb", 9]
+["FB Analysis", 0],
+["FB Last Pair (+DR)", 1],
+["First Square", 2],
+["First Block", 3],
+["Second Square", 4],
+["CMLL", 5],
+["LSE 4c", 6],
+["EOLR / EOLRb", 7],
+["Tracking Trainer (Beta)", 8]
 ]
 
 function TopBarView(props: { value: number, onChange: (x: number) => void,

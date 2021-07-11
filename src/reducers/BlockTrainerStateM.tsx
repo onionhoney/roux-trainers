@@ -1,5 +1,5 @@
 import { AppState, Config, FavCase } from "../Types";
-import { alg_generator, AlgDesc } from "../lib/Algs";
+import { alg_generator_from_group, CaseDesc } from "../lib/Algs";
 import { Face, Typ, FBpairPos } from "../lib/Defs";
 import { CubieCube, CubeUtil, Mask, FaceletCube, MoveSeq } from '../lib/CubeLib';
 import { Evaluator, getEvaluator } from "../lib/Evaluator";
@@ -24,7 +24,7 @@ export abstract class BlockTrainerStateM extends AbstractStateM {
         let evalName = this.state.config.evaluator.getActiveName()
         this.evaluator = getEvaluator(evalName)
     }
-    _solve_with_solvers(cube: CubieCube, solverNames: string[]): AlgDesc[]{
+    _solve_with_solvers(cube: CubieCube, solverNames: string[]): CaseDesc[]{
         const state = this.state;
         const totalSolutionCap = 0 | (+(state.config.solutionNumSelector.getActiveName() || 5) * this.expansionFactor);
         const selectedSolutionCap = +(state.config.solutionNumSelector.getActiveName() || 5);
@@ -39,7 +39,7 @@ export abstract class BlockTrainerStateM extends AbstractStateM {
             const toString = (sol: any) =>
                 (sol.pre === "" ? "" : "(" + sol.pre + ") ") + sol.sol.toString(this.algDescWithMoveCount);
             const algs = solutions.slice(0, selectedSolutionCap).map(toString);
-            let algdesc: AlgDesc = {
+            let algdesc: CaseDesc = {
                 id: `${solverName}`,
                 algs,
                 kind: `${solverName}`
@@ -86,7 +86,7 @@ export abstract class BlockTrainerStateM extends AbstractStateM {
             algDescs.forEach(algDesc => algDesc.setup = setup);
         }
 
-        const ori = (options.updateSolutionOnly) ? this.state.cube.ori : alg_generator(state.config.orientationSelector)().id;
+        const ori = (options.updateSolutionOnly) ? this.state.cube.ori : alg_generator_from_group(state.config.orientationSelector)().id;
         const name = options.updateSolutionOnly ? this.state.name : "hiding";
         // console.log("algdesc", algdesc)
         return {

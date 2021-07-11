@@ -11,6 +11,7 @@ import Radio from '@material-ui/core/Radio';
 
 import { AppState, Config, Action } from '../Types';
 import Selector from '../lib/Selector';
+import CaseVisualizer from './CaseVisualizer';
 
 
 const useStyles = makeStyles(theme => ({
@@ -91,7 +92,7 @@ function SingleSelect(props: {state: AppState, dispatch: React.Dispatch<Action>,
 
   let label = sel.label || props.label || ""
   return (
-    <FormControl component="fieldset" className={classes.select}>
+  <Box>
     <FormLabel component="legend"className={classes.selectLabel} >{label}</FormLabel>
     <RadioGroup aria-label="position" name="position" value={radioValue} onChange={handleChange} row>
       {
@@ -106,18 +107,18 @@ function SingleSelect(props: {state: AppState, dispatch: React.Dispatch<Action>,
         ))
       }
     </RadioGroup>
-  </FormControl>)
+  </Box>)
 }
 
 
 
-type MultiOptions = {
+type MultiSelectOptions = {
   label?: string, noDialog?: boolean,
   manipulators?: {name: string, enableIdx: number[]}[]
 }
 
 
-function MultiSelectContent(props: {state: AppState, dispatch: React.Dispatch<Action>, select: string, options?: MultiOptions }) {
+function MultiSelectContent(props: {state: AppState, dispatch: React.Dispatch<Action>, select: string, options?: MultiSelectOptions }) {
   let { state, dispatch, select, options } = props
   options = options || {}
   let { config } = state
@@ -186,7 +187,7 @@ function MultiSelectContent(props: {state: AppState, dispatch: React.Dispatch<Ac
   return {label, content}
 }
 
-function MultiSelect(props: {state: AppState, dispatch: React.Dispatch<Action>, select: string, options?: MultiOptions }) {
+function MultiSelect(props: {state: AppState, dispatch: React.Dispatch<Action>, select: string, options?: MultiSelectOptions }) {
   let { state, dispatch, select, options } = props
   let {label, content} = MultiSelectContent({state, dispatch, select, options})
   options = options || {}
@@ -209,7 +210,7 @@ function MultiSelect(props: {state: AppState, dispatch: React.Dispatch<Action>, 
   )
 
   return (
-  <div>
+  <Box>
     <FormLabel component="legend">{label}</FormLabel>
     <Box height={8}/>
     <Button color="primary" variant="outlined" style={{borderWidth: 2}} onClick={handleClickOpen}>
@@ -228,11 +229,9 @@ function MultiSelect(props: {state: AppState, dispatch: React.Dispatch<Action>, 
           </Button>
       </DialogActions>
     </Dialog>
-  </div>
+  </Box>
   )
 }
 
-function CaseSelect(props: {state: AppState, dispatch: React.Dispatch<Action>, select: (c: Config) => Selector, options?: MultiOptions }) {
 
-}
 export { SingleSelect, MultiSelectContent, MultiSelect }

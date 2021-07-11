@@ -15,67 +15,119 @@ const get_active_names = (sel : Selector) => {
     return res
 }
 
-export type AlgDesc = {
+export type CaseDesc = {
     id: string,
     algs: string[],
     setup?: string,
     kind: string
 }
 
-export let createAlg = (id: string, alg: string | string[], kind:string, setup?: string) : AlgDesc => ({
+export let createAlg = (id: string, alg: string | string[], kind:string, setup?: string) : CaseDesc => ({
     id, algs:Array.isArray(alg) ? alg : [alg], kind, setup
 })
 
 const empty_alg = createAlg("empty", "", "any")
 
-export const cmll_algs_raw : string[][] = [
-    ["o_adjacent_swap", "R U R' F' R U R' U' R' F R2 U' R'", "cmll" ],
-    ["o_diagonal_swap", "F R U' R' U' R U R' F' R U R' U' R' F R F'", "cmll" ],
-    ["h_columns", "U' R U R' U R U' R' U R U2 R'", "cmll" ],
-    ["h_rows", "F R U R' U' R U R' U' R U R' U' F'", "cmll" ],
-    ["h_column", "U' R U2' R2' F R F' U2 R' F R F'", "cmll" ],
-    ["h_row", "r U' r2' D' r U' r' D r2 U r'", "cmll" ],
-    ["pi_right_bar", "F R U R' U' R U R' U' F'", "cmll" ],
-    ["pi_back_slash", "U F R' F' R U2 R U' R' U R U2' R'", "cmll" ],
-    ["pi_x_checkerboard", "U' R' F R U F U' R U R' U' F'", "cmll" ],
-    ["pi_forward_slash", "R U2 R' U' R U R' U2' R' F R F'", "cmll" ],
-    ["pi_columns", "U' r U' r2' D' r U r' D r2 U r'", "cmll" ],
-    ["pi_left_bar", "U' R' U' R' F R F' R U' R' U2 R", "cmll" ],
-    ["u_forward_slash", "U2 R2 D R' U2 R D' R' U2 R'", "cmll" ],
-    ["u_back_slash", "R2' D' R U2 R' D R U2 R", "cmll" ],
-    ["u_front_row", "R' U' R U' R' U2 R2 U R' U R U2 R'", "cmll" ],
-    ["u_rows", "U' F R2 D R' U R D' R2' U' F'", "cmll" ],
-    ["u_x_checkerboard", "U2 r U' r' U r' D' r U' r' D r", "cmll" ],
-    ["u_back_row", "U' F R U R' U' F'", "cmll" ],
-    ["t_left_bar", "U' R U R' U' R' F R F'", "cmll" ],
-    ["t_right_bar", "U L' U' L U L F' L' F", "cmll" ],
-    ["t_rows", "R U2 R' U' R U' R2' U2' R U R' U R", "cmll" ],
-    ["t_front_row", "r' U r U2' R2' F R F' R", "cmll" ],
-    ["t_back_row", "r' D' r U r' D r U' r U r'", "cmll" ],
-    ["t_columns", "U2 r2' D' r U r' D r2 U' r' U' r", "cmll" ],
-    ["s_left_bar", "R U R' U R U2 R'", "cmll" ],
-    ["s_x_checkerboard", "L' U2 L U2' L F' L' F", "cmll" ],
-    ["s_forward_slash", "F R' F' R U2 R U2' R'", "cmll" ],
-    ["s_columns", "R U R' U' R' F R F' R U R' U R U2' R'", "cmll" ],
-    ["s_right_bar", "U2' R U R' U R' F R F' R U2' R'", "cmll" ],
-    ["s_back_slash", "R U' L' U R' U' L", "cmll" ],
-    ["as_right_bar", "U' R U2' R' U' R U' R", "cmll" ],
-    ["as_columns", "R2 D R' U R D' R' U R' U' R U' R'", "cmll" ],
-    ["as_back_slash", "F' r U r' U2' r' F2 r", "cmll" ],
-    ["as_x_checkerboard", "R U2' R' U2' R' F R F'", "cmll" ],
-    ["as_forward_slash", "L' U R U' L U R'", "cmll" ],
-    ["as_left_bar", "U2' R U2' R' F R' F' R U' R U' R'", "cmll" ],
-    ["l_mirror", "F R U' R' U' R U R' F'", "cmll" ],
-    ["l_inverse", "F R' F' R U R U' R'", "cmll" ],
-    ["l_pure", "U2 R U R' U R U' R' U R U' R' U R U2' R'", "cmll" ],
-    ["l_front_commutator", "R U2 R D R' U2 R D' R2'", "cmll" ],
-    ["l_diag", "U2 R' U' R U R' F' R U R' U' R' F R2", "cmll" ],
-    ["l_back_commutator", "U' R' U2 R' D' R U2 R' D R2", "cmll" ]
+export const cmll_algs_raw : [string,string][] = [
+    ["o_adjacent_swap", "R U R' F' R U R' U' R' F R2 U' R'"],
+    ["o_diagonal_swap", "F R U' R' U' R U R' F' R U R' U' R' F R F'"],
+    ["h_columns", "U' R U R' U R U' R' U R U2 R'"],
+    ["h_rows", "F R U R' U' R U R' U' R U R' U' F'"],
+    ["h_column", "U' R U2' R2' F R F' U2 R' F R F'"],
+    ["h_row", "r U' r2' D' r U' r' D r2 U r'"],
+    ["pi_right_bar", "F R U R' U' R U R' U' F'"],
+    ["pi_back_slash", "U F R' F' R U2 R U' R' U R U2' R'"],
+    ["pi_x_checkerboard", "U' R' F R U F U' R U R' U' F'"],
+    ["pi_forward_slash", "R U2 R' U' R U R' U2' R' F R F'"],
+    ["pi_columns", "U' r U' r2' D' r U r' D r2 U r'"],
+    ["pi_left_bar", "U' R' U' R' F R F' R U' R' U2 R"],
+    ["u_forward_slash", "U2 R2 D R' U2 R D' R' U2 R'"],
+    ["u_back_slash", "R2' D' R U2 R' D R U2 R"],
+    ["u_front_row", "R' U' R U' R' U2 R2 U R' U R U2 R'"],
+    ["u_rows", "U' F R2 D R' U R D' R2' U' F'"],
+    ["u_x_checkerboard", "U2 r U' r' U r' D' r U' r' D r"],
+    ["u_back_row", "U' F R U R' U' F'"],
+    ["t_left_bar", "U' R U R' U' R' F R F'"],
+    ["t_right_bar", "U L' U' L U L F' L' F"],
+    ["t_rows", "R U2 R' U' R U' R2' U2' R U R' U R"],
+    ["t_front_row", "r' U r U2' R2' F R F' R"],
+    ["t_back_row", "r' D' r U r' D r U' r U r'"],
+    ["t_columns", "U2 r2' D' r U r' D r2 U' r' U' r"],
+    ["s_left_bar", "R U R' U R U2 R'"],
+    ["s_x_checkerboard", "L' U2 L U2' L F' L' F"],
+    ["s_forward_slash", "F R' F' R U2 R U2' R'"],
+    ["s_columns", "R U R' U' R' F R F' R U R' U R U2' R'"],
+    ["s_right_bar", "U2' R U R' U R' F R F' R U2' R'"],
+    ["s_back_slash", "R U' L' U R' U' L"],
+    ["as_right_bar", "U' R U2' R' U' R U' R'"],
+    ["as_columns", "R2 D R' U R D' R' U R' U' R U' R'"],
+    ["as_back_slash", "F' r U r' U2' r' F2 r"],
+    ["as_x_checkerboard", "R U2' R' U2' R' F R F'"],
+    ["as_forward_slash", "L' U R U' L U R'"],
+    ["as_left_bar", "U2' R U2' R' F R' F' R U' R U' R'"],
+    ["l_mirror", "F R U' R' U' R U R' F'"],
+    ["l_inverse", "F R' F' R U R U' R'"],
+    ["l_pure", "U2 R U R' U R U' R' U R U' R' U R U2' R'"],
+    ["l_front_commutator", "R U2 R D R' U2 R D' R2'"],
+    ["l_diag", "U2 R' U' R U R' F' R U R' U' R' F R2"],
+    ["l_back_commutator", "U' R' U2 R' D' R U2 R' D R2"],
+    ["solved", ""]
 ]
 
-const cmll_algs : AlgDesc[] = cmll_algs_raw.map( ([x, y, z]) => createAlg(x, y, z))
+export const nmcll_to_cmll_mapping : [string, string[]][] = [
+    ["o_1", ["h_rows", "pi_columns", "h_columns"]],
+    ["o_2", ["pi_x_checkerboard"]],
+    ["s_1", ["as_right_bar", "t_right_bar", "l_diag",  "as_forward_slash"]],
+    ["s_2", ["u_forward_slash", "as_left_bar", "l_pure", "as_x_checkerboard"]],
+    ["s_3", ["u_back_slash", "t_left_bar", "as_back_slash", "as_columns"]],
+    ["as_1", ["t_left_bar", "s_left_bar", "l_diag", "s_back_slash"]],
+    ["as_2", ["u_back_slash", "s_right_bar", "as_left_bar", "s_x_checkerboard"]],
+    ["as_3", ["s_forward_slash", "t_right_bar", "as_right_bar", "s_columns", ]],
+    ["t_1", ["u_back_row", "t_back_row", "h_row", "pi_right_bar"]],
+    ["t_2", ["u_front_row", "as_back_slash", "s_forward_slash", "pi_left_bar"]],
+    ["t_3", ["t_front_row", "as_forward_slash", "s_back_slash", "h_row"]],
+    ["u_1", ["u_rows", "t_rows", "pi_left_bar", "h_column"]],
+    ["u_2", ["t_columns", "s_columns", "as_columns", "pi_right_bar"]],
+    ["u_3", ["u_x_checkerboard", "s_x_checkerboard", "as_x_checkerboard", "h_column"]],
+    ["l_1", ["l_inverse", "as_right_bar", "s_right_bar", "pi_forward_slash"]],
+    ["l_2", ["l_mirror", "as_left_bar", "s_left_bar", "pi_back_slash"]],
+    ["l_3", ["l_back_commutator", "l_front_commutator", "pi_forward_slash", "pi_back_slash"]],
+    ["pi_1", ["o_adjacent_swap", "u_front_row", "t_columns", "pi_x_checkerboard"]],
+    ["pi_2", ["u_back_row", "l_front_commutator", "l_back_commutator", "t_rows"]],
+    ["pi_3", ["o_adjacent_swap", "l_mirror", "l_inverse", "pi_columns"]],
+    ["h_1", ["solved", "t_front_row", "h_rows"]],
+    ["h_2", ["o_diagonal_swap", "u_x_checkerboard", "h_columns"]],
+    ["h_3", ["u_rows", "t_back_row"]],
+]
 
-let trigger_algs: AlgDesc[] = [
+export const nmcll_display_parity : [string, string, string][] = [
+ ["o_1", "U", ""],
+ ["o_2", "", ""], 
+ ["s_1", "", "U"],
+ ["s_2", "U", "U"],
+ ["s_3", "", "U"],
+ ["as_1","", "U2"],
+ ["as_2","U", "U'"],
+ ["as_3","", ""],
+ ["t_1", "", "U2"],
+ ["t_2", "", "U2"],
+ ["t_3", "", "U2"],
+ ["u_1", "U", "U2"],
+ ["u_2", "U", "U2"],
+ ["u_3", "", "U2"],
+ ["l_1", "U", ""],
+ ["l_2", "U", "U2"],
+ ["h_3", "", ""], 
+ ["pi_1","", "U2"],
+ ["pi_2","U", "U'"],
+ ["pi_3","", "U2"],
+ ["l_3", "U", ""],
+ ["h_1", "", ""], 
+ ["h_2", "", ""], 
+]
+const cmll_algs : CaseDesc[] = cmll_algs_raw.map( ([x, y]) => createAlg(x, y, "cmll"))
+
+let trigger_algs: CaseDesc[] = [
     createAlg("RUR'_1", "R U R'", "trigger"),
     createAlg("RUR'_2", "r U r'", "trigger"),
     createAlg("RU'R'_1", "R U' R'", "trigger"),
@@ -90,14 +142,14 @@ let trigger_algs: AlgDesc[] = [
     createAlg("R'U2R_2", "r' U2 r", "trigger"),
 ]
 
-let u_auf_algs: AlgDesc[] = [
+let u_auf_algs: CaseDesc[] = [
     createAlg("U", "U", "u_auf"),
     createAlg("U'", "U'", "u_auf"),
     createAlg("U2", "U2", "u_auf"),
     createAlg("None", "", "u_auf"),
 ]
 
-let ori_algs: AlgDesc[] =
+let ori_algs: CaseDesc[] =
     ["WG", "WB", "WO", "WR",
     "YG", "YB", "YO", "YR",
     "BW", "BY", "BO", "BR",
@@ -107,7 +159,9 @@ let ori_algs: AlgDesc[] =
 
 let lookup_algset = (kind : string) => {
     switch (kind) {
-        case "cmll": return cmll_algs;
+        case "cmll": 
+        case "cmll_case":
+        case "nmcll": return cmll_algs;
         case "trigger": return trigger_algs;
         case "orientation": return ori_algs;
         case "u_auf": return u_auf_algs;
@@ -115,13 +169,13 @@ let lookup_algset = (kind : string) => {
     }
 }
 
-let alg_generator = (selector: Selector) => {
+let alg_generator_from_group = (selector: Selector) => {
     let algSet = lookup_algset(selector.kind)
-    let lookup = new Set(get_active_names(selector))
+    let lookup = new Set(selector.getActiveNames())
     let get_prefix = (id: string) => {
         return id.split("_", 1)[0]
     }
-    let algs : AlgDesc[] = (() => {
+    let algs : CaseDesc[] = (() => {
         return algSet.filter(alg => {
             let prefix = get_prefix(alg.id);
             return lookup.has(prefix)
@@ -138,4 +192,18 @@ let alg_generator = (selector: Selector) => {
     return next
 }
 
-export { alg_generator }
+let alg_generator_from_cases = (kind: string, activeNames: string[]) => {
+    let activeNamesSet = new Set(activeNames)
+    // console.log("generating from active caes", activeNamesSet)
+    let algs = lookup_algset(kind).filter(c => activeNamesSet.has(c.id) )
+    let next = () => {
+        if (algs.length === 0) {
+            return empty_alg
+        } else {
+            return rand_choice(algs)
+        }
+    }
+    return next
+}
+
+export { alg_generator_from_group , alg_generator_from_cases }

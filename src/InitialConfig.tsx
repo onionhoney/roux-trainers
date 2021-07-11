@@ -40,8 +40,8 @@ export const initialConfig : Config = (() => {
         }),
         cmllCaseSelector: new Selector({
             names: cmll_alg_names,
-            flags: Array(cmll_alg_names.length).fill(0),
-            kind: "cmll-by-case"
+            flags: Array(cmll_alg_names.length).fill(1),
+            kind: "cmll_case"
         }),
         cmllAufSelector: new Selector({
             names: ["None", "U", "U'", "U2"],

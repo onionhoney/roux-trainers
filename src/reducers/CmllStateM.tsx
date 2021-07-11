@@ -1,12 +1,12 @@
 import { AppState, StateT, Config } from "../Types";
-import { alg_generator, AlgDesc, createAlg } from "../lib/Algs";
+import { alg_generator_from_group, alg_generator_from_cases, CaseDesc, createAlg, cmll_algs_raw, nmcll_to_cmll_mapping } from "../lib/Algs";
 import { CubieCube, Move, CubeUtil, MoveSeq } from '../lib/CubeLib';
 import { AbstractStateM } from "./AbstractStateM";
 import {initialize as min2phase_init, solve as min2phase_solve} from "../lib/min2phase/min2phase-wrapper"
 import { arrayEqual } from "../lib/Math";
 
 export abstract class CmllStateM extends AbstractStateM {
-    _get2PhaseSolution(cube: CubieCube): AlgDesc {
+    _get2PhaseSolution(cube: CubieCube): CaseDesc {
         // Aha! f = g(b) but you modified b later, and f won't update!
 
         let m2_away = false
@@ -23,21 +23,30 @@ export abstract class CmllStateM extends AbstractStateM {
         if (m2_away) {
             solution += " M2"
         }
-        const algDesc: AlgDesc = createAlg("scramble", solution, "scramble")
+        const algDesc: CaseDesc = createAlg("scramble", solution, "scramble")
         console.log(solution);
         return algDesc;
     }
     _generateCase(): AppState {
         let state = this.state;
         let { config } = state;
-        let { cmllSelector, triggerSelector, cmllAufSelector, orientationSelector } = config;
-        let generator = alg_generator(cmllSelector);
-        let trig_generator = alg_generator(triggerSelector);
-        let u_auf_generator = alg_generator(cmllAufSelector);
-        let ori_generator = alg_generator(orientationSelector);
-        let trigger_alg: AlgDesc = trig_generator();
-        let cmll_alg: AlgDesc = generator();
-        let u_auf_alg: AlgDesc = u_auf_generator();
+        let { cmllCaseSelector, triggerSelector, cmllAufSelector, orientationSelector, nmcllSelector, hyperOriSelector } = config;
+
+        let generator = (() => {
+            if (hyperOriSelector.getActiveName() === "off") {
+                return alg_generator_from_cases(cmllCaseSelector.kind, cmllCaseSelector.getActiveNames());
+            } else {
+                const lookup = Object.fromEntries(nmcll_to_cmll_mapping)
+                const activeNames = (nmcllSelector.getActiveNames().map(x => lookup[x]).flat())
+                return alg_generator_from_cases(nmcllSelector.kind, activeNames)
+            }
+        })();
+        let trig_generator = alg_generator_from_group(triggerSelector);
+        let u_auf_generator = alg_generator_from_group(cmllAufSelector);
+        let ori_generator = alg_generator_from_group(orientationSelector);
+        let trigger_alg: CaseDesc = trig_generator();
+        let cmll_alg: CaseDesc = generator();
+        let u_auf_alg: CaseDesc = u_auf_generator();
         let alg_str = trigger_alg.algs + " " + u_auf_alg.algs + " " + cmll_alg.algs;
         let moves: Move[] = new MoveSeq(alg_str).inv().moves;
 

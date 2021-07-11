@@ -20,7 +20,7 @@ import { Face } from '../lib/Defs';
 
 import { SingleSelect, MultiSelect } from './SelectorViews';
 import { ColorPanel } from './Input';
-import { AlgDesc } from '../lib/Algs';
+import { CaseDesc } from '../lib/Algs';
 import TextField from '@material-ui/core/TextField';
 
 import { AnalyzerState, SolverConfig, SolutionDesc, initialState, analyze_roux_solve } from '../lib/Analyzer';

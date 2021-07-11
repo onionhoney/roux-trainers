@@ -54,7 +54,7 @@ export function ColorPanel(props: {state: AppState, dispatch: React.Dispatch<Act
       setOpen(true);
     };
     const handleClose = (e: any, reason: string) => {
-      if (reason !== "backdropClick") 
+      if (reason === "backdropClick") 
         setOpen(false);
     }
     return (

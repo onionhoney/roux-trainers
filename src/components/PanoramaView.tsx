@@ -3,7 +3,7 @@ import React, { Dispatch } from 'react'
 import { makeStyles } from '@material-ui/core';
 import { GridList, GridListTile} from '@material-ui/core';
 
-import { AlgDesc } from "../lib/Algs";
+import { CaseDesc } from "../lib/Algs";
 import { AppState, Action } from '../Types';
 
 const useStyles = makeStyles(theme => ({
@@ -43,7 +43,7 @@ function VisualCube(props: VisualCubeConfig) {
   return <img src={template} alt=""/>
 }
 
-function PanoramaTable(props: {algs: AlgDesc[]}){
+function PanoramaTable(props: {algs: CaseDesc[]}){
     let classes = useStyles()
     let { algs } = props
     return <GridList cellHeight={160} className={classes.gridList} cols={3}>
@@ -57,7 +57,7 @@ function PanoramaTable(props: {algs: AlgDesc[]}){
 
 export default function PanoramaView(props: { state: AppState, dispatch: Dispatch<Action> }) {
     let classes = useStyles()
-    let algs : AlgDesc[] = [
+    let algs : CaseDesc[] = [
         "RUR", "RU'R'"
     ].map( str => ({
         id: str,

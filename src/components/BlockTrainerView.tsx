@@ -20,7 +20,7 @@ import { Face } from '../lib/Defs';
 
 import { SingleSelect, MultiSelect } from './SelectorViews';
 import { ColorPanel } from './Input';
-import { AlgDesc } from '../lib/Algs';
+import { CaseDesc } from '../lib/Algs';
 import { ScrambleInputView } from './ScrambleInputView';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import { config } from 'process';
@@ -161,14 +161,14 @@ function BlockTrainerView(props: { state: AppState, dispatch: React.Dispatch<Act
 
     let facelet = FaceletCube.from_cubie(cube, getMask(state))
 
-    let desc : AlgDesc[] = state.case.desc.length ? state.case.desc :
+    let desc : CaseDesc[] = state.case.desc.length ? state.case.desc :
        [ { algs: [""], setup:"Press next for new case", id: "", kind: ""} ]
 
     let spaceButtonText = (state.name === "hiding") ? "Reveal" : "Next"
 
 
-    let describe_reveal = function(algs: AlgDesc[]) {
-      let get_algs = (d: AlgDesc) => d.algs;
+    let describe_reveal = function(algs: CaseDesc[]) {
+      let get_algs = (d: CaseDesc) => d.algs;
       if (algs.length === 1) {
         return get_algs(algs[0]).join("\n")
       } else {
@@ -178,7 +178,7 @@ function BlockTrainerView(props: { state: AppState, dispatch: React.Dispatch<Act
       }
     }
 
-    let describe_hide = (desc: AlgDesc[]) => {
+    let describe_hide = (desc: CaseDesc[]) => {
       let minMove = desc.map( d =>
         d.algs.map(a => new MoveSeq(a).remove_setup().moves.length))
         .flat()

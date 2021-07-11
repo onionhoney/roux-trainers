@@ -1,4 +1,4 @@
-import { AlgDesc } from "./lib/Algs";
+import { CaseDesc } from "./lib/Algs";
 import Selector from "./lib/Selector";
 import { KeyMapping } from "./KeyMapping";
 import { CubieCube, Move, ColorScheme } from "./lib/CubeLib";
@@ -13,8 +13,10 @@ export type Config = {
     theme: Selector,
     evaluator: Selector,
     cmllSelector: Selector,
+    cmllCaseSelector: Selector,
     cmllAufSelector: Selector,
     cmllCubeMaskSelector: Selector,
+    nmcllSelector: Selector,
     triggerSelector: Selector,
     hyperOriSelector: Selector,
     orientationSelector: Selector
@@ -81,7 +83,7 @@ type CustomAction = {
 export type Action = KeyAction | ConfigAction | ModeChangeAction | ScrambleInputAction | FavListAction | ColorSchemeAction | CustomAction
 export type ScrambleSource = "random" | "input"
 
-export type InfoT = {cube: CubieCube, desc: AlgDesc[]}
+export type InfoT = {cube: CubieCube, desc: CaseDesc[]}
 
 export type FavCase = {mode: Mode, setup: string, solver: string[] }
 
@@ -95,7 +97,7 @@ export type AppState = {
     },
     case: {
         state: CubieCube,
-        desc: AlgDesc[]
+        desc: CaseDesc[]
     },
     scrambleInput: string[],
     config: Config,
