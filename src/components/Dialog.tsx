@@ -37,10 +37,13 @@ const makeDialog = <P extends object>(
     </Button>
     <Box height={8}/>
 
-    <Dialog disableEscapeKeyDown open={open} onClose={handleClose} maxWidth="xl" fullWidth={options.fullWidth}>
+
+    <Dialog disableEscapeKeyDown open={open} onClose={handleClose} maxWidth="md" style={{marginLeft: 10,marginRight: 10}}> 
       <DialogTitle> {title} </DialogTitle>
-      <DialogContent>
-        <Component {...props}/>
+      <DialogContent >
+        <Box paddingLeft={1}>
+          <Component {...props}/>
+        </Box>
       </DialogContent>
       <DialogActions>
           <Button onClick={handleClose} color="primary" size="large" >
@@ -48,7 +51,7 @@ const makeDialog = <P extends object>(
           </Button>
       </DialogActions>
     </Dialog>
-  </Box>
+    </Box>
   )
 
 }
