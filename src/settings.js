@@ -1,1 +1,1 @@
-export const ENABLE_DEV = false
+export const __DEV__ = false

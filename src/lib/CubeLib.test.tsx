@@ -66,3 +66,18 @@ U' M2' U' // UL/UR
 E2' M E2' M' // EP
     `).toString())
 })
+
+it('should generate apply func correctly', () => {
+    let u_func = CubieCube.generate_apply_func(Move.all.U)
+    let cube = new CubieCube()
+    for (let i = 0; i < 4; i++) {
+        cube = u_func(cube)
+        expect(CubeUtil.is_cube_solved(cube)).toBe((i === 3))
+    }
+    let mp_func = CubieCube.generate_apply_func(Move.all["M'"])
+    cube = new CubieCube()
+    for (let i = 0; i < 4; i++) {
+        cube = mp_func(cube)
+        expect(CubeUtil.is_cube_solved(cube)).toBe((i === 3))
+    }
+})

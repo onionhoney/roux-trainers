@@ -1,4 +1,4 @@
-import { EventAvailableOutlined } from "@material-ui/icons";
+import { EventAvailableOutlined } from "@mui/icons-material";
 import { setEmitFlags } from "typescript";
 import { MoveSeq } from "./CubeLib";
 import two_gram_meter from './two_gram_v1.json'

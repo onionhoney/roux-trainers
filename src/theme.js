@@ -1,8 +1,23 @@
-import { red } from '@material-ui/core/colors';
-import { createTheme } from '@material-ui/core/styles';
+import { red } from '@mui/material/colors';
+import { createTheme, adaptV4Theme } from '@mui/material/styles';
 
 // A custom theme for this app
-const theme = createTheme({
+const components = {
+  components: {
+    MuiSlider: {
+      styleOverrides: {
+        root: {
+          height: 100
+        },
+        track: {
+          height: 100
+        }
+      }
+      
+    }
+  }
+}
+const theme = createTheme(adaptV4Theme({
   name: "bright",
   palette: {
     primary: {
@@ -21,9 +36,10 @@ const theme = createTheme({
     text: {
       primary: '#000',
       secondary: '#888',
-      hint: '#556cd6'
+      disabled: '#556cd6'
     }
   },
+  ...components
   /*
   typography: {
     "fontFamily": `"Public Sans", "Roboto", "Helvetica", "Arial", sans-serif`,
@@ -34,8 +50,8 @@ const theme = createTheme({
   }
   */
 
-});
-const themeDark = createTheme({
+}));
+const themeDark = createTheme(adaptV4Theme({
   name: "dark",
   palette: {
     primary: {
@@ -54,7 +70,7 @@ const themeDark = createTheme({
     text: {
       primary: '#fff',
       secondary: '#ddd',
-      hint: '#eee'
+      disabled: '#eee'
     }
   },
   overrides: {
@@ -66,8 +82,9 @@ const themeDark = createTheme({
         backgroundColor: 'rgba(255, 255 ,255, 0.3)',
       }
     },
-  }
+  },
+  ...components
 
-});
+}));
 
 export { theme, themeDark };

@@ -1,4 +1,4 @@
-import { Config, FavCase, Mode } from "../Types"
+import { Config, FavCase, Mode, SliderOpt } from "../Types"
 import { version } from "../Version"
 import { initialConfig, initialFavList } from "../InitialConfig"
 import Selector from '../lib/Selector';
@@ -32,7 +32,13 @@ let serializeConfig = (config : Config) => {
 let deserializeConfig = (s: string) => {
     const obj = JSON.parse(s)
     return Object.fromEntries(Object.entries(obj).map( 
-        ([k, v]) => [k, new Selector(v as Selector)] ) )
+        ([k, v]) => {
+            if ("names" in (v as any)) { 
+                return [k, new Selector(v as Selector)] 
+            } else {
+                return [k, v as SliderOpt]
+            }
+        }) )
 }
 
 let configManager = function() {
@@ -40,6 +46,19 @@ let configManager = function() {
     const versionKey = "version"
     let cache : Config | null = null
 
+    let resetConfig = () => {
+        const item = window.localStorage.getItem(key);
+        const item1 : Partial<Config> = item ? deserializeConfig(item) : initialConfig
+        // let's preserve orientation
+        let config = initialConfig
+        if (item1.orientationSelector) {
+            config = {...initialConfig, orientationSelector: new Selector(item1.orientationSelector) }
+        }
+        window.localStorage.setItem(key, serializeConfig(config));
+        window.localStorage.setItem(versionKey, version)
+
+        return config
+    }
     let getConfig = () => {
         if (cache) {
             return cache
@@ -73,7 +92,7 @@ let configManager = function() {
             window.localStorage.setItem(key, serializeConfig(item2));
             return item2
         }
-        console.log("config = ", item1)
+        //console.log("config = ", item1)
 
         cache = item1 as Config
         return cache
@@ -87,15 +106,15 @@ let configManager = function() {
 
     return {
         getConfig,
-        setConfig
+        setConfig,
+        resetConfig
     }
 }()
 
-let getConfig = configManager.getConfig
-let setConfig = configManager.setConfig
+let {getConfig, setConfig, resetConfig} = configManager
 let getFavList = favListManager.getFavList
 let setFavList = favListManager.setFavList
 
 export {
-    getConfig, setConfig, getFavList, setFavList
+    getConfig, setConfig, resetConfig, getFavList, setFavList
 }

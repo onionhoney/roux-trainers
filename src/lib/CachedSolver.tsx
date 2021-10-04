@@ -1,8 +1,24 @@
-import { FbdrSolver, SolverT, FsSolver, SsSolver, SbSolver, FbSolver, FbssSolver, Min2PhaseSolver, LSESolver, EOLRSolver} from './Solver';
+import { Pruner, PrunerConfig, PrunerT } from './Pruner';
+import { FbdrSolver, SolverT, FsSolver, SsSolver, SbSolver, FbSolver, FbssSolver, LpsbSolver, Min2PhaseSolver, LSESolver, EOLRSolver} from './Solver';
 
 let all_solvers = [
 "fbdr","fb", "fs-front", "fs-back", "ss-front", "ss-back", "min2phase",
-"lse", "eolrac", "eolrmc", "eolr", "eolrac-b", "eolrmc-b", "eolr-b" ]
+"lse", "eolrac", "eolrmc", "eolr", "eolrac-b", "eolrmc-b", "eolr-b", "sb" ]
+
+let CachedPruner = function() {
+    let cache : Map<string, PrunerT> = new Map()
+    function get(pc: PrunerConfig) {
+        let pcs = JSON.stringify(pc)
+        if (!cache.has(pcs)) {
+            let pruner = Pruner(pc)
+            cache.set(pcs, pruner)
+            return pruner
+        } else {
+            return cache.get(pcs) as PrunerT
+        }
+    }
+    return { get }
+}()
 
 let CachedSolver = function() {
     let cache : Map<string, SolverT> = new Map()
@@ -17,6 +33,8 @@ let CachedSolver = function() {
                 case "ss-back": cache.set(s, SsSolver(false)); break
                 case "fbss-front": cache.set(s, FbssSolver(true)); break
                 case "fbss-back": cache.set(s,FbssSolver(false)); break
+                case "lpsb-front": cache.set(s,LpsbSolver(true)); break
+                case "lpsb-back": cache.set(s,LpsbSolver(false)); break
                 case "sb": cache.set(s, SbSolver()); break
 
                 case "min2phase": cache.set(s, Min2PhaseSolver()); break
@@ -35,4 +53,4 @@ let CachedSolver = function() {
     return {get}
 }()
 
-export {CachedSolver, all_solvers}
+export {CachedSolver, CachedPruner, all_solvers}

@@ -1,19 +1,29 @@
 import { CubieCube, Move } from './CubeLib';
 import { cartesianProduct } from './Math';
+if ((globalThis as any).$RefreshReg$ === undefined) {
+    // hack for disabling refresh plugin in web worker
+    (globalThis as any).$RefreshReg$ = () => {};
+    (globalThis as any).$RefreshSig$ = () => () => {};
+}
 
 export type PrunerConfig = {
     size: number,
     encode: (cube : CubieCube) => number,
     solved_states: CubieCube[],
     max_depth: number,
-    moveset: Move[]
+    moveset: string[],
+    rev_lookup_depth?: number,
+    name: string
 }
 
 export type PrunerT = {
     init: () => void,
     query: (c : CubieCube) => number,
     equal: (c1 : CubieCube, c2: CubieCube) => boolean,
-    encode: (c : CubieCube) => number
+    encode: (c : CubieCube) => number,
+    moveset: Move[],
+    max_depth: number,
+    size: number
 }
 
 enum PrunerPiece {
@@ -27,13 +37,25 @@ export type PrunerDef = {
     center: PrunerPiece[],
     solved_states: string[],
     moveset: string[],
-    max_depth: number
+    max_depth: number,
+    name: string
 }
+
+let htm_rwm = ["U", "U2", "U'", "F", "F2", "F'", "R", "R2", "R'",
+    "r", "r2", "r'", "D", "D2", "D'", "M", "M'", "M2", "B", "B'", "B2"]
+let rrwmu = ["U", "U'", "U2", "R", "R'", "R2",
+    "r", "r'", "r2", "M'", "M", "M2"]
+let rrwmu_f = ["U", "U'", "U2", "R", "R'", "R2",
+    "r", "r'", "r2", "M'", "M", "M2", "F'", "F", "F2"]
+let rrwmu_b = ["U", "U'", "U2", "R", "R'", "R2",
+    "r", "r'", "r2", "M'", "M", "M2", "B'", "B", "B2"]
 
 export function Pruner(config: PrunerConfig) : PrunerT {
     let dist: Uint8Array;
-    let { size, encode, solved_states, max_depth, moveset} = config
+    let { size, encode, solved_states, max_depth, moveset: moveset_str, name} = config
+    let moveset = moveset_str.map(x => Move.all[x])
     let initialized = false
+    let level_states = [[...solved_states]]
     function init() {
         if (initialized) return
         initialized = true
@@ -44,7 +66,7 @@ export function Pruner(config: PrunerConfig) : PrunerT {
         let frontier = [...solved_states]
         let total_expanded = frontier.length
         for (let i = 0; i < max_depth; i++) {
-            console.log("pruner: expanding depth ", i)
+            //console.log("pruner: expanding depth ", i)
             let new_frontier = []
             for (let state of frontier) {
                 for (let move of moveset) {
@@ -57,9 +79,15 @@ export function Pruner(config: PrunerConfig) : PrunerT {
                 }
             }
             frontier = new_frontier
+            if (config.rev_lookup_depth && i + 1 <= config.rev_lookup_depth) {
+                level_states.push([...frontier])
+            }
             total_expanded += frontier.length
         }
-        console.log("Initialization complete. size = ", total_expanded)
+        //console.log(`${name} pruning table generated. depth = ${max_depth}. size = ${total_expanded}`)
+        if (config.rev_lookup_depth) {
+            // console.log(`${name} pruning reverse lookup generated. depth = ${config.rev_lookup_depth}. size = ${level_states.map(x => x.length).reduce((x,y)=>x+y)}`)
+        }
     }
     function query(cube: CubieCube) {
         let d = dist[encode(cube)]
@@ -73,7 +101,10 @@ export function Pruner(config: PrunerConfig) : PrunerT {
         init,
         query,
         equal,
-        encode
+        encode,
+        moveset,
+        max_depth,
+        size
     }
 }
 
@@ -104,7 +135,7 @@ let prunerFactory = function(def: PrunerDef): PrunerConfig {
     let cosize = def.corner.filter(x => x === S || x === O).length
     let cpsize = def.corner.filter(x => x === S).length
     let cisize = def.corner.filter(x => x !== X).length
-    let csize = Math.pow(2, cosize) * Math.pow(cisize, cpsize)
+    let csize = Math.pow(3, cosize) * Math.pow(cisize, cpsize)
     let cp_idx = def_to_idx(def.corner, false);
     let c_idx = def_to_idx(def.corner, true);
 
@@ -157,19 +188,21 @@ let prunerFactory = function(def: PrunerDef): PrunerConfig {
     }
 
     const solved_states = def.solved_states.map( m => new CubieCube().apply(m))
-    const moveset : Move[] = def.moveset.map(s => Move.all[s])
+    const moveset = def.moveset
     const max_depth = def.max_depth
+    const name = def.name
     return {
         size,
         encode,
         solved_states,
         max_depth,
-        moveset
+        moveset,
+        name
     }
 }
 
 
-let fbdrPrunerConfig : PrunerConfig = function() {
+let fbdrPrunerConfigGen = (max_depth: number) : PrunerConfig => {
     const esize = Math.pow(24, 4)
     const csize = Math.pow(24, 2)
     const size = esize * csize
@@ -191,7 +224,7 @@ let fbdrPrunerConfig : PrunerConfig = function() {
               case 8 : e2 = i * 2 + cube.eo[i]; break;
               case 9 : e3 = i * 2 + cube.eo[i]; break;
               case 7 : e4 = i * 2 + cube.eo[i]; break;
-          }
+          } 
       }
       const enc_e = e1 * (24 * 24 * 24) + e2 * (24 * 24) + e3 * 24 + e4
       return enc_c + 24 * 24 * enc_e
@@ -199,37 +232,71 @@ let fbdrPrunerConfig : PrunerConfig = function() {
 
     const moves = [[]]//, Move.parse("L R'"), Move.parse("L' R"), Move.parse("L2 R2")] 
     const solved_states = moves.map( (move : Move[]) => new CubieCube().apply(move) )
-
-    const max_depth = 4
-    const moveset : Move[] = ["U", "U2", "U'", "F", "F2", "F'", "R", "R2", "R'",
-    "r", "r2", "r'", "D", "D2", "D'", "M", "M'", "M2", "B", "B'", "B2"].map(s => Move.all[s])
+    const moveset = htm_rwm
 
     return {
         size,
         encode,
         solved_states,
         max_depth,
-        moveset
+        moveset,
+        name: "fbdr"
     }
-}()
+}
 
+let fbdrPrunerConfig = fbdrPrunerConfigGen(5)
 
+// let fbPrunerConfigAuto = prunerFactory({
+//     corner: [I,I,I,I,S,S,I,I],
+//     edge:   [I,I,I,I,I,S,I,I,S,S,I,I],
+//     center: [I,I,I,I,S,I],
+//     solved_states: ["id"],
+//     moveset: htm_rwm,
+//     max_depth: 5
+// });
 
+let fbPrunerConfigGen = (max_depth: number) : PrunerConfig => {
+    const esize = Math.pow(24, 3)
+    const csize = Math.pow(24, 2)
+    const size = esize * csize
 
-let htm_rwm = ["U", "U2", "U'", "F", "F2", "F'", "R", "R2", "R'",
-    "r", "r2", "r'", "D", "D2", "D'", "M", "M'", "M2", "B", "B'", "B2"]
-let rrwmu = ["U", "U'", "U2", "R", "R'", "R2",
-    "r", "r'", "r2", "M'", "M", "M2"]
+    function encode(cube:CubieCube) {
+      let c1 = 0, c2 = 0
+      for (let i = 0; i < 8; i++) {
+        switch (cube.cp[i]) {
+            case 4: c1 = i * 3 + cube.co[i]; break;
+            case 5: c2 = i * 3 + cube.co[i]; break;
+        }
+      }
+      const enc_c = c1 * 24 + c2
+      let e1 = 0, e2 = 0, e3 = 0
+      for (let i = 0; i < 12; i++) {
+          switch (cube.ep[i]) {
+              case 5 : e1 = i * 2 + cube.eo[i]; break;
+              case 8 : e2 = i * 2 + cube.eo[i]; break;
+              case 9 : e3 = i * 2 + cube.eo[i]; break;
+          } 
+      }
+      const enc_e = e1 * (24 * 24) + e2 * (24) + e3
+      return enc_e * (24 * 24) + enc_c
+    }
 
-let fbPrunerConfig = prunerFactory({
-    corner: [I,I,I,I,S,S,I,I],
-    edge:   [I,I,I,I,I,S,I,I,S,S,I,I],
-    center: [I,I,I,I,S,I],
-    solved_states: ["id"],
-    moveset: htm_rwm,
-    max_depth: 5
-});
+    const moves = [[]]//, Move.parse("L R'"), Move.parse("L' R"), Move.parse("L2 R2")] 
+    const solved_states = moves.map( (move : Move[]) => new CubieCube().apply(move) )
 
+    const moveset = htm_rwm
+    return {
+        size,
+        encode,
+        solved_states,
+        max_depth,
+        moveset,
+        // rev_lookup_depth: 3,
+        name: "fb"
+    }
+}
+
+let fbPrunerConfig = fbPrunerConfigGen(5)
 let ssPrunerConfig = (is_front: boolean) => {
     const size = Math.pow(24, 3)
     const c1 = is_front ? 7 : 6;
@@ -249,64 +316,350 @@ let ssPrunerConfig = (is_front: boolean) => {
 
     const moves = [[]] 
     const solved_states = moves.map( (move : Move[]) => new CubieCube().apply(move))
-
     const max_depth = 8
-    const moveset : Move[] = ["U", "U'", "U2", "R", "R'", "R2",
-        "r", "r'", "r2", "M'", "M", "M2"].map(s => Move.all[s])
+    const moveset = rrwmu
 
     return {
         size,
         encode,
         solved_states,
         max_depth,
-        moveset
+        moveset,
+        name: "ss" + (is_front ? "-front" : "-back")
     }
 }
-let sbPrunerConfig = prunerFactory({
-    corner: [I,I,I,I,I,I,S,S],
-    edge:   [I,I,I,I,I,I,I,S,I,I,S,S],
-    center: [I,I,I,I,I,I],
-    solved_states: ["id"],
-    moveset: rrwmu,
-    max_depth: 6
-});
+let sbPrunerConfig = function(){
+    const esize = Math.pow(24, 3)
+    const csize = Math.pow(24, 2)
+    const size = esize * csize
 
-let fsPrunerConfig = (is_front: boolean) => prunerFactory({
-        corner: is_front ? [I,I,I,I,S,I,I,I] : [I,I,I,I,I,S,I,I] ,
-        edge:   is_front ? [I,I,I,I,I,S,I,I,S,I,I,I] : [I,I,I,I,I,S,I,I,I,S,I,I] ,
-        center: [I,I,I,I,S,I],
-        solved_states: ["id"],
-        moveset: htm_rwm,
-        max_depth: 4
-});
+    function encode(cube:CubieCube) {
+      let c1 = 0, c2 = 0
+      for (let i = 0; i < 8; i++) {
+        switch (cube.cp[i]) {
+            case 6: c1 = i * 3 + cube.co[i]; break;
+            case 7: c2 = i * 3 + cube.co[i]; break;
+        }
+      }
+      const enc_c = c1 * 24 + c2
+      let e1 = 0, e2 = 0, e3 = 0
+      for (let i = 0; i < 12; i++) {
+          switch (cube.ep[i]) {
+              case 7  : e1 = i * 2 + cube.eo[i]; break;
+              case 10 : e2 = i * 2 + cube.eo[i]; break;
+              case 11 : e3 = i * 2 + cube.eo[i]; break;
+          } 
+      }
+      const enc_e = e1 * (24 * 24) + e2 * (24) + e3
+      return enc_e * (24 * 24) + enc_c
+    }
 
-let fbssPrunerConfig =(is_front: boolean) => [
+    const moves = [[]]
+    const solved_states = moves.map( (move : Move[]) => new CubieCube().apply(move) )
+
+    const moveset = rrwmu
+    return {
+        size,
+        encode,
+        solved_states,
+        max_depth: 6,
+        moveset,
+        // rev_lookup_depth: 3,
+        name: "sb_rRUM"
+    }
+}()
+
+let lpSbPrunerConfigsAuto = (lp_front: boolean) => [
     prunerFactory({
-        corner: is_front ? [I,I,I,I,S,S,I,S]: [I,I,I,I,S,S,S,I],
-        edge:   [I,I,I,I,I,I,I,I,I,I,I,I],
+        corner: lp_front ? [I,I,I,I,S,I,I,S] : [I,I,I,I,I,S,S,I],
+        edge:   lp_front ? [I,I,I,I,I,I,I,S,S,I,I,S] : [I,I,I,I,I,I,I,S,I,S,S,I],
         center: [I,I,I,I,I,I],
         solved_states: ["id"],
-        moveset: htm_rwm,
-        max_depth: 5
+        moveset: lp_front ? rrwmu_f : rrwmu_b,
+        max_depth: 5,
+        name: "FBLP+SSdiag"
     }),
-    prunerFactory({
-        corner: [I,I,I,I,I,I,I,I],
-        edge:   [I,I,I,I,I,S,I,S,S,S,is_front ? I : S,is_front ? S : I],
+    prunerFactory({ // SB
+        corner: [I,I,I,I,I,I,S,S],
+        edge:   [I,I,I,I,I,I,I,S,I,I,S,S],
         center: [I,I,I,I,I,I],
         solved_states: ["id"],
-        moveset: htm_rwm,
-        max_depth: 5
+        moveset: lp_front ? rrwmu_f : rrwmu_b,
+        max_depth: 5,
+        name: "SB with LP"
     }),
-]
+];
+
+let lpSbSbPrunerConfigGen = (lp_front: boolean, max_depth: number) : PrunerConfig => {
+    const esize = Math.pow(24, 3)
+    const csize = Math.pow(24, 2)
+    const size = esize * csize
+    function encode(cube:CubieCube) {
+      let c1 = 0, c2 = 0
+      for (let i = 0; i < 8; i++) {
+        switch (cube.cp[i]) {
+            case 6: c1 = i * 3 + cube.co[i]; break;
+            case 7: c2 = i * 3 + cube.co[i]; break;
+        }
+      }
+      const enc_c = c1 * 24 + c2
+      let e1 = 0, e2 = 0, e3 = 0
+      for (let i = 0; i < 12; i++) {
+          switch (cube.ep[i]) {
+              case 7 : e1 = i * 2 + cube.eo[i]; break;
+              case 10 : e2 = i * 2 + cube.eo[i]; break;
+              case 11 : e3 = i * 2 + cube.eo[i]; break;
+          } 
+      }
+      const enc_e = e1 * (24 * 24) + e2 * (24) + e3
+      return enc_e * (24 * 24) + enc_c
+    }
+
+    const moves = [[]]//, Move.parse("L R'"), Move.parse("L' R"), Move.parse("L2 R2")] 
+    const solved_states = moves.map( (move : Move[]) => new CubieCube().apply(move) )
+
+    const moveset = (lp_front ? rrwmu_f : rrwmu_b)
+
+    return {
+        size,
+        encode,
+        solved_states,
+        max_depth,
+        moveset,
+        name: "lpsb-sb" + (lp_front ? "+front-lp" : "+back-lp")
+    }
+}
+
+let lpSbDiagPrunerConfigGen = (lp_front: boolean, max_depth: number) : PrunerConfig => {
+    const esize = Math.pow(24, 3)
+    const csize = Math.pow(24, 2)
+    const size = esize * csize
+    function encode_f(cube:CubieCube) {
+      let c1 = 0, c2 = 0
+      for (let i = 0; i < 8; i++) {
+        switch (cube.cp[i]) {
+            case 4: c1 = i * 3 + cube.co[i]; break;
+            case 7: c2 = i * 3 + cube.co[i]; break;
+        }
+      }
+      const enc_c = c1 * 24 + c2
+      let e1 = 0, e2 = 0, e3 = 0
+      for (let i = 0; i < 12; i++) {
+          switch (cube.ep[i]) {
+              case 7 : e1 = i * 2 + cube.eo[i]; break;
+              case 8 : e2 = i * 2 + cube.eo[i]; break;
+              case 11 : e3 = i * 2 + cube.eo[i]; break;
+          } 
+      }
+      const enc_e = e1 * (24 * 24) + e2 * (24) + e3
+      return enc_e * (24 * 24) + enc_c
+    }
+    function encode_b(cube:CubieCube) {
+        let c1 = 0, c2 = 0
+        for (let i = 0; i < 8; i++) {
+          switch (cube.cp[i]) {
+              case 5: c1 = i * 3 + cube.co[i]; break;
+              case 6: c2 = i * 3 + cube.co[i]; break;
+          }
+        }
+        const enc_c = c1 * 24 + c2
+        let e1 = 0, e2 = 0, e3 = 0
+        for (let i = 0; i < 12; i++) {
+            switch (cube.ep[i]) {
+                case 7 : e1 = i * 2 + cube.eo[i]; break;
+                case 9 : e2 = i * 2 + cube.eo[i]; break;
+                case 10 : e3 = i * 2 + cube.eo[i]; break;
+            } 
+        }
+        const enc_e = e1 * (24 * 24) + e2 * (24) + e3
+        return enc_e * (24 * 24) + enc_c
+      }
+
+    const moves = [[]]//, Move.parse("L R'"), Move.parse("L' R"), Move.parse("L2 R2")] 
+    const solved_states = moves.map( (move : Move[]) => new CubieCube().apply(move) )
+
+    const moveset = (lp_front ? rrwmu_f : rrwmu_b)
+
+    return {
+        size,
+        encode: lp_front ? encode_f : encode_b,
+        solved_states,
+        max_depth,
+        moveset,
+        name: "lpsb-2sq" + (lp_front ? "+front-lp" : "+back-lp")
+    }
+}
+
+let lpSbPrunerConfigs = (lp_front: boolean) => [
+    lpSbSbPrunerConfigGen(lp_front, 5),
+    lpSbDiagPrunerConfigGen(lp_front, 5)
+];
+
+let fsPrunerConfig = (is_front: boolean) => {
+    const size = Math.pow(24, 3)
+    const c1 = is_front ? 4 : 5;
+    const e1 = is_front ? 8 : 9;
+    const e2 = 5
+    function encode(cube:CubieCube) {
+      let v0 = 0, v1 = 0, v2 = 0
+      for (let i = 0; i < 8; i++) {
+        if ( cube.cp[i] === c1) v0 = i * 3 + cube.co[i]
+      }
+      for (let i = 0; i < 12; i++) {
+          if (cube.ep[i] === e1) v1 = i * 2 + cube.eo[i];
+          else if (cube.ep[i] === e2) v2 = i * 2 + cube.eo[i]
+      }
+      return v0 + v1 * 24 + v2 * 24 * 24
+    }
+
+    const moves = [[]] 
+    const solved_states = moves.map( (move : Move[]) => new CubieCube().apply(move))
+
+    const max_depth = 5
+    const moveset = htm_rwm
+
+    return {
+        size,
+        encode,
+        solved_states,
+        max_depth,
+        moveset,
+        name: "fs" + (is_front ? "-front" : "-back")
+    }
+}
+
+// let fsPrunerConfigAuto = (is_front: boolean) => prunerFactory({
+//         corner: is_front ? [I,I,I,I,S,I,I,I] : [I,I,I,I,I,S,I,I] ,
+//         edge:   is_front ? [I,I,I,I,I,S,I,I,S,I,I,I] : [I,I,I,I,I,S,I,I,I,S,I,I] ,
+//         center: [I,I,I,I,S,I],
+//         solved_states: ["id"],
+//         moveset: htm_rwm,
+//         max_depth: 4
+// });
+
+let fbssPrunerConfigsManual = (is_front: boolean) : PrunerConfig[] => {
+    // make a line+ss solver
+    const esize = Math.pow(24, 3) // 3 edges
+    const csize = Math.pow(24, 3) // 3 corners
+    const size = esize * csize
+
+    function encode_front(cube:CubieCube) {
+      let c1 = 0, c2 = 0, c3 = 0
+      for (let i = 0; i < 8; i++) {
+        switch (cube.cp[i]) {
+            case 4 : c1 = i * 3 + cube.co[i]; break
+            case 5 : c2 = i * 3 + cube.co[i]; break
+            case 7 : c3 = i * 3 + cube.co[i]; break
+        }
+      }
+      const enc_c = c1 * (24 * 24) + c2 * 24 + c3
+      let e1 = 0, e2 = 0, e3 = 0
+      for (let i = 0; i < 12; i++) {
+          switch (cube.ep[i]) {
+              case 5 : e1 = i * 2 + cube.eo[i]; break;
+              case 7 : e2 = i * 2 + cube.eo[i]; break;
+              case 11 : e3 = i * 2 + cube.eo[i]; break;
+          } 
+      }
+      const enc_e = e1 * (24 * 24) + e2 * 24 + e3
+      return enc_c + csize * enc_e
+    }
+    function encode_front2(cube:CubieCube) {
+        let c1 = 0, c2 = 0
+        for (let i = 0; i < 8; i++) {
+          switch (cube.cp[i]) {
+              case 5 : c1 = i * 3 + cube.co[i]; break
+              case 7 : c2 = i * 3 + cube.co[i]; break
+          }
+        }
+        const enc_c = c1 * 24 + c2
+        let e1 = 0, e2 = 0, e3 = 0, e4 = 0
+        for (let i = 0; i < 12; i++) {
+            switch (cube.ep[i]) {
+                case 5 : e1 = i * 2 + cube.eo[i]; break;
+                case 7 : e2 = i * 2 + cube.eo[i]; break;
+                case 9 : e3 = i * 2 + cube.eo[i]; break;
+                case 11 : e4 = i * 2 + cube.eo[i]; break;
+            } 
+        }
+        const enc_e = e1 * (24 * 24 * 24) + e2 * (24 * 24) + e3 * 24 + e4
+        return enc_c + (24 * 24) * enc_e
+      }
+    function encode_back(cube:CubieCube) {
+        let c1 = 0, c2 = 0, c3 = 0
+        for (let i = 0; i < 8; i++) {
+          switch (cube.cp[i]) {
+              case 4 : c1 = i * 3 + cube.co[i]; break
+              case 5 : c2 = i * 3 + cube.co[i]; break
+              case 6 : c3 = i * 3 + cube.co[i]; break
+          }
+        }
+        const enc_c = c1 * (24 * 24) + c2 * 24 + c3
+        let e1 = 0, e2 = 0, e3 = 0
+        for (let i = 0; i < 12; i++) {
+            switch (cube.ep[i]) {
+                case 5 : e1 = i * 2 + cube.eo[i]; break;
+                case 7 : e2 = i * 2 + cube.eo[i]; break;
+                case 10 : e3 = i * 2 + cube.eo[i]; break;
+            } 
+        }
+        const enc_e = e1 * (24 * 24) + e2 * 24 + e3
+        return enc_c + csize * enc_e
+    }
+
+    const moves = [[]]//, Move.parse("L R'"), Move.parse("L' R"), Move.parse("L2 R2")] 
+    const solved_states = moves.map( (move : Move[]) => new CubieCube().apply(move) )
+
+    const max_depth = 5
+    //const moveset : Move[] = ["U", "U2", "U'", "F", "F2", "F'", "R", "R2", "R'",
+    //"r", "r2", "r'", "D", "D2", "D'", "M", "M'", "M2", "B", "B'", "B2"].map(s => Move.all[s])
+
+    const moveset = htm_rwm
+    
+    return [
+        fbdrPrunerConfig,
+        {
+            size,
+            encode: (is_front ? encode_front : encode_back),
+            solved_states,
+            max_depth,
+            moveset,
+            name: "liness-" + (is_front ? "front" : "back")
+        },
+    ]
+}
+
+// let fbssPrunerConfigsAuto = (is_front: boolean) => [
+//     prunerFactory({
+//         corner: is_front ? [I,I,I,I,S,S,I,S]: [I,I,I,I,S,S,S,I],
+//         edge:   [I,I,I,I,I,I,I,I,I,I,I,I],
+//         center: [I,I,I,I,I,I],
+//         solved_states: ["id"],
+//         moveset: htm_rwm,
+//         max_depth: 5,
+//         name: "fbss-corner"
+//     }),
+//     prunerFactory({
+//         corner: [I,I,I,I,I,I,I,I],
+//         edge:   [I,I,I,I,I,S,I,S,S,S,is_front ? I : S,is_front ? S : I],
+//         center: [I,I,I,I,I,I],
+//         solved_states: ["id"],
+//         moveset: htm_rwm,
+//         max_depth: 5,
+//         name: "fbss-edge"
+//     }),
+// ]
+
+let fbssPrunerConfigs = fbssPrunerConfigsManual
 
 let lsePrunerConfig : PrunerConfig = function() {
-    const size = Math.pow(12, 6) * 4 * 4 // TODO: optimize this plz
+    const size = Math.pow(12, 6) * 4 * 4 / 2 // TODO: optimize this plz
+    const edge_encode = [0, 1, 2, 3, 4, -1, 5, -1, -1, -1, -1, -1];
     function encode(cube:CubieCube) {
-      let edge_encode = [0, 1, 2, 3, 4, -1, 5, -1, -1, -1, -1, -1];
       let enc = [0, 0, 0, 0, 0, 0]
       for (let i = 0; i < 12; i++) {
         let idx = edge_encode[cube.ep[i]];
-        if (idx > -1) {
+        if (idx > 0) {
             enc[idx] = edge_encode[i] * 2 + cube.eo[i];
         }
       }
@@ -321,14 +674,15 @@ let lsePrunerConfig : PrunerConfig = function() {
     const solved_states = moves.map( m => new CubieCube().apply(m))
 
     const max_depth = 7
-    const moveset : Move[] = ["U", "U'", "U2", "M'", "M", "M2"].map(s => Move.all[s])
+    const moveset = ["U", "U'", "U2", "M'", "M", "M2"]
 
     return {
         size,
         encode,
         solved_states,
         max_depth,
-        moveset
+        moveset,
+        name: "lse"
     }
 }()
 
@@ -370,16 +724,17 @@ function eolrPrunerConfig(center_flag: number, barbie_mode?: string): PrunerConf
     const solved_states = pre_moves.map( m => new CubieCube().apply(m))
 
     const max_depth = 20
-    const moveset : Move[] = ["U", "U'", "U2", "M'", "M", "M2"].map(s => Move.all[s])
+    const moveset = ["U", "U'", "U2", "M'", "M", "M2"]
 
     return {
         size,
         encode,
         solved_states,
         max_depth,
-        moveset
+        moveset,
+        name: "eolr-" + center_flag + "-" + barbie_mode
     }
 }
 
 export { fbdrPrunerConfig, fsPrunerConfig, sbPrunerConfig, ssPrunerConfig, fbPrunerConfig, lsePrunerConfig, eolrPrunerConfig,
-    prunerFactory, fbssPrunerConfig }
+    prunerFactory, fbssPrunerConfigs, lpSbPrunerConfigs }

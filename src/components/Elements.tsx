@@ -1,13 +1,11 @@
-import {
-    Divider,
-    withStyles,
-    Theme,
-    createStyles
-} from '@material-ui/core';
+import { Divider, Theme } from '@mui/material';
+
+import withStyles from '@mui/styles/withStyles';
+import createStyles from '@mui/styles/createStyles';
 
 const styles = (theme: Theme) => createStyles({
     root: {
-        backgroundColor: theme.palette.text.hint,
+        backgroundColor: theme.palette.text.disabled,
     },
 });
 

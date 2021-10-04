@@ -1,4 +1,4 @@
-import { AppState, Config, FavCase } from "../Types";
+import { AppState, Config, FavCase, SliderOpt } from "../Types";
 import { alg_generator_from_group, CaseDesc } from "../lib/Algs";
 import { Face, Typ, FBpairPos } from "../lib/Defs";
 import { CubieCube, CubeUtil, Mask, FaceletCube, MoveSeq } from '../lib/CubeLib';
@@ -6,6 +6,13 @@ import { Evaluator, getEvaluator } from "../lib/Evaluator";
 import { CachedSolver } from "../lib/CachedSolver";
 import { rand_choice, arrayEqual } from '../lib/Math';
 import { AbstractStateM, StateFactory } from "./AbstractStateM";
+
+type RandomCubeT = {
+    cube: CubieCube,
+    solvers: string[],
+    ssolver: string,
+    failed?: boolean
+}
 
 export abstract class BlockTrainerStateM extends AbstractStateM {
     abstract solverL: number;
@@ -17,8 +24,56 @@ export abstract class BlockTrainerStateM extends AbstractStateM {
     premoves: string[] = [""];
     orientations: string[] = [""];
     evaluator : Evaluator;
+    levelMaxAttempt = 1000;
+    // [case, solver]
+    abstract getRandomAnyLevel(): RandomCubeT
+    getLevelSelector() : SliderOpt | null {
+        return null
+    }
+    checkLevelConstraint(n: number) : boolean {
+        // default to true
+        let slider = this.getLevelSelector()
+        if (!slider) return true;
+        // default to true
+        // either slider at "ANY" or depth must match
+        return ( (slider.value === slider.l - 1) || 
+                 (slider.value === n) ||
+                 (slider.value === slider.r && slider.value < n && (!!slider.extend_r)) ||
+                 (slider.value === slider.l && slider.value > n && (!!slider.extend_l))
+               );
+    }
+    levelConstraintOkayWithUpperBound(b: number) : boolean {
+        // default to true
+        let slider = this.getLevelSelector()
+        if (!slider) return true;
+        // default to true
+        // either slider at "ANY" or depth must match
+        return ( (slider.value === slider.l - 1) || 
+                 (slider.value >= b) ||
+                 (slider.value === slider.r && (!!slider.extend_r))
+               );
+    }
+    getRandom() : RandomCubeT {
+        for (let i = 0; i < this.levelMaxAttempt; i++) {
+            let {cube, solvers, ssolver} = this.getRandomAnyLevel()
+            const premoves = this.premoves || [""]
+            let bound = Math.min(...solvers.map(solver => premoves.map(pm => 
+                    CachedSolver.get(solver).getPruners()[0].query(cube.apply(pm)) )).flat())
+            //console.log("bound estimate = ", bound, this.getLevelSelector()?.value, this.levelConstraintOkayWithUpperBound(bound))
+            if (!this.levelConstraintOkayWithUpperBound(bound)) {
+                continue;
+            }   
+            let level = Math.min(...solvers.map(solver => premoves.map(pm => 
+                    CachedSolver.get(solver).solve(cube.apply(pm), 0, this.solverR, 1)[0].moves.length)).flat())
+            if (this.checkLevelConstraint(level)) {
+                console.log(`generated random state after ${i+1} tries.`)
+                return {cube, solvers, ssolver}
+            }
+        }
+        console.log(`failed to generate random state after ${this.levelMaxAttempt} tries`)
+        return {...this.getRandomAnyLevel(), failed: true}
+    }
 
-    abstract getRandom(): [CubieCube, string[]] | [CubieCube, string[], string];
     constructor(state: AppState) {
         super(state)
         let evalName = this.state.config.evaluator.getActiveName()
@@ -56,7 +111,6 @@ export abstract class BlockTrainerStateM extends AbstractStateM {
         const state = this.state;
         options = options || {}
         let algDescs = this._solve_with_solvers(cube, solverNames);
-        const scrambleMargin = 1;
         let setup : string
         if (options.scramble) {
             setup = options.scramble
@@ -69,7 +123,7 @@ export abstract class BlockTrainerStateM extends AbstractStateM {
             const solutionLength = new MoveSeq(algDescs[0].algs[0]).remove_setup().moves.length;
             return rand_choice(
                 CachedSolver.get(options.scrambleSolver || solverNames[0])
-                .solve(cube, Math.max(this.solverL, solutionLength + scrambleMargin),
+                .solve(cube, Math.min(this.solverR, Math.max(this.solverL, solutionLength + this.scrambleMargin)),
                     this.solverR, this.scrambleCount || 1)).inv()
             })()
             setup = scramble.toString()
@@ -104,13 +158,13 @@ export abstract class BlockTrainerStateM extends AbstractStateM {
         };
     }
     _updateCase(): AppState {
-        let [cube, solverName, scrambleSolver] = this.getRandom();
+        let {cube, solvers: solverNames, ssolver: scrambleSolver, failed} = this.getRandom();
         let inputScramble : string | undefined = undefined
         if (this.state.scrambleInput.length > 0) {
             inputScramble = this.state.scrambleInput[0]
             cube = new CubieCube().apply(inputScramble)
         }
-        let state = this._solve(cube, solverName, {
+        let state = this._solve(cube, solverNames, {
             updateSolutionOnly: false,
             scrambleSolver,
             scramble: inputScramble
@@ -120,6 +174,7 @@ export abstract class BlockTrainerStateM extends AbstractStateM {
                 scrambleInput: state.scrambleInput.slice(1)
             }
         }
+        state = {...state, cube: {...state.cube, levelSuccess: !failed}}
         return state
     }
     _updateCap(): AppState {
@@ -254,13 +309,14 @@ export class FbdrStateM extends BlockTrainerStateM {
     ]
     allowed_pedge : [number, number][] = []
     allowed_dr : [number, number][] = []
-    getRandom(): [CubieCube, string[], string] {
+    getLevelSelector() {return this.state.config.fbdrLevelSelector}
+    getRandomAnyLevel(): RandomCubeT {
         const fbOnly = this.state.config.fbOnlySelector.getActiveName() === "FB Last Pair Only";
         const pairSolved = this.state.config.fbPairSolvedSelector.getActiveName() !== "Random";
         const scrambleType = this.state.config.fbdrScrambleSelector.getActiveName() || "Short";
         const useMin2PhaseScramble = !scrambleType.startsWith("Short");
-        const solverName = fbOnly ? "fb" : "fbdr";
-        const scrambleSolver = useMin2PhaseScramble ? "min2phase" : solverName
+        const solvers = [fbOnly ? "fb" : "fbdr"];
+        const ssolver = useMin2PhaseScramble ? "min2phase" : solvers[0]
         let active = this.state.config.fbdrSelector.getActiveNames()[0];
         //console.log("active", active)
         this.allowed_pedge = this.state.config.fbdrPosSelector1.flags.map( (value, i) => [value, i])
@@ -269,24 +325,25 @@ export class FbdrStateM extends BlockTrainerStateM {
             .filter( ([value, i]) => value ).map( ([value, i]) => this.edgePositionMap[i] )
 
         // decide which random scramble generator to use. but prioritize use input if there's any
-        
+        let cube
         if (active === "FS at back") {
-            if (pairSolved)
-                return [this._get_pair_solved_front(), [solverName], scrambleSolver];
-            else
-                return [this._get_random_fs_back(), [solverName], scrambleSolver];
+            cube = (pairSolved) ? this._get_pair_solved_front() : this._get_random_fs_back();
         }
         else if (active === "FS at front") {
-            return [this._get_random_fs_front(), [solverName], scrambleSolver];
+            cube = this._get_random_fs_front();
         }
-        else
-            return [ rand_choice([ () => this._get_random_fs_back(), () => this._get_random_fs_front()])(),
-                [solverName], scrambleSolver];
+        else {
+            cube = rand_choice([ () => this._get_random_fs_back(), () => this._get_random_fs_front()])();
+        }
+        return {cube, solvers, ssolver};
     }
 }
 export class SsStateM extends BlockTrainerStateM {
-    solverL = 9;
-    solverR = 10;
+    scrambleMargin = 1;
+    solverL = 8;
+    solverR = 14;
+    levelMaxAttempt = 3000;
+
     _get_random_fb(allowed_dr_eo_ep: [number, number][]) {
         let active = this.state.config.ssPairOnlySelector.getActiveName();
         let mask = (active === "SS") ? Mask.fb_mask : Mask.fbdr_mask;
@@ -302,7 +359,8 @@ export class SsStateM extends BlockTrainerStateM {
         }
         return cube
     }
-    getRandom(): [CubieCube, string[] ] {
+    getLevelSelector() {return this.state.config.ssLevelSelector}
+    getRandomAnyLevel() {
         let active = this.state.config.ssSelector.getActiveNames()[0];
         const drPositionMap : [number, number][] = [
             [0, 0], [1, 0],
@@ -318,17 +376,20 @@ export class SsStateM extends BlockTrainerStateM {
         let allowed_dr_eo_ep_patterns = this.state.config.ssPosSelector.flags.map( (value, i) => [value, i])
             .filter( ([value, i]) => value ).map( ([value, i]) => drPositionMap[i] )
         let cube = this._get_random_fb(allowed_dr_eo_ep_patterns);
-        let solver;
-        if (active === "SS at front") {
-            solver = "ss-front";
+        let solvers, ssolver;
+        if (active === "Front SS") {
+            solvers = ["ss-front"];
+            ssolver = "ss-front";
         }
-        else if (active === "SS at back") {
-            solver = "ss-back";
+        else if (active === "Back SS") {
+            solvers = ["ss-back"];
+            ssolver = "ss-back";
         }
         else {
-            solver = rand_choice(["ss-back", "ss-front"]);
+            solvers = ["ss-front", "ss-back"];
+            ssolver = "sb";
         }
-        return [cube, [solver] ];
+        return {cube, solvers, ssolver};
     }
 }
 export class FbStateM extends BlockTrainerStateM {
@@ -336,6 +397,7 @@ export class FbStateM extends BlockTrainerStateM {
     solverR: number = 11;
     //premoves = ["", "x", "x'", "x2"];
     premoves = ["", "x", "x'", "x2"];
+    levelMaxAttempt = 2000;
 
     _find_center_connected_edges(cube: CubieCube, is_l_only: boolean) {
         let centers = is_l_only ? [ Face.L ] : [ Face.F, Face.B, Face.L, Face.R]
@@ -365,7 +427,7 @@ export class FbStateM extends BlockTrainerStateM {
             solver = "fbdr";
         }
         const hard_str = "Hard";
-        const g_hard_str = "Hard over x2y(Scramble only)"
+        const g_hard_str = "Hard over x2y (Scramble only)"
         if (active === g_hard_str) {
             solver = "min2phase";
         }
@@ -377,17 +439,18 @@ export class FbStateM extends BlockTrainerStateM {
         while (true) {
             let pairs = CubeUtil.find_pairs(cube);
             let cc_edges = this._find_center_connected_edges(cube, is_l_only);
-            n++;
+            // n++;
             if (pairs.length === 0 && cc_edges.length === 0) {
-                console.log("Successful after " + n + " tries ");
+                //console.log("Successful after " + n + " tries ");
                 return [cube, solver];
             }
             cube = CubeUtil.get_random_with_mask(Mask.empty_mask);
         }
     }
-    getRandom() : [CubieCube, string[], string]{
+    getLevelSelector() {return this.state.config.fbLevelSelector}
+    getRandomAnyLevel() {
         let [cube, solver] = this._get_random();
-        return [cube, solver === "min2phase" ? [] : [solver], solver ];
+        return {cube, solvers: solver === "min2phase" ? [] : [solver], ssolver: solver};
     }
 }
 
@@ -396,39 +459,54 @@ export class FsStateM extends BlockTrainerStateM {
     solverL = 7;
     solverR = 11;
     premoves = ["", "x", "x'", "x2"];
+    levelMaxAttempt = 2000;
 
-    getRandom(): [CubieCube, string[], string] {
+    getLevelSelector() {return this.state.config.fsLevelSelector}
+    getRandomAnyLevel() {
         let cube = CubeUtil.get_random_with_mask(Mask.empty_mask);
         let name = this.state.config.fsSelector.getActiveName()
         if (name === "Front FS") {
-            return [cube, ["fs-front"], "fb"]
+            return {cube, solvers: ["fs-front"], ssolver: "fb"}
         } else if (name === "Back FS") {
-            return [cube, ["fs-back"], "fb"]
+            return {cube, solvers: ["fs-back"], ssolver: "fb"}
         } else {
-            return [cube, ["fs-front", "fs-back"], "fb" ];
+            return {cube, solvers: ["fs-front", "fs-back"], ssolver: "fb"}
         }
     }
 }
 
 
 export class FbssStateM extends BlockTrainerStateM {
-    solverL = 6;
-    solverR = 10;
+    solverL = 8;
+    solverR = 12;
+    expansionFactor = 5;
+    levelMaxAttempt = 500;
 
-    getRandom(): [CubieCube, string[] ] {
-        let active_lp = this.state.config.fbssLpSelector.getActiveName()
-        let active_ss = this.state.config.fbssSsSelector.getActiveName()
-        let cube, solver
-        if (active_lp === "FBLP at front") {
-            cube = CubeUtil.get_random_with_mask(Mask.fs_back_mask)
+    getLevelSelector() {return this.state.config.fbssLevelSelector}
+    getRandom() {
+        let ls = this.getLevelSelector()
+        this.levelMaxAttempt = (ls.value <= 4) ? 1500 : 500;
+        return super.getRandom()
+    }
+    getRandomAnyLevel() {
+        let lp_option = this.state.config.fbssLpSelector.getActiveName()
+        let ss_option = this.state.config.fbssSsSelector.getActiveName()
+        let cube, solvers, ssolver
+        // ["Front SS", "Back SS" , "Both"]
+        let lp_is_front = (lp_option === "Front FBLP")
+        let randomMask = lp_is_front ? Mask.fs_back_mask : Mask.fs_front_mask
+        cube = CubeUtil.get_random_with_mask(randomMask)
+
+        if (ss_option === "Front SS") {
+            solvers = ["fbss-front"];
+            ssolver = "fbss-front"
+        } else if (ss_option === "Back SS") {
+            solvers = ["fbss-back"];
+            ssolver = "fbss-back"
         } else {
-            cube = CubeUtil.get_random_with_mask(Mask.fs_front_mask)
+            solvers = ["fbss-front", "fbss-back"];
+            ssolver = lp_is_front ? "lpsb-front" : "lpsb-back" //("min2phase"
         }
-        if (active_ss === "SS at front") {
-            solver = "fbss-front";
-        } else {
-            solver = "fbss-back";
-        }
-        return [cube, [solver] ];
+        return {cube, solvers, ssolver};
     }
 }

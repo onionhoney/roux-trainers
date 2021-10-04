@@ -1,23 +1,25 @@
 import React from 'react'
 
 import CubeSim from './CubeSim'
-import { Button, makeStyles, Typography, useTheme, FormControl, FormLabel, Size, } from '@material-ui/core';
-import Grid from '@material-ui/core/Grid';
-import Paper from '@material-ui/core/Paper';
-import Box from '@material-ui/core/Box';
+import { Button, Typography, useTheme, FormControl, FormLabel } from '@mui/material';
+import makeStyles from '@mui/styles/makeStyles';
+import Grid from '@mui/material/Grid';
+import Paper from '@mui/material/Paper';
+import Box from '@mui/material/Box';
 
 import { CubeUtil, CubieCube, FaceletCube, Mask, MoveSeq } from '../lib/CubeLib';
 
 import { AppState,  Action, Config, FavCase, Mode} from "../Types";
 
-import InputLabel from '@material-ui/core/InputLabel';
-import Select from '@material-ui/core/Select';
-import MenuItem from '@material-ui/core/MenuItem'
+import InputLabel from '@mui/material/InputLabel';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem'
 
-import classes from '*.module.css';
+import { SelectChangeEvent } from '@mui/material/Select';
+
 import { Face, FaceletCubeT } from '../lib/Defs';
 import { rand_choice, rand_int, rand_shuffle } from '../lib/Math';
-import TextField from '@material-ui/core/TextField';
+import TextField from '@mui/material/TextField';
 import { CachedSolver } from '../lib/CachedSolver';
 import { SolverT } from '../lib/Solver';
 
@@ -45,13 +47,13 @@ const useStyles = makeStyles(theme => ({
         fontWeight:500,
     },
     title: {
-        color: theme.palette.text.hint,
+        color: theme.palette.text.disabled,
         fontWeight: 500,
         borderBottom: "3px solid",
     },
     fgap: {
         flexShrink: 100, flexBasis: "2.5rem", minWidth: "1.5em",
-        [theme.breakpoints.down('xs')]: {
+        [theme.breakpoints.down('sm')]: {
           flexBasis: "1.0rem", 
           minWidth: "0.4rem"
         }
@@ -270,11 +272,11 @@ function TrackerView(props: { state: AppState, dispatch: React.Dispatch<Action> 
         setState({...state, moveSet: moveSetText})
     }
 
-    let handleMode = (event: React.ChangeEvent<{ value: unknown }>) => {
+    let handleMode = (event: SelectChangeEvent<String>) => {
         let value = (event.target.value as string)
         setState({...state, mode: value})
     }
-    let handleMoveCount = (event: React.ChangeEvent<{ value: unknown }>) => {
+    let handleMoveCount = (event: SelectChangeEvent<number>) => {
         let value = Number.parseInt(event.target.value as string) || 5
         setState({...state, moveCount: value})
     }

@@ -1,12 +1,13 @@
 import { CubieCube, Move, MoveSeq } from './CubeLib';
 import { arrayEqual } from './Math';
 
-import { Pruner, PrunerT, fbdrPrunerConfig, fbssPrunerConfig, fsPrunerConfig, sbPrunerConfig, ssPrunerConfig, fbPrunerConfig, lsePrunerConfig, PrunerConfig, eolrPrunerConfig, PrunerDef } from './Pruner';
+import { Pruner, PrunerT, fbdrPrunerConfig, fbssPrunerConfigs, fsPrunerConfig, sbPrunerConfig, ssPrunerConfig, fbPrunerConfig, lsePrunerConfig, PrunerConfig, eolrPrunerConfig, PrunerDef, lpSbPrunerConfigs } from './Pruner';
 
 import { prunerFactory } from './Pruner';
 import {initialize as min2phase_init, solve as min2phase_solve} from "../lib/min2phase/min2phase-wrapper"
-import { maxHeaderSize } from 'http';
+import { __DEV__ } from '../settings';
 
+import { CachedPruner } from './CachedSolver';
 
 type SolverConfig = {
     is_solved: (cube : CubieCube) => boolean,
@@ -23,12 +24,12 @@ type Accumulator = {
 export type SolverT = {
     solve: (cube : CubieCube, l : number, r : number, c : number) => MoveSeq[],
     is_solved: (cube : CubieCube) => boolean,
-    getPruner: () => PrunerT[]
+    getPruners: () => PrunerT[]
 }
 
 
 function Solver(config: SolverConfig) : SolverT{
-    const MAX_STATE_COUNT = 1000000
+    const MAX_STATE_COUNT = 3000000
     let { moveset, is_solved, pruners } = config
     let state_count = 0, prune_count = 0;
     let accum : Accumulator
@@ -50,7 +51,7 @@ function Solver(config: SolverConfig) : SolverT{
         return accum
     }
 
-    let nextMoves = Object.create({})
+    let nextMoves : {[move: string] : Move[] }= Object.create({})
     function generateNextMoveTable() {
         function getAvailableMove(name : string) {
             switch (name[0]) {
@@ -58,6 +59,7 @@ function Solver(config: SolverConfig) : SolverT{
                 case "D": return moveset.filter(k => k.name[0] !== "U" && k.name[0] !== "D");
                 case "R": {
                     let base = moveset.filter(k => k.name[0] !== "R" && k.name[0] !== "r");
+                    // we want to represent all Rr's as RM's. This demands M&r to always be enabled together.
                     if (name === "R") return base.filter(k => k.name !== "M'")
                     if (name === "R'") return base.filter(k => k.name !== "M")
                     if (name === "R2") return base.filter(k => k.name !== "M2")
@@ -71,6 +73,7 @@ function Solver(config: SolverConfig) : SolverT{
 
                 case "E": return moveset.filter(k => k.name[0] !== "U" && k.name[0] !== "D" && k.name[0] !== "E");
                 case "S": return moveset.filter(k => k.name[0] !== "F" && k.name[0] !== "B" && k.name[0] !== "S");
+                default: return moveset
             }
         }
         for (let move of moveset) {
@@ -80,16 +83,23 @@ function Solver(config: SolverConfig) : SolverT{
     generateNextMoveTable()
 
     function expand(cube: CubieCube, depth: number, solution: Move[]) : SState{
-        const availableMoves = solution.length > 0 ? nextMoves[solution[solution.length - 1].name] : moveset
-        let seen_encodings : Set<number> | null = null
+        const availableMoves : Move[] = solution.length > 0 ? nextMoves[solution[solution.length - 1].name] : moveset
+        let seen_encodings : Set<BigInt|number> | null = null
         let prune = config.pruneSeenEncodings
         if (prune) {
             seen_encodings = new Set()
-            seen_encodings.add(pruners[0].encode(cube))
+            if (pruners.length === 1)
+                seen_encodings.add(pruners[0].encode(cube))
+            else  {
+                let n = BigInt(pruners[0].encode(cube)) * BigInt(pruners[1].size) + BigInt(pruners[1].encode(cube))
+                seen_encodings.add(n)
+            }
         }
         for (let move of availableMoves) {
-            let new_cube = cube.apply(move)
-            let enc = pruners[0].encode(new_cube)
+            let new_cube = cube.apply_one(move)
+            let enc = (pruners.length === 1) ? pruners[0].encode(new_cube) :
+                BigInt(pruners[0].encode(new_cube)) * BigInt(pruners[1].size) + BigInt(pruners[1].encode(new_cube))
+
             if (seen_encodings == null || !seen_encodings.has(enc)) {
                 seen_encodings?.add(enc)
                 solution.push(move)
@@ -155,34 +165,25 @@ function Solver(config: SolverConfig) : SolverT{
                 break;
             }
         }
-        //console.log(`Number of states = ${state_count}, pruned = ${prune_count}`);
+        if (__DEV__) console.log(`Number of states = ${state_count}, pruned = ${prune_count}`);
         return accum.solutions
     }
 
-    function getPruner() {
+    function getPruners() {
         return pruners
     }
-    return { solve, is_solved, getPruner }
+    return { solve, is_solved, getPruners }
 };
 
-function solverFactory(def: PrunerDef | PrunerConfig) {
-    let prunerConfig: PrunerConfig
-    if ("corner" in def) {
-        prunerConfig = prunerFactory(def);
-    } else {
-        prunerConfig = def
-    }
-    let pruner = Pruner(prunerConfig)
+function solverFactory(prunerConfig: PrunerConfig) {
+    let pruner = CachedPruner.get(prunerConfig) //Pruner(prunerConfig)
     pruner.init()
-    //let solvedEncodings = prunerConfig.solved_states.map(s => prunerConfig.encode(s))
-    let solved_states = new Set(prunerConfig.solved_states.map(x => pruner.encode(x)))
-    let is_solved = (prunerConfig.solved_states.length === 0) ?
-        (cube: CubieCube) => pruner.query(cube) === 0 :
-        (cube: CubieCube) => solved_states.has(pruner.encode(cube));
 
+    let is_solved = (cube: CubieCube) => pruner.query(cube) === 0;
+    
     let config = {
         is_solved,
-        moveset: prunerConfig.moveset,
+        moveset: prunerConfig.moveset.map(s => Move.all[s]),
         pruners: [pruner],
         pruneSeenEncodings: true
     }
@@ -192,16 +193,18 @@ function solverFactory(def: PrunerDef | PrunerConfig) {
 }
 
 function solverFactory2(prunerConfigs: PrunerConfig[]) {
-    let pruners = prunerConfigs.map(pc => Pruner(pc))
+    let pruners = prunerConfigs.map(pc => {
+        return CachedPruner.get(pc)
+    })
     pruners.forEach(p => p.init())
     //let solvedEncodings = prunerConfig.solved_states.map(s => prunerConfig.encode(s))
     let is_solved = (cube: CubieCube) => pruners.every(p => p.query(cube) === 0)
 
     let config : SolverConfig = {
         is_solved,
-        moveset: prunerConfigs[0].moveset,
+        moveset: prunerConfigs[0].moveset.map(s => Move.all[s]),
         pruners,
-        pruneSeenEncodings: false
+        pruneSeenEncodings: true
     }
     let solver = Solver(config)
     return solver
@@ -213,8 +216,10 @@ let FbdrSolver = () => solverFactory(fbdrPrunerConfig)
 
 let SsSolver = (is_front: boolean) => solverFactory(ssPrunerConfig(is_front))
 
-let FbssSolver =  (is_front: boolean) => solverFactory2(fbssPrunerConfig(is_front))
+// hand-crafted encoders are much faster though...
+let FbssSolver =  (is_front: boolean) => solverFactory2(fbssPrunerConfigs(is_front))
 
+let LpsbSolver = (is_front: boolean) => solverFactory2(lpSbPrunerConfigs(is_front))
 let SbSolver = () => solverFactory(sbPrunerConfig)
 
 let FsSolver = (is_front: boolean) => solverFactory(fsPrunerConfig(is_front))
@@ -238,16 +243,16 @@ let Min2PhaseSolver : () => SolverT = function() {
     function is_solved(cube: CubieCube) {
         return true
     }
-    function getPruner() {
+    function getPruners() {
         return []
     }
     return {
         solve,
         is_solved,
-        getPruner
+        getPruners
     }
 }
 
 
 
-export { FbdrSolver, FbSolver, SbSolver, FbssSolver, FsSolver, SsSolver, Min2PhaseSolver, LSESolver, EOLRSolver }
+export { FbdrSolver, FbSolver, SbSolver, FbssSolver, FsSolver, SsSolver, Min2PhaseSolver, LSESolver, EOLRSolver, LpsbSolver }

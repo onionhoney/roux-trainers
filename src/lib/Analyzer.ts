@@ -3,7 +3,6 @@ import { CubeUtil, CubieCube, Mask, Move, MoveSeq } from './CubeLib';
 import { CachedSolver } from '../lib/CachedSolver';
 import { getEvaluator } from '../lib/Evaluator';
 
-
 export type AnalyzerState = {
     scramble: string,
     post_scramble: string, // the part of solution leading up to the stage under analysis
@@ -15,7 +14,7 @@ export type AnalyzerState = {
     show_mode: string //"foreach" | "combined"
 }
 export let initialState : AnalyzerState = {
-    scramble: "L2 D2 R2 B2 F' D2 U2 L2 B2 F L B' U2 F' D U B L D2 ",
+    scramble: "",
     post_scramble: "",
     full_solution: [],
     stage: "fb",

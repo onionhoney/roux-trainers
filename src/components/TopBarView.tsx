@@ -1,23 +1,25 @@
 import React from "react";
 
-import { makeStyles } from '@material-ui/core';
-import Toolbar from '@material-ui/core/Toolbar';
-import FormControl from '@material-ui/core/FormControl';
-import MenuItem from '@material-ui/core/MenuItem';
-import Select from '@material-ui/core/Select';
-import InputLabel from '@material-ui/core/InputLabel';
+import makeStyles from '@mui/styles/makeStyles';
+import Toolbar from '@mui/material/Toolbar';
+import FormControl from '@mui/material/FormControl';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
+import InputLabel from '@mui/material/InputLabel';
 
-import AppBar from '@material-ui/core/AppBar';
-import Tabs from '@material-ui/core/Tabs';
-import Tab from '@material-ui/core/Tab';
-import Box from '@material-ui/core/Box';
-import Typography from '@material-ui/core/Typography';
-import { ENABLE_DEV } from '../settings';
-import InfoIcon from '@material-ui/icons/Info';
-import BookmarkIcon from '@material-ui/icons/Bookmark';
-import Brightness6Icon from '@material-ui/icons/Brightness6';
-import IconButton from "@material-ui/core/IconButton";
-import Container from "@material-ui/core/Container";
+import AppBar from '@mui/material/AppBar';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import InfoIcon from '@mui/icons-material/Info';
+import BookmarkIcon from '@mui/icons-material/Bookmark';
+import Brightness6Icon from '@mui/icons-material/Brightness6';
+import IconButton from "@mui/material/IconButton";
+import Container from "@mui/material/Container";
+import { SelectChangeEvent } from '@mui/material/Select';
+import { tab_modes } from "./AppView";
+
 
 const useStyles = makeStyles(theme => {
     let is_bright = theme.palette.primary.main === '#556cd6';
@@ -43,73 +45,72 @@ const useStyles = makeStyles(theme => {
       justifyContent: "space-between",
     },
     select: {
-      backgroundColor: is_bright ? "#657ce9" : "#9297b3", //9FA4C2",
+      backgroundColor: is_bright ? "#657ce9" : "#9095b2", //9297b3", //9FA4C2",
       color: theme.palette.background.paper,
-      paddingLeft: 12,
-      marginRight: 15,
+      paddingLeft: 35,
+      marginRight: 5,
       marginLeft: 15,
-      fontWeight: 500,
-      fontSize: "0.9rem",
-      paddingTop: 8,
-      paddingBottom: 8,
-      borderRadius: 4,
+      height: 60,
+      fontWeight: 400,
+      fontSize: "1.0rem",
+      paddingTop: 4,
+      paddingBottom: 7,
       //borderBottom: "1px solid " + theme.palette.background.default,
     }
 })})
-const description : [string, number][] = [
-["FB Analysis", 0],
-["FB Last Pair (+DR)", 1],
-["First Square", 2],
-["First Block", 3],
-["Second Square", 4],
-["CMLL", 5],
-["LSE 4c", 6],
-["EOLR / EOLRb", 7],
-["Tracking Trainer (Beta)", 8]
-]
+
 
 function TopBarView(props: { value: number, onChange: (x: number) => void,
     toggleFav: () => void, toggleBright: () => void, handleInfoOpen: () => void } )
 {
     let classes = useStyles()
     let { value, onChange, toggleFav, toggleBright, handleInfoOpen } = props
-    let value_str_ = description.find(x => x[1] === value)
-    let value_str = value_str_ ? value_str_[0]: ""
-    let handleChange = (event: React.ChangeEvent<{ value: unknown }>) =>  {
-        let idx = description.findIndex(x => x[0] === (event.target.value as string))
-        let tab_idx = description[idx][1]
+    let value_str = tab_modes[value][1] || ""
+    let handleChange = (event: SelectChangeEvent<String>) =>  {
+        let tab_idx = tab_modes.findIndex(x => x[1] === (event.target.value as string))
         onChange(tab_idx)
         //
     }
-    return <div>
-            <Box boxShadow={4} >
-        <Toolbar className={classes.bar} >
-        <Typography style={{fontSize: "0.9rem", fontFamily: "Public Sans", flexShrink: 10}} >
-            Roux Trainer
-        </Typography>
-        <FormControl style={{flexShrink: 1}}>
-            <Select
-                 value={value_str}
-                 className={classes.select}
-                 onChange={handleChange}
-                 onFocus={(e) => e.target.blur()}
-            >
-                { description.map( (s, i) => <MenuItem key={i} value={s[0]}>{s[0]}</MenuItem> )}
-            </Select>
-        </FormControl>
-        <Box style={{flexGrow: 10}}> </Box>
-        <IconButton onClick={toggleFav}>
-            <BookmarkIcon />
-        </IconButton>
-        <IconButton onClick={toggleBright}>
-            <Brightness6Icon/>
-        </IconButton>
-        <IconButton onClick={handleInfoOpen}>
-            <InfoIcon />
-        </IconButton>
-        </Toolbar>
-        </Box>
-    </div>
+    return (
+        <div>
+                <Box boxShadow={4} >
+            <Toolbar className={classes.bar} >
+            <Typography style={{fontSize: "0.9rem", fontFamily: "Public Sans", flexShrink: 10}} >
+                Roux Trainer
+            </Typography>
+            <Box paddingX={0.5}/>
+            <Box>
+                <Select
+                     fullWidth
+                     value={value_str}
+                     className={classes.select}
+                     onChange={handleChange}
+                     onFocus={(e) => e.target.blur()}
+                     variant="standard"
+                >
+                    { tab_modes.map( (s, i) => 
+                      <MenuItem key={i} value={s[1]} sx={{mx: 1.5}} style={{fontSize: "1.1rem", marginBottom: 5}}>
+                        {s[1]}
+                      </MenuItem> 
+                    )}
+                </Select>
+            </Box>
+            <Box style={{flexGrow: 10}}> </Box>
+            <Box>
+              <IconButton onClick={toggleFav} size="large">
+                  <BookmarkIcon />
+              </IconButton>
+              <IconButton onClick={toggleBright} size="large">
+                  <Brightness6Icon/>
+              </IconButton>
+              <IconButton onClick={handleInfoOpen} size="large">
+                  <InfoIcon />
+              </IconButton>
+            </Box>
+            </Toolbar>
+            </Box>
+        </div>
+    );
 }
 
 export default TopBarView;
