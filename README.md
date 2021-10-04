@@ -43,7 +43,8 @@
 - (v1.5) 2/18/2021: Introduced Tracking Trainer Beta.
 - (v1.6) 7/11/2021: You can train CMLL by case now. And by NMCLL case too if you want.
     - We added a case selection menu to help you pick cases conveniently.
-    - We also let you select cases based on the L/R face shape, to assist users of NMCLL-based recognition methods. As usual, we're the first ever trainer to do so. 
+    - We also let you select cases based on the L/R face shape, to assist users of NMCLL-based recognition methods. As usual, we're the first ever trainer to do so.
+- (v.17) 10/3/2021: Add LEVEL SELECTION. Add FBLP + SS Trainer mode. Clarify wording for config options. Solve performance enhancements.
 =======
 
 If you have ideas on how to improve the app just shoot a message and let me know. <3
