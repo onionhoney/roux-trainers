@@ -1,26 +1,23 @@
 {
   "files": {
-    "main.css": "/roux-trainers/static/css/main.4a4137e4.chunk.css",
-    "main.js": "/roux-trainers/static/js/main.06a8feba.chunk.js",
-    "main.js.map": "/roux-trainers/static/js/main.06a8feba.chunk.js.map",
-    "runtime-main.js": "/roux-trainers/static/js/runtime-main.84b867eb.js",
-    "runtime-main.js.map": "/roux-trainers/static/js/runtime-main.84b867eb.js.map",
+    "main.js": "/roux-trainers/static/js/main.f2147810.chunk.js",
+    "main.js.map": "/roux-trainers/static/js/main.f2147810.chunk.js.map",
+    "runtime-main.js": "/roux-trainers/static/js/runtime-main.800f274a.js",
+    "runtime-main.js.map": "/roux-trainers/static/js/runtime-main.800f274a.js.map",
     "static/css/2.658d00ee.chunk.css": "/roux-trainers/static/css/2.658d00ee.chunk.css",
-    "static/js/2.5d7dcec8.chunk.js": "/roux-trainers/static/js/2.5d7dcec8.chunk.js",
-    "static/js/2.5d7dcec8.chunk.js.map": "/roux-trainers/static/js/2.5d7dcec8.chunk.js.map",
+    "static/js/2.d65e5f5f.chunk.js": "/roux-trainers/static/js/2.d65e5f5f.chunk.js",
+    "static/js/2.d65e5f5f.chunk.js.map": "/roux-trainers/static/js/2.d65e5f5f.chunk.js.map",
     "index.html": "/roux-trainers/index.html",
     "static/css/2.658d00ee.chunk.css.map": "/roux-trainers/static/css/2.658d00ee.chunk.css.map",
-    "static/css/main.4a4137e4.chunk.css.map": "/roux-trainers/static/css/main.4a4137e4.chunk.css.map",
-    "static/js/2.5d7dcec8.chunk.js.LICENSE.txt": "/roux-trainers/static/js/2.5d7dcec8.chunk.js.LICENSE.txt",
-    "static/js/Worker.bbe34fd3.worker.js": "/roux-trainers/static/js/Worker.bbe34fd3.worker.js",
-    "static/js/Worker.bbe34fd3.worker.js.map": "/roux-trainers/static/js/Worker.bbe34fd3.worker.js.map",
+    "static/js/2.d65e5f5f.chunk.js.LICENSE.txt": "/roux-trainers/static/js/2.d65e5f5f.chunk.js.LICENSE.txt",
+    "static/js/analyzer-worker.a06f4cbe.chunk.worker.js": "/roux-trainers/static/js/analyzer-worker.a06f4cbe.chunk.worker.js",
+    "static/js/analyzer-worker.a06f4cbe.chunk.worker.js.map": "/roux-trainers/static/js/analyzer-worker.a06f4cbe.chunk.worker.js.map",
     "static/media/index.css": "/roux-trainers/static/media/roboto-mono-latin-700italic.a2b3b9b9.woff"
   },
   "entrypoints": [
-    "static/js/runtime-main.84b867eb.js",
+    "static/js/runtime-main.800f274a.js",
     "static/css/2.658d00ee.chunk.css",
-    "static/js/2.5d7dcec8.chunk.js",
-    "static/css/main.4a4137e4.chunk.css",
-    "static/js/main.06a8feba.chunk.js"
+    "static/js/2.d65e5f5f.chunk.js",
+    "static/js/main.f2147810.chunk.js"
   ]
 }
