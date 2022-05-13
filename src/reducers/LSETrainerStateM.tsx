@@ -3,7 +3,7 @@ import { BlockTrainerStateM } from "./BlockTrainerStateM";
 import { Mask, CubeUtil, CubieCube, Move } from "../lib/CubeLib";
 import { rand_choice } from "../lib/Math";
 import { CachedSolver } from "../lib/CachedSolver";
-import { EOLRMode } from "../InitialConfig";
+import { EOLRMode } from "../Config";
 
 export class LSEStateM extends BlockTrainerStateM {
     solverL = 5;

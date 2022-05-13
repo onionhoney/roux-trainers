@@ -1,4 +1,4 @@
-import { AppState, Config, FavCase, SliderOpt } from "../Types";
+import { AppState, FavCase, SliderOpt } from "../Types";
 import { alg_generator_from_group, CaseDesc } from "../lib/Algs";
 import { Face, Typ, FBpairPos } from "../lib/Defs";
 import { CubieCube, CubeUtil, Mask, FaceletCube, MoveSeq } from '../lib/CubeLib';
@@ -6,6 +6,7 @@ import { Evaluator, getEvaluator } from "../lib/Evaluator";
 import { CachedSolver } from "../lib/CachedSolver";
 import { rand_choice, arrayEqual } from '../lib/Math';
 import { AbstractStateM, StateFactory } from "./AbstractStateM";
+import { Config } from "../Config";
 
 type RandomCubeT = {
     cube: CubieCube,
@@ -334,60 +335,6 @@ export class FbdrStateM extends BlockTrainerStateM {
         }
         else {
             cube = rand_choice([ () => this._get_random_fs_back(), () => this._get_random_fs_front()])();
-        }
-        return {cube, solvers, ssolver};
-    }
-}
-export class SsStateM extends BlockTrainerStateM {
-    scrambleMargin = 1;
-    solverL = 8;
-    solverR = 14;
-    levelMaxAttempt = 3000;
-
-    _get_random_fb(allowed_dr_eo_ep: [number, number][]) {
-        let active = this.state.config.ssPairOnlySelector.getActiveName();
-        let mask = (active === "SS") ? Mask.fb_mask : Mask.fbdr_mask;
-        let cube : CubieCube;
-        while (true) {
-            cube = CubeUtil.get_random_with_mask(mask);
-            if (active !== "SS") break;
-            let ep = cube.ep.indexOf(7);
-            let eo = cube.eo[ep];
-            if (allowed_dr_eo_ep.find( ([eo_, ep_]) => (eo === eo_) && (ep === ep_))) {
-                break
-            }
-        }
-        return cube
-    }
-    getLevelSelector() {return this.state.config.ssLevelSelector}
-    getRandomAnyLevel() {
-        let active = this.state.config.ssSelector.getActiveNames()[0];
-        const drPositionMap : [number, number][] = [
-            [0, 0], [1, 0],
-            [0, 1], [1, 1],
-            [0, 2], [1, 2],
-            [0, 3], [1, 3],
-            [0, 4], [1, 4],
-            [0, 6], [1, 6],
-            [0, 7], [1, 7],
-            [0, 10], [1, 10],
-            [0, 11], [1, 11]
-        ]
-        let allowed_dr_eo_ep_patterns = this.state.config.ssPosSelector.flags.map( (value, i) => [value, i])
-            .filter( ([value, i]) => value ).map( ([value, i]) => drPositionMap[i] )
-        let cube = this._get_random_fb(allowed_dr_eo_ep_patterns);
-        let solvers, ssolver;
-        if (active === "Front SS") {
-            solvers = ["ss-front"];
-            ssolver = "ss-front";
-        }
-        else if (active === "Back SS") {
-            solvers = ["ss-back"];
-            ssolver = "ss-back";
-        }
-        else {
-            solvers = ["ss-front", "ss-back"];
-            ssolver = "sb";
         }
         return {cube, solvers, ssolver};
     }

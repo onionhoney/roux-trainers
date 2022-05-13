@@ -1,9 +1,8 @@
 import { CubieCube, Move, MoveSeq } from './CubeLib';
 import { arrayEqual } from './Math';
 
-import { Pruner, PrunerT, fbdrPrunerConfig, fbssPrunerConfigs, fsPrunerConfig, sbPrunerConfig, ssPrunerConfig, fbPrunerConfig, lsePrunerConfig, PrunerConfig, eolrPrunerConfig, PrunerDef, lpSbPrunerConfigs } from './Pruner';
+import { PrunerT, fbdrPrunerConfig, fbssPrunerConfigs, fsPrunerConfig, sbPrunerConfig, ssPrunerConfig, ssDpPrunerConfig, fbPrunerConfig, lsePrunerConfig, PrunerConfig, eolrPrunerConfig, PrunerDef, lpSbPrunerConfigs } from './Pruner';
 
-import { prunerFactory } from './Pruner';
 import {initialize as min2phase_init, solve as min2phase_solve} from "../lib/min2phase/min2phase-wrapper"
 import { __DEV__ } from '../settings';
 
@@ -192,7 +191,7 @@ function solverFactory(prunerConfig: PrunerConfig) {
     return solver
 }
 
-function solverFactory2(prunerConfigs: PrunerConfig[]) {
+export function solverFactory2(prunerConfigs: PrunerConfig[]) {
     let pruners = prunerConfigs.map(pc => {
         return CachedPruner.get(pc)
     })
@@ -215,6 +214,8 @@ let FbSolver = () => solverFactory(fbPrunerConfig)
 let FbdrSolver = () => solverFactory(fbdrPrunerConfig)
 
 let SsSolver = (is_front: boolean) => solverFactory(ssPrunerConfig(is_front))
+
+let SsDpSolver = (is_front: boolean) => solverFactory(ssDpPrunerConfig(is_front))
 
 // hand-crafted encoders are much faster though...
 let FbssSolver =  (is_front: boolean) => solverFactory2(fbssPrunerConfigs(is_front))
@@ -255,4 +256,4 @@ let Min2PhaseSolver : () => SolverT = function() {
 
 
 
-export { FbdrSolver, FbSolver, SbSolver, FbssSolver, FsSolver, SsSolver, Min2PhaseSolver, LSESolver, EOLRSolver, LpsbSolver }
+export { FbdrSolver, FbSolver, SbSolver, FbssSolver, FsSolver, SsSolver, SsDpSolver, Min2PhaseSolver, LSESolver, EOLRSolver, LpsbSolver }

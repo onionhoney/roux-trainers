@@ -1,9 +1,8 @@
-import { FbdrSolver, FbSolver } from './Solver'
+import { FbdrSolver, FbSolver, solverFactory2 } from './Solver'
 import { CubeUtil, CubieCube, FaceletCube, Move } from './CubeLib'
 import { SeqEvaluator } from "./Evaluator"
 import { CachedSolver } from './CachedSolver'
 import { cartesianProduct } from './Math'
-import { SwapCalls } from '@mui/icons-material'
 import { corners_coord, edges_coord } from './Defs'
 
 it('solves fbdr case', () => {
@@ -113,6 +112,7 @@ it('gens all ss cases', () => {
     for (let e of eps) cube.ep[e] = -1
     for (let c of cps) cube.cp[c] = -1
     let result = []
+
 
     console.log(`Perms length = ${perms.length}`);
     for (let perm of perms) {

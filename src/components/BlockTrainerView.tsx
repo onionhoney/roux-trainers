@@ -20,7 +20,7 @@ import { theme } from '../theme';
 
 import { FaceletCube, Mask, MoveSeq } from '../lib/CubeLib';
 
-import { AppState,  Action, Config, FavCase, Mode} from "../Types";
+import { AppState,  Action, FavCase, Mode} from "../Types";
 import 'typeface-roboto-mono';
 import { Face } from '../lib/Defs';
 
@@ -130,11 +130,13 @@ function getMask(state: AppState) : Mask {
     else if (state.mode === "ss") {
       if (state.case.desc.length === 0) return Mask.sb_mask
       let name = state.config.ssSelector.getActiveName()
-      return ({
-        "Front SS": Mask.ss_front_mask,
-        "Back SS": Mask.ss_back_mask,
-        "Both": Mask.f2b_mask
-      } as any)[name]
+      let dpair = state.config.ssPairOnlySelector.getActiveName() === "D-Pair only"
+
+      switch (name) {
+        case "Front SS": return dpair ? Mask.ssdp_front_mask : Mask.ss_front_mask; 
+        case "Back SS": return dpair ? Mask.ssdp_back_mask : Mask.ss_back_mask; 
+        default : return dpair ? Mask.ssdp_both_mask : Mask.f2b_mask
+      }
     }
     else if (state.mode === "fb") {
       if (state.case.desc.length === 0 || state.case.desc[0].kind === "fb") {

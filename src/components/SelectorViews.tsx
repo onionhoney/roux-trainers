@@ -23,13 +23,9 @@ import SettingsIcon from '@mui/icons-material/Settings';
 
 import Radio from '@mui/material/Radio';
 
-import { AppState, Config, Action, SliderOpt } from '../Types';
+import { AppState, Action, SliderOpt } from '../Types';
 import Selector from '../lib/Selector';
-import CaseVisualizer from './CaseVisualizer';
 import Slider, { SliderThumb } from '@mui/material/Slider';
-import { CustomTooltip } from './Tooltip';
-import IconButton from '@material-ui/core/IconButton';
-import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 
 const useStyles = makeStyles(theme => ({
     container: {

@@ -45,6 +45,8 @@ let htm_rwm = ["U", "U2", "U'", "F", "F2", "F'", "R", "R2", "R'",
     "r", "r2", "r'", "D", "D2", "D'", "M", "M'", "M2", "B", "B'", "B2"]
 let rrwmu = ["U", "U'", "U2", "R", "R'", "R2",
     "r", "r'", "r2", "M'", "M", "M2"]
+let rrwmu_m_first = ["U", "U'", "U2", "R", "R'", "R2", "M'", "M", "M2",
+"r", "r'", "r2"]
 let rrwmu_f = ["U", "U'", "U2", "R", "R'", "R2",
     "r", "r'", "r2", "M'", "M", "M2", "F'", "F", "F2"]
 let rrwmu_b = ["U", "U'", "U2", "R", "R'", "R2",
@@ -328,6 +330,37 @@ let ssPrunerConfig = (is_front: boolean) => {
         name: "ss" + (is_front ? "-front" : "-back")
     }
 }
+
+let ssDpPrunerConfig = (is_front: boolean) => {
+    const size = Math.pow(24, 2)
+    const c1 = is_front ? 7 : 6;
+    const e1 = 7
+    function encode(cube:CubieCube) {
+      let v0 = 0, v1 = 0
+      for (let i = 0; i < 8; i++) {
+        if ( cube.cp[i] === c1) v0 = i * 3 + cube.co[i]
+      }
+      for (let i = 0; i < 12; i++) {
+          if (cube.ep[i] === e1) v1 = i * 2 + cube.eo[i];
+      }
+      return v0 + v1 * 24
+    }
+
+    const moves = ["", "R", "R2", "R'"] 
+    const solved_states = moves.map( (move : string) => new CubieCube().apply(move))
+    const max_depth = 8
+    const moveset = rrwmu_m_first
+
+    return {
+        size,
+        encode,
+        solved_states,
+        max_depth,
+        moveset,
+        name: "ssdp" + (is_front ? "-front" : "-back")
+    }
+}
+
 let sbPrunerConfig = function(){
     const esize = Math.pow(24, 3)
     const csize = Math.pow(24, 2)
@@ -537,8 +570,9 @@ let fsPrunerConfig = (is_front: boolean) => {
 //         max_depth: 4
 // });
 
-let fbssPrunerConfigsManual = (is_front: boolean) : PrunerConfig[] => {
+let fbssPrunerConfigsManual = (is_front: boolean, max_depth?: number) : PrunerConfig[] => {
     // make a line+ss solver
+    max_depth = max_depth || 5
     const esize = Math.pow(24, 3) // 3 edges
     const csize = Math.pow(24, 3) // 3 corners
     const size = esize * csize
@@ -564,27 +598,7 @@ let fbssPrunerConfigsManual = (is_front: boolean) : PrunerConfig[] => {
       const enc_e = e1 * (24 * 24) + e2 * 24 + e3
       return enc_c + csize * enc_e
     }
-    function encode_front2(cube:CubieCube) {
-        let c1 = 0, c2 = 0
-        for (let i = 0; i < 8; i++) {
-          switch (cube.cp[i]) {
-              case 5 : c1 = i * 3 + cube.co[i]; break
-              case 7 : c2 = i * 3 + cube.co[i]; break
-          }
-        }
-        const enc_c = c1 * 24 + c2
-        let e1 = 0, e2 = 0, e3 = 0, e4 = 0
-        for (let i = 0; i < 12; i++) {
-            switch (cube.ep[i]) {
-                case 5 : e1 = i * 2 + cube.eo[i]; break;
-                case 7 : e2 = i * 2 + cube.eo[i]; break;
-                case 9 : e3 = i * 2 + cube.eo[i]; break;
-                case 11 : e4 = i * 2 + cube.eo[i]; break;
-            } 
-        }
-        const enc_e = e1 * (24 * 24 * 24) + e2 * (24 * 24) + e3 * 24 + e4
-        return enc_c + (24 * 24) * enc_e
-      }
+    
     function encode_back(cube:CubieCube) {
         let c1 = 0, c2 = 0, c3 = 0
         for (let i = 0; i < 8; i++) {
@@ -610,14 +624,13 @@ let fbssPrunerConfigsManual = (is_front: boolean) : PrunerConfig[] => {
     const moves = [[]]//, Move.parse("L R'"), Move.parse("L' R"), Move.parse("L2 R2")] 
     const solved_states = moves.map( (move : Move[]) => new CubieCube().apply(move) )
 
-    const max_depth = 5
     //const moveset : Move[] = ["U", "U2", "U'", "F", "F2", "F'", "R", "R2", "R'",
     //"r", "r2", "r'", "D", "D2", "D'", "M", "M'", "M2", "B", "B'", "B2"].map(s => Move.all[s])
 
     const moveset = htm_rwm
     
     return [
-        fbdrPrunerConfig,
+        fbdrPrunerConfigGen(max_depth),
         {
             size,
             encode: (is_front ? encode_front : encode_back),
@@ -736,5 +749,5 @@ function eolrPrunerConfig(center_flag: number, barbie_mode?: string): PrunerConf
     }
 }
 
-export { fbdrPrunerConfig, fsPrunerConfig, sbPrunerConfig, ssPrunerConfig, fbPrunerConfig, lsePrunerConfig, eolrPrunerConfig,
+export { fbdrPrunerConfig, fsPrunerConfig, sbPrunerConfig, ssPrunerConfig, ssDpPrunerConfig, fbPrunerConfig, lsePrunerConfig, eolrPrunerConfig,
     prunerFactory, fbssPrunerConfigs, lpSbPrunerConfigs }

@@ -17,8 +17,8 @@ import EditIcon from '@mui/icons-material/Edit';
 import { theme } from '../theme';
 
 
-import { AppState, Config, Action } from '../Types'
-import IconButton from '@material-ui/core/IconButton';
+import { Action } from '../Types';
+
 const useStyles = makeStyles(theme => ({
 
     setupEdit: {

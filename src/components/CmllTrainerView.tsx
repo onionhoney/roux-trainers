@@ -11,7 +11,7 @@ import Paper from '@mui/material/Paper';
 import Box from '@mui/material/Box';
 import { CubeUtil, FaceletCube, Mask, MoveSeq } from '../lib/CubeLib';
 
-import { AppState, Action, Config } from "../Types";
+import { AppState, Action } from "../Types";
 import clsx from 'clsx';
 import { Face } from '../lib/Defs';
 import { MultiSelect, SingleSelect } from './SelectorViews';

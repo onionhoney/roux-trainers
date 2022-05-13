@@ -3,7 +3,7 @@ import Box from '@mui/material/Box'
 import React from 'react'
 import CaseVisualizer from './CaseVisualizer'
 
-import { AppState, Action, Config } from "../Types";
+import { AppState, Action } from "../Types";
 import { makeDialog } from './Dialog';
 import SRVisualizer from 'sr-visualizer';
 

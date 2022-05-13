@@ -1,4 +1,5 @@
-import { AppState, Config, FavCase } from "../Types";
+import { AppState, FavCase } from "../Types";
+import { Config } from "../Config";
 /* State Manager
  * "Passively" updates localstorage in reduce.
  * Action types

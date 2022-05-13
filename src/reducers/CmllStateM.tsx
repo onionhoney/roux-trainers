@@ -1,5 +1,6 @@
-import { AppState, StateT, Config } from "../Types";
-import { alg_generator_from_group, alg_generator_from_cases, CaseDesc, createAlg, cmll_algs_raw, nmcll_to_cmll_mapping } from "../lib/Algs";
+import { AppState, StateT  } from "../Types";
+import { Config } from '../Config';
+import { alg_generator_from_group, alg_generator_from_cases, CaseDesc, createAlg, nmcll_to_cmll_mapping } from "../lib/Algs";
 import { CubieCube, Move, CubeUtil, MoveSeq } from '../lib/CubeLib';
 import { AbstractStateM } from "./AbstractStateM";
 import {initialize as min2phase_init, solve as min2phase_solve} from "../lib/min2phase/min2phase-wrapper"

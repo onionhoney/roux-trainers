@@ -1,9 +1,12 @@
 
-import { AppState, Action, Config, FavListAction } from "../Types"
+import { AppState, Action, FavListAction } from "../Types"
+import { Config } from '../Config';
+
 import { setConfig, setFavList} from '../lib/LocalStorage';
 import { StateFactory } from "./StateFactory";
 import { arrayEqual } from "../lib/Math";
 import { getInitialState } from "./InitialState";
+import ReactGA from 'react-ga';
 
 export { getInitialState }
 function reduceByFavlist(state: AppState, action: FavListAction) {
@@ -58,7 +61,11 @@ export function reducer(state: AppState, action: Action): AppState {
         };
         case "mode": {
             let mode = action.content
+            if (window.location.hash !== mode) {
+                ReactGA.pageview(mode);
+            }
             window.location.hash = mode
+            
             state = getInitialState(mode)
             return state
         };

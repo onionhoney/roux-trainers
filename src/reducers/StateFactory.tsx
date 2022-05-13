@@ -1,6 +1,7 @@
 import { StateFactory} from './AbstractStateM';
 import { AppState, Mode } from '../Types';
-import { FbdrStateM, SsStateM, FbStateM, FsStateM, FbssStateM} from './BlockTrainerStateM';
+import { FbdrStateM, FbStateM, FsStateM, FbssStateM} from './BlockTrainerStateM';
+import { SsStateM } from './SsStateM';
 import { LSEStateM, EOLRStateM } from './LSETrainerStateM';
 import { SolvingStateM, SolvedStateM } from './CmllStateM';
 

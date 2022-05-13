@@ -1,7 +1,7 @@
 import React from 'react'
 
 import CubeSim from './CubeSim'
-import { Button, Typography, useTheme, FormControl, FormLabel } from '@mui/material';
+import { Button, Typography, useTheme, FormControl } from '@mui/material';
 import makeStyles from '@mui/styles/makeStyles';
 import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
@@ -9,7 +9,7 @@ import Box from '@mui/material/Box';
 
 import { CubeUtil, CubieCube, FaceletCube, Mask, MoveSeq } from '../lib/CubeLib';
 
-import { AppState,  Action, Config, FavCase, Mode} from "../Types";
+import { AppState, Action } from "../Types";
 
 import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';
@@ -17,7 +17,7 @@ import MenuItem from '@mui/material/MenuItem'
 
 import { SelectChangeEvent } from '@mui/material/Select';
 
-import { Face, FaceletCubeT } from '../lib/Defs';
+import { Face } from '../lib/Defs';
 import { rand_choice, rand_int, rand_shuffle } from '../lib/Math';
 import TextField from '@mui/material/TextField';
 import { CachedSolver } from '../lib/CachedSolver';

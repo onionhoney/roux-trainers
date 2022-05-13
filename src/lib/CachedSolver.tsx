@@ -1,5 +1,5 @@
 import { Pruner, PrunerConfig, PrunerT } from './Pruner';
-import { FbdrSolver, SolverT, FsSolver, SsSolver, SbSolver, FbSolver, FbssSolver, LpsbSolver, Min2PhaseSolver, LSESolver, EOLRSolver} from './Solver';
+import { FbdrSolver, SolverT, FsSolver, SsSolver, SsDpSolver, SbSolver, FbSolver, FbssSolver, LpsbSolver, Min2PhaseSolver, LSESolver, EOLRSolver} from './Solver';
 
 let all_solvers = [
 "fbdr","fb", "fs-front", "fs-back", "ss-front", "ss-back", "min2phase",
@@ -31,6 +31,8 @@ let CachedSolver = function() {
                 case "fs-back": cache.set(s, FsSolver(false)); break
                 case "ss-front": cache.set(s, SsSolver(true)); break
                 case "ss-back": cache.set(s, SsSolver(false)); break
+                case "ssdp-front": cache.set(s, SsDpSolver(true)); break
+                case "ssdp-back": cache.set(s, SsDpSolver(false)); break
                 case "fbss-front": cache.set(s, FbssSolver(true)); break
                 case "fbss-back": cache.set(s,FbssSolver(false)); break
                 case "lpsb-front": cache.set(s,LpsbSolver(true)); break

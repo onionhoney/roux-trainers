@@ -1,6 +1,6 @@
-import { Config, FavCase, Mode, SliderOpt } from "../Types"
+import { FavCase, Mode, SliderOpt } from "../Types"
 import { version } from "../Version"
-import { initialConfig, initialFavList } from "../InitialConfig"
+import { initialConfig, initialFavList, Config } from "../Config"
 import Selector from '../lib/Selector';
 
 export type FavCaseStore = {mode: Mode, setup: string, solver: string }

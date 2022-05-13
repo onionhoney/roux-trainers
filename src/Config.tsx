@@ -1,8 +1,54 @@
 
-import { Config, FavCase } from "./Types"
+import { FavCase } from "./Types"
 import Selector from './lib/Selector';
 import { cmll_algs_raw } from './lib/Algs';
+import { SliderOpt } from "./Types";
+
 export const initialFavList : FavCase[] = []
+
+export type Config = {
+    showCube: Selector;
+    theme: Selector;
+    evaluator: Selector;
+    fbdrLevelSelector: SliderOpt;
+    fbssLevelSelector: SliderOpt;
+    fbLevelSelector: SliderOpt;
+    fsLevelSelector: SliderOpt;
+    ssLevelSelector: SliderOpt;
+    // lse4cLevelSelector: SliderOpt,
+    // eolrLevelSelector: SliderOpt,
+    cmllSelector: Selector;
+    cmllCaseSelector: Selector;
+    cmllAufSelector: Selector;
+    cmllCubeMaskSelector: Selector;
+    nmcllSelector: Selector;
+    triggerSelector: Selector;
+    hyperOriSelector: Selector;
+    orientationSelector: Selector;
+    fbdrSelector: Selector;
+    fsSelector: Selector;
+    fbdrPosSelector1: Selector;
+    fbdrPosSelector2: Selector;
+    fbdrPosSelector3: Selector;
+    fbssLpSelector: Selector;
+    fbssSsSelector: Selector;
+    ssSelector: Selector;
+    ssEOSelector: Selector;
+    ssPosSelector: Selector;
+    fbOnlySelector: Selector;
+    fbdrScrambleSelector: Selector;
+    ssPairOnlySelector: Selector;
+    fbPairSolvedSelector: Selector;
+    solutionNumSelector: Selector;
+    fbPieceSolvedSelector: Selector;
+    lseMCSelector: Selector;
+    lseBarSelector: Selector;
+    lseStageSelector: Selector;
+    lseEOSelector: Selector;
+    lseEOLRMCSelector: Selector;
+    lseBarbieSelector: Selector;
+    lseEOLRScrambleSelector: Selector;
+};
 
 const cmll_alg_names = cmll_algs_raw.map(x => x[0])
 
@@ -185,7 +231,7 @@ export const initialConfig : Config = (() => {
             kind: "ss-position"
         }),
         ssPairOnlySelector: new Selector({
-            label: "Solve w/wo DR",
+            label: "Solve",
             names: ["SS", "DR fixed"],
             flags: [1, 0],
             kind: "sb-pair-only"

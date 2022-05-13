@@ -15,7 +15,7 @@ import CheckIcon from '@mui/icons-material/Check';
 
 import { CubeUtil, CubieCube, FaceletCube, Mask, MoveSeq } from '../lib/CubeLib';
 
-import { AppState,  Action, Config, FavCase, Mode} from "../Types";
+import { AppState,  Action, FavCase, Mode} from "../Types";
 import 'typeface-roboto-mono';
 import { Face } from '../lib/Defs';
 

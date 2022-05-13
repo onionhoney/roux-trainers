@@ -9,7 +9,8 @@ import {
 
 import SettingsIcon from '@mui/icons-material/Settings';
 
-import { AppState, Config, Action } from '../Types';
+import { AppState, Action } from '../Types';
+import { Config } from '../Config';
 import { ColorScheme } from '../lib/CubeLib';
 
 import { MultiSelectContent } from './SelectorViews';

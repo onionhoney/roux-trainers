@@ -532,6 +532,10 @@ export class MoveSeq {
         return new MoveSeq(moves)
     }
 
+    length() {
+        return this.moves.length
+    }
+
     static add_auf(moves: Array<Move>, auf_moves?: Array<Move | MoveSeq>) {
         auf_moves = auf_moves || [ Move.all["id"], Move.all["U"], Move.all["U'"], Move.all["U2"]]
         let auf_move = rand_choice(auf_moves)
@@ -765,6 +769,21 @@ const ss_front_mask: Mask = {
 const ss_back_mask: Mask = {
     cp: [0, 0, 0, 0, 1, 1, 1, 0],
     ep: [0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 0],
+    tp: [0, 0, 0, 0, 1, 1]
+}
+const ssdp_front_mask: Mask = {
+    cp: [0, 0, 0, 0, 1, 1, 0, 1],
+    ep: [0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 0, 0],
+    tp: [0, 0, 0, 0, 1, 1]
+}
+const ssdp_back_mask: Mask = {
+    cp: [0, 0, 0, 0, 1, 1, 1, 0],
+    ep: [0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 0, 0],
+    tp: [0, 0, 0, 0, 1, 1]
+}
+const ssdp_both_mask: Mask = {
+    cp: [0, 0, 0, 0, 1, 1, 1, 1],
+    ep: [0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 0, 0],
     tp: [0, 0, 0, 0, 1, 1]
 }
 
@@ -1074,7 +1093,7 @@ export class ColorScheme extends Storage {
 
 let Mask = {
     lse_mask, fs_back_mask, fs_front_mask, fbdr_mask, fb_mask, f2b_mask, sb_mask, cmll_mask, ss_front_mask, ss_back_mask,
-    empty_mask, dl_solved_mask, bl_solved_mask, solved_mask, zhouheng_mask, lse_4c_mask,
+    ssdp_front_mask, ssdp_back_mask, ssdp_both_mask, empty_mask, dl_solved_mask, bl_solved_mask, solved_mask, zhouheng_mask, lse_4c_mask,
     copy: mask_copy
 }
 
