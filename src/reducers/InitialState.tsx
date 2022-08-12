@@ -33,6 +33,7 @@ export const getInitialState = (mode?: Mode): AppState => {
             state: new CubieCube(),
             ori,
             history: [],
+            levelSuccess: true,
         },
         case: {
             state: new CubieCube(),

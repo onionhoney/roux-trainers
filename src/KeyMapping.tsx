@@ -49,7 +49,7 @@ const lseKeyMapping : { [key: string]: string } = {
     "L": "E",
     "ENTER": "#enter",
     " ": "#space",
-  }
+};
 
 
 export abstract class KeyMapping {

@@ -1,12 +1,14 @@
 import React, { Fragment } from 'react'
 
 import CubeSim from './CubeSim'
-import { makeStyles, useTheme, FormControl, FormLabel, Typography, Button} from '@material-ui/core';
+import { useTheme, FormControl, FormLabel, Typography, Button } from '@mui/material';
 
-import Divider from '@material-ui/core/Divider';
-import Grid from '@material-ui/core/Grid';
-import Paper from '@material-ui/core/Paper';
-import Box from '@material-ui/core/Box';
+import makeStyles from '@mui/styles/makeStyles';
+
+import Divider from '@mui/material/Divider';
+import Grid from '@mui/material/Grid';
+import Paper from '@mui/material/Paper';
+import Box from '@mui/material/Box';
 import { CubeUtil, FaceletCube, Mask, MoveSeq } from '../lib/CubeLib';
 
 import { AppState, Action, Config } from "../Types";
@@ -43,7 +45,7 @@ const useStyles = makeStyles(theme => ({
       flexDirection: 'column',
     },
     title : {
-        color: theme.palette.text.hint,
+        color: theme.palette.text.disabled,
         fontWeight: 500,
         fontSize: 18,
         borderBottom: "2px solid",

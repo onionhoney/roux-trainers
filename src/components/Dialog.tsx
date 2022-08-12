@@ -1,6 +1,6 @@
 import React from 'react';
-import { FormLabel, Box, Button, Dialog, DialogTitle, DialogContent, DialogActions, FormControl } from '@material-ui/core';
-import SettingsIcon from '@material-ui/icons/Settings';
+import { FormLabel, Box, Button, Dialog, DialogTitle, DialogContent, DialogActions, FormControl } from '@mui/material';
+import SettingsIcon from '@mui/icons-material/Settings';
 import { getDefaultCompilerOptions } from 'typescript';
 
 export interface DialogProps {
@@ -16,7 +16,7 @@ const defaultOptions = {
 
 const makeDialog = <P extends object>(
   Component: React.ComponentType<P>, options?: DialogOptions
-) => function DialogView(props: P & DialogProps) {
+) => (function DialogView(props: P & DialogProps) {
   options = options || defaultOptions
   const title = props.title || props.label
   const [open, setOpen] = React.useState(false);
@@ -54,6 +54,6 @@ const makeDialog = <P extends object>(
     </Box>
   )
 
-}
+})
 
 export {makeDialog}

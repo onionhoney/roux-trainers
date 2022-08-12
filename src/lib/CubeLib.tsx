@@ -70,7 +70,6 @@ export class CubieCube {
     _apply_partial(o: Array<number>, p: Array<number>, oc: Array<OriChg>, pc: Array<PermChg>, mod: number) {
         let o_new = [...o];
         let p_new = [...p];
-        console.assert(oc.length === pc.length)
 
         for (let i = 0; i < oc.length; i++) {
             //let [src, dst] = pc[i];
@@ -80,14 +79,63 @@ export class CubieCube {
         }
         return [o_new, p_new]
     }
+    _apply_partial_perm(p: Array<number>, pc: Array<PermChg>, mod: number) {
+        let p_new = [...p];
+
+        for (let i = 0; i < pc.length; i++) {
+            //let [src, dst] = pc[i];
+            let src = pc[i][0], dst = pc[i][1];
+            p_new[dst] = p[src];
+        }
+        return p_new
+    }
 
     // all side-effect-less
     apply_one(move: Move) {
         let [co, cp] = this._apply_partial(this.co, this.cp, move.coc, move.cpc, C_MOD)
         let [eo, ep] = this._apply_partial(this.eo, this.ep, move.eoc, move.epc, E_MOD)
-        let toc = Array(move.tpc.length).fill(0)
-        let [, tp] = this._apply_partial([0, 0, 0, 0, 0, 0], this.tp, toc, move.tpc, T_MOD)
+        let tp = this._apply_partial_perm(this.tp, move.tpc, T_MOD)
         return new CubieCube({ co, cp, eo, ep, tp })
+    }
+
+    static generate_apply_partial_func_perm(pc: Array<PermChg>, mod: number, p: string) {
+        return `
+        let ${p}_new = [...${p}];
+        src = 0, dst = 0;
+        ${Array(pc.length).fill(0).map( (_, i) => {
+            let src = pc[i][0], dst = pc[i][1];
+            return `
+                ${p}_new[${dst}] =  ${p}[${src}];
+            `
+        }).join("\n")}
+        // return [ ${p}_new]
+        `
+    }
+    static generate_apply_partial_func(oc: Array<OriChg>, pc: Array<PermChg>, mod: number, o: string, p: string) {
+        return `
+        let ${o}_new = [...${o}];
+        let ${p}_new = [...${p}];
+        src = 0, dst = 0;
+        ${Array(oc.length).fill(0).map( (_, i) => {
+            let src = pc[i][0], dst = pc[i][1], ori = oc[i];
+            return `
+                ${p}_new[${dst}] =  ${p}[${src}];
+                ${o}_new[${dst}] = (${o}[${src}] + ${ori}) % ${mod};
+            `
+        }).join("\n")}
+        // return [${o}_new, ${p}_new]
+        `
+    }
+    static generate_apply_func(move: Move) : (c: CubieCube) => CubieCube {
+        // eslint-disable-next-line no-new-func
+        return new Function("cube", `
+        let {co, cp, eo, ep, tp} = cube;
+        ${CubieCube.generate_apply_partial_func(move.coc, move.cpc, C_MOD, "co", "cp")}
+        ${CubieCube.generate_apply_partial_func(move.eoc, move.epc, E_MOD, "eo", "ep")}
+        ${CubieCube.generate_apply_partial_func_perm(move.tpc, T_MOD, "tp")}
+        return ({ co: co_new, cp: cp_new, eo: eo_new, 
+            ep: ep_new, tp: tp_new })
+        `) as (c: CubieCube) => CubieCube
     }
 
     apply(move: Move | Array<Move> | MoveSeq | string): CubieCube {
@@ -692,6 +740,13 @@ const fb_mask: Mask = {
     ep: [0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0],
     tp: [0, 0, 0, 0, 1, 1]
 }
+
+const f2b_mask: Mask = {
+    cp: [0, 0, 0, 0, 1, 1, 1, 1],
+    ep: [0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1],
+    tp: [0, 0, 0, 0, 1, 1]
+}
+
 const zhouheng_mask: Mask = {
     cp: [0, 0, 0, 0, 0, 0, 0, 0],
     ep: [0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 0, 0],
@@ -712,6 +767,7 @@ const ss_back_mask: Mask = {
     ep: [0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 0],
     tp: [0, 0, 0, 0, 1, 1]
 }
+
 const sb_mask : Mask = {
     cp: [0, 0, 0, 0, 1, 1, 1, 1],
     ep: [0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1],
@@ -1017,7 +1073,7 @@ export class ColorScheme extends Storage {
 }
 
 let Mask = {
-    lse_mask, fs_back_mask, fs_front_mask, fbdr_mask, fb_mask, sb_mask, cmll_mask, ss_front_mask, ss_back_mask,
+    lse_mask, fs_back_mask, fs_front_mask, fbdr_mask, fb_mask, f2b_mask, sb_mask, cmll_mask, ss_front_mask, ss_back_mask,
     empty_mask, dl_solved_mask, bl_solved_mask, solved_mask, zhouheng_mask, lse_4c_mask,
     copy: mask_copy
 }

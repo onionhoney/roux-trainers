@@ -1,16 +1,22 @@
 import React, { Fragment } from 'react'
 
 import CubeSim from './CubeSim'
-import { Button, makeStyles, Typography, useTheme, FormControl, FormLabel, } from '@material-ui/core';
-import Divider from '@material-ui/core/Divider';
+import { Button, Typography, useTheme, FormControl, FormLabel } from '@mui/material';
+import makeStyles from '@mui/styles/makeStyles';
+import Divider from '@mui/material/Divider';
 
-import Grid from '@material-ui/core/Grid';
-import Paper from '@material-ui/core/Paper';
-import Box from '@material-ui/core/Box';
-import Checkbox from '@material-ui/core/Checkbox';
+import Grid from '@mui/material/Grid';
+import Paper from '@mui/material/Paper';
+import Box from '@mui/material/Box';
+import Checkbox from '@mui/material/Checkbox';
 
-import FavoriteIcon from '@material-ui/icons/Favorite';
-import CheckIcon from '@material-ui/icons/Check';
+import FavoriteIcon from '@mui/icons-material/Favorite';
+import CheckIcon from '@mui/icons-material/Check';
+import useMediaQuery from '@mui/material/useMediaQuery';
+import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
+import IconButton from '@mui/material/IconButton';
+import { theme } from '../theme';
+
 
 import { FaceletCube, Mask, MoveSeq } from '../lib/CubeLib';
 
@@ -18,12 +24,11 @@ import { AppState,  Action, Config, FavCase, Mode} from "../Types";
 import 'typeface-roboto-mono';
 import { Face } from '../lib/Defs';
 
-import { SingleSelect, MultiSelect } from './SelectorViews';
+import { SingleSelect, MultiSelect, SliderSelect } from './SelectorViews';
 import { ColorPanel } from './Input';
 import { CaseDesc } from '../lib/Algs';
 import { ScrambleInputView } from './ScrambleInputView';
-import useMediaQuery from '@material-ui/core/useMediaQuery';
-import { config } from 'process';
+import { CustomTooltip } from './Tooltip';
 
 const useStyles = makeStyles(theme => ({
     container: {
@@ -34,6 +39,7 @@ const useStyles = makeStyles(theme => ({
     },
     button: {
       width: "100%",
+      height: 50
     },
     paper: {
       padding: theme.spacing(3),
@@ -65,16 +71,16 @@ const useStyles = makeStyles(theme => ({
       whiteSpace: 'pre-line',
       fontSize: "1.4rem",
       fontWeight:500,
-      [theme.breakpoints.down('xs')]: {
-      fontSize: "1.0rem",
+      [theme.breakpoints.down('sm')]: {
+      fontSize: "1.2rem",
       fontWeight: 500
       },
-  },
+    },
     condGap: {
     },
     fgap: {
       flexShrink: 100, flexBasis: "2.5rem", minWidth: "1.5em",
-      [theme.breakpoints.down('xs')]: {
+      [theme.breakpoints.down('sm')]: {
         flexBasis: "1.0rem", 
         minWidth: "0.4rem"
       }
@@ -83,17 +89,17 @@ const useStyles = makeStyles(theme => ({
       height: 250,
     },
     title : {
-        color: theme.palette.text.hint,
+        color: theme.palette.text.disabled,
         fontWeight: 500,
         borderBottom: "3px solid",
     },
     sourceIcon : {
-        color: theme.palette.text.hint,
+        color: theme.palette.text.disabled,
         fontSize: 15,
         padding: 0
     },
     sourceIconWrap : {
-        //border: "1px solid " + theme.palette.text.hint,
+        //border: "1px solid " + theme.palette.text.disabled,
         //borderRadius: 3
     },
     fab: {
@@ -123,10 +129,12 @@ function getMask(state: AppState) : Mask {
     }
     else if (state.mode === "ss") {
       if (state.case.desc.length === 0) return Mask.sb_mask
-      if (state.case.desc[0].kind === "ss-front")
-        return Mask.ss_front_mask
-      else
-        return Mask.ss_back_mask
+      let name = state.config.ssSelector.getActiveName()
+      return ({
+        "Front SS": Mask.ss_front_mask,
+        "Back SS": Mask.ss_back_mask,
+        "Both": Mask.f2b_mask
+      } as any)[name]
     }
     else if (state.mode === "fb") {
       if (state.case.desc.length === 0 || state.case.desc[0].kind === "fb") {
@@ -137,6 +145,14 @@ function getMask(state: AppState) : Mask {
       } else {
         return Mask.solved_mask
       }
+    }
+    else if (state.mode === "fbss") {
+      let name = state.config.fbssSsSelector.getActiveName()
+      return ({
+        "Front SS": Mask.ss_front_mask,
+        "Back SS": Mask.ss_back_mask,
+        "Both": Mask.f2b_mask
+      } as any)[name]
     }
     else if (state.mode === "4c" || state.mode === "eopair") {
       return Mask.solved_mask
@@ -166,7 +182,6 @@ function BlockTrainerView(props: { state: AppState, dispatch: React.Dispatch<Act
 
     let spaceButtonText = (state.name === "hiding") ? "Reveal" : "Next"
 
-
     let describe_reveal = function(algs: CaseDesc[]) {
       let get_algs = (d: CaseDesc) => d.algs;
       if (algs.length === 1) {
@@ -195,16 +210,8 @@ function BlockTrainerView(props: { state: AppState, dispatch: React.Dispatch<Act
       }
     }
 
-
-    const [inputActive, setInputActive] = React.useState(false)
-    const handleInput = () => {
-      setInputActive(true)
-    }
     const setup = desc.length ? desc[0].setup! : ""
-
-
     const theme = useTheme()
-    const simBackground = state.config.theme.getActiveName() === "bright" ? "#eeeeef" : theme.palette.background.paper
 
     // source
     // Add event listeners
@@ -220,7 +227,6 @@ function BlockTrainerView(props: { state: AppState, dispatch: React.Dispatch<Act
         window.removeEventListener('keydown', downHandler);
       };
     });
-
 
     const [favSelected, setFav] = React.useState(false)
     const handleFav = () => {
@@ -241,17 +247,13 @@ function BlockTrainerView(props: { state: AppState, dispatch: React.Dispatch<Act
 
     const gt_sm = useMediaQuery(theme.breakpoints.up('sm'));
     const canvas_wh = (gt_sm) ? [400, 350] : [320, 280]
+    const ADD_STR = (gt_sm) ? "Add" : "";
 
     // helper-text
     let helperText = getHelperTextForMode(state.mode)
 
-                // <Checkbox  className={classes.sourceIconWrap}
-            //       icon={<FavoriteIcon />}
-            //       checked={favSelected}
-            //       onChange = {handleFav}
-            //       checkedIcon={<FavoriteIcon color="primary" />}
-            //       name="fav" />
-
+    let levelSelectionWarning = "We weren't able to generate your level within time limit. You can try again -- some levels are reachable within a few tries."
+    let levelSelectionSuccess = state.cube.levelSuccess
     return (
     <Box className={classes.container}>
       <Paper className={classes.paper} elevation={1}>
@@ -273,16 +275,30 @@ function BlockTrainerView(props: { state: AppState, dispatch: React.Dispatch<Act
                 dispatch={dispatch} scrambles={state.scrambleInput}/>
 
             <Box>
-            <Button variant={favSelected ? "contained" : "outlined"}
-                color="primary"
-                size="small"
-                name="fav"
-                onClick={handleFav}
-                startIcon={<FavoriteIcon />} 
-                endIcon={favSelected ? null : null}
-                >
-                {favSelected ? "✓" : "ADD"}
-            </Button></Box>
+            {
+              gt_sm ?
+              <Button variant={favSelected ? "contained" : "outlined"}
+                  color="primary"
+                  size="small"
+                  name="fav"
+                  onClick={handleFav}
+                  startIcon={<FavoriteIcon/>} 
+                  >
+                  {favSelected ? "✓" : ADD_STR}
+              </Button> 
+              :
+              <Button variant={favSelected ? "contained" : "outlined"}
+                  color="primary"
+                  size="small"
+                  name="fav"
+                  onClick={handleFav}
+              >
+                <Box marginTop={0.5}>
+                  <FavoriteIcon fontSize="small"/>
+                </Box>
+              </Button>
+            }
+            </Box>
           </Box>
           
         </Box>
@@ -301,7 +317,7 @@ function BlockTrainerView(props: { state: AppState, dispatch: React.Dispatch<Act
             <Box style={{}} className={classes.fgap} />
             <div>
               <Box paddingBottom={2} lineHeight={1}>
-                <Typography style={{whiteSpace: 'pre-line', fontSize: 16}} >
+                <Typography style={{whiteSpace: 'pre-line', fontSize: "1.2rem"}} >
                   {algText}
                 </Typography>
               </Box>
@@ -328,15 +344,25 @@ function BlockTrainerView(props: { state: AppState, dispatch: React.Dispatch<Act
       </Grid>
       </Paper>
 
-      <Paper className={classes.paper} elevation={2}>
+      <Paper className={classes.paper} style={{paddingTop: 20, paddingBottom: 22}}>
 
-      <Grid container spacing={0}>
-        <Grid item xs={5} sm={4} md={3}>
-          <Button onFocus={(evt) => evt.target.blur() } className={classes.button} size="medium" variant="contained" color="primary" onClick={handleSpace}>
+      <Grid container spacing={1}>
+        <Grid item xs={5} sm={4} md={3} marginLeft={1}>
+          <Button onFocus={(evt) => evt.target.blur() } className={classes.button} size="large" variant="contained" color="primary" onClick={handleSpace} sx={{borderRadius: 0}}>
               {spaceButtonText}
           </Button>
         </Grid>
-
+        {
+          !levelSelectionSuccess ?
+          <Grid item xs={1} marginLeft={1}>
+            <CustomTooltip title={levelSelectionWarning}>
+              <IconButton>
+                <ErrorOutlineIcon sx={{ fontSize: 30 }}/>
+              </IconButton>
+            </CustomTooltip> 
+          </Grid> :
+          null
+        }
       </Grid>
 
       </Paper>
@@ -379,6 +405,7 @@ function ConfigPanelGroup(props: {state: AppState, dispatch: React.Dispatch<Acti
     ]
     return (
       <Fragment>
+      <SliderSelect {...{state, dispatch, select: "ssLevelSelector"}} /> 
 
       <SingleSelect {...{state, dispatch, select: "ssSelector"}}> </SingleSelect>
       <SingleSelect {...{state, dispatch, select: "ssPairOnlySelector"}}> </SingleSelect>
@@ -405,6 +432,8 @@ function ConfigPanelGroup(props: {state: AppState, dispatch: React.Dispatch<Acti
 
     return (
       <Fragment>
+      <SliderSelect {...{state, dispatch, select: "fbdrLevelSelector"}} /> 
+
       <SingleSelect {...{state, dispatch, select: select2}}> </SingleSelect>
       <SingleSelect {...{state, dispatch, select: select1}}> </SingleSelect>
       <SingleSelect {...{state, dispatch, select: select3}}> </SingleSelect>
@@ -424,6 +453,8 @@ function ConfigPanelGroup(props: {state: AppState, dispatch: React.Dispatch<Acti
 
     return (
       <Fragment>
+        <SliderSelect {...{state, dispatch, select: "fbLevelSelector"}} /> 
+
         <SingleSelect {...{ state, dispatch, select: select1 }}> </SingleSelect>
         <SingleSelect {...{ state, dispatch, select: select2 }}> </SingleSelect>
         <SingleSelect {...{state, dispatch, select: "showCube"}}> </SingleSelect>
@@ -439,6 +470,8 @@ function ConfigPanelGroup(props: {state: AppState, dispatch: React.Dispatch<Acti
 
     return (
       <Fragment>
+        <SliderSelect {...{state, dispatch, select: "fsLevelSelector"}} /> 
+
         <SingleSelect {...{ state, dispatch, select: select1 }}> </SingleSelect>
         <SingleSelect {...{ state, dispatch, select: select2 }}> </SingleSelect>
         <SingleSelect {...{state, dispatch, select: "showCube" }}> </SingleSelect>
@@ -455,6 +488,7 @@ function ConfigPanelGroup(props: {state: AppState, dispatch: React.Dispatch<Acti
 
     return (
       <Fragment>
+        <SliderSelect {...{state, dispatch, select: "fbssLevelSelector"}} /> 
         <SingleSelect {...{ state, dispatch, select: select1 }}> </SingleSelect>
         <SingleSelect {...{ state, dispatch, select: select2 }}> </SingleSelect>
         <SingleSelect {...{ state, dispatch, select: select3 }}> </SingleSelect>

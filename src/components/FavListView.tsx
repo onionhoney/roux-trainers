@@ -1,19 +1,19 @@
 import React from 'react';
-import { makeStyles } from '@material-ui/core/styles';
+import makeStyles from '@mui/styles/makeStyles';
 
 import {
   Button, IconButton, DialogContent, TextField, DialogContentText
-} from '@material-ui/core';
+} from '@mui/material';
 
-import Dialog from '@material-ui/core/Dialog';
-import DialogActions from '@material-ui/core/DialogActions';
-import DialogTitle from '@material-ui/core/DialogTitle';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogTitle from '@mui/material/DialogTitle';
 
-import { Table, Paper, TableBody, TableCell, TableHead, TableRow } from '@material-ui/core';
+import { Table, Paper, TableBody, TableCell, TableHead, TableRow } from '@mui/material';
 
-import PlaylistPlayIcon from '@material-ui/icons/PlaylistPlay';
-import DeleteOutlineIcon from '@material-ui/icons/DeleteOutline';
-import AddIcon from '@material-ui/icons/Add';
+import PlaylistPlayIcon from '@mui/icons-material/PlaylistPlay';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import AddIcon from '@mui/icons-material/Add';
 import { AppState, Action, FavCase } from '../Types';
 import { all_solvers } from '../lib/CachedSolver';
 

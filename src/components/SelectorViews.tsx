@@ -1,18 +1,35 @@
 import React from 'react'
 
 import {
-    FormControlLabel, FormGroup, Button, makeStyles, Box,
-    FormControl, FormLabel, RadioGroup, Checkbox, Dialog, DialogTitle, DialogContent, DialogActions
-} from '@material-ui/core';
+  FormControlLabel,
+  FormGroup,
+  Button,
+  Box,
+  FormControl,
+  FormLabel,
+  RadioGroup,
+  Checkbox,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+} from '@mui/material';
 
-import SettingsIcon from '@material-ui/icons/Settings';
+import makeStyles from '@mui/styles/makeStyles';
 
-import Radio from '@material-ui/core/Radio';
+import { styled } from '@mui/material/styles';
 
-import { AppState, Config, Action } from '../Types';
+import SettingsIcon from '@mui/icons-material/Settings';
+
+import Radio from '@mui/material/Radio';
+
+import { AppState, Config, Action, SliderOpt } from '../Types';
 import Selector from '../lib/Selector';
 import CaseVisualizer from './CaseVisualizer';
-
+import Slider, { SliderThumb } from '@mui/material/Slider';
+import { CustomTooltip } from './Tooltip';
+import IconButton from '@material-ui/core/IconButton';
+import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 
 const useStyles = makeStyles(theme => ({
     container: {
@@ -62,6 +79,77 @@ const useStyles = makeStyles(theme => ({
 
 }))
 
+function SliderThumbComponent(props: any) {
+  const { children, ...other } = props;
+  return (
+    <SliderThumb {...other}>
+      {children}
+      <span className="airbnb-bar" />
+      <span className="airbnb-bar" />
+      <span className="airbnb-bar" />
+    </SliderThumb>
+  );
+}
+
+const LevelSlider = styled(Slider)({
+  '& .MuiSlider-markLabel': {
+    fontSize: "1rem"
+  }
+})
+
+function SliderView(props: {
+  slider: SliderOpt, onChange: (n: number) => void}) {
+  let { slider } = props
+  let classes = useStyles()
+  const handleChange = (_: any, newValue: number|number[]) => {
+      let v = Array.isArray(newValue) ? newValue[0] : newValue
+      if ((slider.l - 1<= v && v <= slider.r))
+        props.onChange(v)
+  }
+  let label = slider.label
+  let marks = React.useMemo(() => {
+    let obj = [{value: slider.l - 1, label: "Any"}]
+    for (let i = slider.l; i <= slider.r; i++) {
+      let suffix = ""
+      if (i === slider.l && slider.extend_l) suffix = "-";
+      if (i === slider.r && slider.extend_r) suffix = "+";
+      obj.push({value: i, label: i.toString() + suffix})
+    }
+    return obj
+  }, [slider.l, slider.r, slider.extend_l, slider.extend_r])
+  return (
+  <Box>
+    <FormLabel component="legend" className={classes.selectLabel} >Level</FormLabel>
+    <Box paddingX={5}>
+      <LevelSlider
+      marks={marks}
+      track={false}
+      min={slider.l - 1}
+      max={slider.r}
+      value={slider.value}
+      onChange={handleChange} 
+      onFocus={(evt) => evt.target.blur()}
+      style={{fontSize: "1.2rem"}}
+      />
+    </Box>
+  </Box>)
+}
+
+function SliderSelect(props: {state: AppState, dispatch: React.Dispatch<Action>,
+  select: string}) {
+    let sliderName = props.select
+    let sliderOpt = (props.state.config as any)[sliderName] as SliderOpt
+    return <SliderView
+      slider={(props.state.config as any)[sliderName] as SliderOpt}
+      onChange={(n: number) => {
+        props.dispatch( { type: "config", 
+         content: { [sliderName]: ({...sliderOpt, value:n }) }
+        } )
+      }}
+    />
+}
+
+
 function SingleSelect(props: {state: AppState, dispatch: React.Dispatch<Action>,
     select: string, label?: string}) {
   let { state, dispatch, select } = props
@@ -93,7 +181,14 @@ function SingleSelect(props: {state: AppState, dispatch: React.Dispatch<Action>,
   let label = sel.label || props.label || ""
   return (
   <Box>
-    <FormLabel component="legend"className={classes.selectLabel} >{label}</FormLabel>
+    <FormLabel component="legend" className={classes.selectLabel} >
+      {label}
+    </FormLabel>
+    {/* {sel.annotation ? <Box> <CustomTooltip title={sel.annotation}>
+        <IconButton>
+          <HelpOutlineIcon sx={{ fontSize: 30 }}/>
+        </IconButton>
+      </CustomTooltip> </Box> : null} */}
     <RadioGroup aria-label="position" name="position" value={radioValue} onChange={handleChange} row>
       {
         sel.names.map(name => (
@@ -234,4 +329,4 @@ function MultiSelect(props: {state: AppState, dispatch: React.Dispatch<Action>, 
 }
 
 
-export { SingleSelect, MultiSelectContent, MultiSelect }
+export { SingleSelect, MultiSelectContent, MultiSelect, SliderSelect }

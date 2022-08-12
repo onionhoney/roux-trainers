@@ -1,7 +1,3 @@
-// source: "https://sites.google.com/view/kianroux/cmll" and https://github.com/AshleyF/briefcubing/blob/master/algs.js
-
-//type oll_case = "o"|"h"|"pi"|"u"|"t"|"s"|"as"|"l"
-import zIndex from "@material-ui/core/styles/zIndex";
 import Selector from "../lib/Selector";
 import { rand_choice } from "./Math";
 

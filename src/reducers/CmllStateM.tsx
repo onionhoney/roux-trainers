@@ -68,6 +68,7 @@ export abstract class CmllStateM extends AbstractStateM {
                 state: lse_cube,
                 ori,
                 history: [],
+                levelSuccess: true
             },
             case: {
                 state: lse_cube,

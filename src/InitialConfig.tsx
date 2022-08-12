@@ -6,6 +6,43 @@ export const initialFavList : FavCase[] = []
 
 const cmll_alg_names = cmll_algs_raw.map(x => x[0])
 
+export const EOLRMode = {
+    NONMC_SHORTER_ONLY: "Only show cases where non-MC is optimal",
+    MC_SHORTER_ONLY: "Only show cases where MC is optimal",
+    COMBINED: "Combined",
+    MC_ONLY: "Only show MC solutions",
+    NONMC_ONLY: "Only show non-MC solutions"
+}
+
+const fbPieceSolvedAnnotation = `
+Explanation:
+These modes apply different constraints on your FB state.
+[Hard] means there's no free pair AND no edges attached to the L center.
+[Hard over x2y] means it's hard for all FBs over the x2y orientations. To see solutions, paste them into the FB analyzer.`
+
+const initialLevels = {
+    fbdrLevelSelector: ({
+        l: 1, r: 7, label: "fbdr-level", value: 0, extend_r: true
+    }),
+    fbssLevelSelector: ({
+        l: 3, r: 9, label: "fbss-level", value: 2
+    }),
+    fsLevelSelector: ({
+        l: 1, r: 6, label: "fs-level", value: 0
+    }),
+    fbLevelSelector: ({
+        l: 3, r: 8, label: "fb-level", value: 2, extend_r: true
+    }),
+    ssLevelSelector: ({
+        l: 1, r: 10, label: "ss-level", value: 0
+    }),
+    // lse4cLevelSelector: ({
+    //     l: 1, r: 11, label: "4c-level", value: 0
+    // }),
+    // eolrLevelSelector: ({
+    //     l: 1, r: 11, label: "eolr-level", value: 0
+    // }),
+}
 export const initialConfig : Config = (() => {
     let arr_ori_flag = Array(24).fill(0)
     arr_ori_flag[7] = 1 // YR
@@ -121,6 +158,7 @@ export const initialConfig : Config = (() => {
             flags: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
             kind: "fbdr-position-3"
         }),
+
         fsSelector: new Selector({
             label: "Position of square",
             names: ["Front FS", "Back FS", "Both"],
@@ -128,8 +166,8 @@ export const initialConfig : Config = (() => {
             kind: "fs"
         }),
         ssSelector: new Selector({
-            label: "Position of square",
-            names: ["SS at front", "SS at back", "Either"],
+            label: "Square position",
+            names: ["Front SS", "Back SS", "Both"],
             flags: [1, 0, 0],
             kind: "ss"
         }),
@@ -148,7 +186,7 @@ export const initialConfig : Config = (() => {
         }),
         ssPairOnlySelector: new Selector({
             label: "Solve w/wo DR",
-            names: ["SS", "SB First Pair"],
+            names: ["SS", "DR fixed"],
             flags: [1, 0],
             kind: "sb-pair-only"
         }),
@@ -160,21 +198,22 @@ export const initialConfig : Config = (() => {
         }),
         fbPieceSolvedSelector: new Selector({
             label: "Difficulty",
-            names: ["Hard over x2y(Scramble only)", "Hard", "DL Solved", "BL Solved", "Random"],
+            names: ["Random", "DL Solved", "BL Solved", "Hard", "Hard over x2y (Scramble only)"],
+            annotation: fbPieceSolvedAnnotation,
             flags: [1, 0, 0, 0, 0],
             kind: "fb-piece-solved"
         }),
         fbssLpSelector: new Selector({
-            label: "fbss-lp",
-            names: ["FBLP at front", "FBLP at back"],
+            label: "FBLP Position",
+            names: ["Front FBLP", "Back FBLP"],
             flags: [1, 0],
-            kind: "fbss"
+            kind: "fbss-lp"
         }),
         fbssSsSelector: new Selector({
-            label: "fbss-ss",
-            names: ["SS at front", "SS at back"],
-            flags: [1, 0],
-            kind: "fbss"
+            label: "SS Position",
+            names: ["Front SS", "Back SS" , "Both"],
+            flags: [1, 0, 0],
+            kind: "fbss-ss"
         }),
         lseMCSelector: new Selector({
             label: "Center",
@@ -202,7 +241,7 @@ export const initialConfig : Config = (() => {
         }),
         lseEOLRMCSelector: new Selector({
             label: "Center strategy",
-            names: ["Non MC only", "MC only", "Combined","Filter by Non-MC shorter",  "Filter by MC shorter", ],
+            names: [EOLRMode.NONMC_ONLY, EOLRMode.MC_ONLY, EOLRMode.COMBINED, EOLRMode.NONMC_SHORTER_ONLY, EOLRMode.MC_SHORTER_ONLY ],
             flags: [0, 0, 1, 0, 0],
             kind: "lse-eolrmc"
         }),
@@ -217,6 +256,8 @@ export const initialConfig : Config = (() => {
             names: ["Short", "Random State"],
             flags: [0, 1],
             kind: "lse-eolr-scramble"
-        })
+        }),
+        ...initialLevels
     }
 })()
+

@@ -3,10 +3,10 @@ import React, { useEffect } from 'react'
 import { FaceletCubeT, Face } from "../lib/Defs";
 import * as THREE from 'three';
 import { arrayEqual } from '../lib/Math';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import * as chroma from 'chroma-js';
-import useMediaQuery from '@material-ui/core/useMediaQuery';
-import { useTheme } from '@material-ui/core/styles';
+import useMediaQuery from '@mui/material/useMediaQuery';
+import { useTheme } from '@mui/material/styles';
+import { OrbitControls } from '../lib/three/OrbitControls';
 
 type Config = {
     cube: FaceletCubeT, width: number, height: number, colorScheme: Array<string>, facesToReveal: Face[],
@@ -108,8 +108,7 @@ const redraw_cube = function (cube: FaceletCubeT, config: ConfigT ) {
     //renderer.setViewport( 0, 0, width * window.devicePixelRatio, height * window.devicePixelRatio);
     renderer.setClearColor(bgColor) // #70788a') //#5a606e') // '#373B43') // '#eeeeee')
     renderer.setPixelRatio(window.devicePixelRatio)
-
-    const controls = new OrbitControls( camera, renderer.domElement );
+    let controls = new OrbitControls( camera, renderer.domElement );
     controls.enabled = !!config.enableControl
 
     const angleScale = Math.sin(70 / 180 * Math.PI)  /  Math.sin(angle / 180 * Math.PI)

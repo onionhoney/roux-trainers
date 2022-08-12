@@ -2,27 +2,30 @@ import React, { Fragment } from 'react'
 
 import {
     TextField,
-    Divider,
-    Button, Box,
-    makeStyles,
-    Typography,
-    FormLabel, Dialog, DialogTitle, DialogContent, DialogActions
-} from '@material-ui/core';
+    Button,
+    Box,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions,
+    useMediaQuery,
+} from '@mui/material';
 
-import EditIcon from '@material-ui/icons/Edit';
-import SaveAltIcon from '@material-ui/icons/SaveAlt';
-import RootRef from '@material-ui/core/RootRef';
+import makeStyles from '@mui/styles/makeStyles';
 
+import EditIcon from '@mui/icons-material/Edit';
+import { theme } from '../theme';
 
 
 import { AppState, Config, Action } from '../Types'
+import IconButton from '@material-ui/core/IconButton';
 const useStyles = makeStyles(theme => ({
 
     setupEdit: {
         whiteSpace: 'pre-line',
         fontSize: "1.2rem",
         fontWeight:500,
-        [theme.breakpoints.down('xs')]: {
+        [theme.breakpoints.down('sm')]: {
         fontSize: "1.0rem",
         fontWeight: 500
         },
@@ -38,8 +41,6 @@ export function ScrambleInputView(props: { display: string, scrambles: string[],
     let [editing, setEditing] = React.useState(false)
     let [value, setValue] = React.useState(props.scrambles.join("\n"))
     let textField = React.useRef<HTMLInputElement | null>(null)
-    let container = React.useRef<HTMLInputElement | null>(null)
-    let editButton = React.useRef<HTMLElement | null>(null)
     const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setValue(event.target.value)
         event.stopPropagation()
@@ -71,8 +72,10 @@ export function ScrambleInputView(props: { display: string, scrambles: string[],
     const onEntered = () => {
         textField.current && textField.current.focus()
     }
+    const gt_sm = useMediaQuery(theme.breakpoints.up('sm'));
     return <>
     <Box>
+        { gt_sm ? 
             <Button variant={editing ? "contained" : "outlined"}
                 color="primary"
                 size="small"
@@ -80,8 +83,30 @@ export function ScrambleInputView(props: { display: string, scrambles: string[],
                 className={classes.button}
                 startIcon={<EditIcon />}
             >
-                {"INPUT"}
+                Input
             </Button>
+            : 
+            <Button variant={editing ? "contained" : "outlined"}
+                color="primary"
+                size="small"
+                onClick={toggleEdit}
+                className={classes.button}
+            >
+                <Box marginTop={0.5}>
+                    <EditIcon fontSize="small"/>
+                </Box>
+            </Button>
+            // <Box>
+            // <IconButton 
+            //     size="small"
+            //     onClick={toggleEdit}
+            //     className={classes.button}
+            //     color="primary"
+            // >
+            //     <EditIcon />
+            // </IconButton>
+            // </Box>
+        }
 
     </Box>
 
@@ -119,17 +144,4 @@ export function ScrambleInputView(props: { display: string, scrambles: string[],
           </DialogActions>
     </Dialog>
     </>
-    /*
-    return <Dialog open={props.open} onClose={handleClose}>
-          <DialogTitle> Input your own scrambles  </DialogTitle>
-          <DialogContent>
-              Hello
-          </DialogContent>
-          <DialogActions>
-              <Button onClick={handleClose} color="primary">
-                  Confirm
-              </Button>
-          </DialogActions>
-        </Dialog>
-        */
 }

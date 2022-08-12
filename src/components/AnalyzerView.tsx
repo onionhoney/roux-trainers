@@ -1,16 +1,17 @@
 import React, { Fragment } from 'react'
 
 import CubeSim from './CubeSim'
-import { Button, makeStyles, Typography, useTheme, FormControl, FormLabel, Size, } from '@material-ui/core';
-import Divider from '@material-ui/core/Divider';
+import { Button, Typography, useTheme, FormControl, FormLabel } from '@mui/material';
+import makeStyles from '@mui/styles/makeStyles';
+import Divider from '@mui/material/Divider';
 
-import Grid from '@material-ui/core/Grid';
-import Paper from '@material-ui/core/Paper';
-import Box from '@material-ui/core/Box';
-import Checkbox from '@material-ui/core/Checkbox';
+import Grid from '@mui/material/Grid';
+import Paper from '@mui/material/Paper';
+import Box from '@mui/material/Box';
+import Checkbox from '@mui/material/Checkbox';
 
-import FavoriteIcon from '@material-ui/icons/Favorite';
-import CheckIcon from '@material-ui/icons/Check';
+import FavoriteIcon from '@mui/icons-material/Favorite';
+import CheckIcon from '@mui/icons-material/Check';
 
 import { CubeUtil, CubieCube, FaceletCube, Mask, MoveSeq } from '../lib/CubeLib';
 
@@ -21,44 +22,29 @@ import { Face } from '../lib/Defs';
 import { SingleSelect, MultiSelect } from './SelectorViews';
 import { ColorPanel } from './Input';
 import { CaseDesc } from '../lib/Algs';
-import TextField from '@material-ui/core/TextField';
+
+import { SelectChangeEvent } from '@mui/material/Select';
+import TextField from '@mui/material/TextField';
 
 import { AnalyzerState, SolverConfig, SolutionDesc, initialState, analyze_roux_solve } from '../lib/Analyzer';
 
-import * as Comlink from 'comlink';
-/* eslint-disable import/no-webpack-loader-syntax */
-import MyWorker from "worker-loader!../lib/Worker";
-import InputLabel from '@material-ui/core/InputLabel';
-import Select from '@material-ui/core/Select';
-import MenuItem from '@material-ui/core/MenuItem';
-import FormHelperText from '@material-ui/core/FormHelperText';
+import { useAnalyzer } from "../lib/Hooks";
 
-import Chip from '@material-ui/core/Chip';
-import { BoxBufferGeometry, BoxHelper } from 'three';
+import InputLabel from '@mui/material/InputLabel';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
+import FormHelperText from '@mui/material/FormHelperText';
+
+import Chip from '@mui/material/Chip';
 import { CachedSolver } from '../lib/CachedSolver';
-import Dialog from '@material-ui/core/Dialog';
-import DialogTitle from '@material-ui/core/DialogTitle';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogActions from '@material-ui/core/DialogActions';
-import EditIcon from '@material-ui/icons/Edit';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import EditIcon from '@mui/icons-material/Edit';
 
-import SearchIcon from '@material-ui/icons/Search';
-import { createNonNullChain } from 'typescript';
-import useMediaQuery from '@material-ui/core/useMediaQuery';
-
-// web work solution: worker-loader + comlink interface
-// https://dev.to/nicolasrannou/web-workers-in-create-react-app-cra-without-unmounting-4865
-// https://github.com/webpack-contrib/worker-loader#integrating-with-typescript
-// const worker = new Worker()
-// const obj = Comlink.wrap(worker)
-// async function init() {
-//   await (obj as any).inc();
-//   await (obj as any).inc();
-//   let ct = await (obj as any).counter
-//   console.log("Testing ",  ct);
-// }
-// init()
-
+import SearchIcon from '@mui/icons-material/Search';
+import useMediaQuery from '@mui/material/useMediaQuery';
 
 const useStyles = makeStyles(theme => ({
     container: {
@@ -109,7 +95,7 @@ const useStyles = makeStyles(theme => ({
       whiteSpace: 'pre-line',
       fontSize: "1.4rem",
       fontWeight:500,
-      [theme.breakpoints.down('xs')]: {
+      [theme.breakpoints.down('sm')]: {
       fontSize: "1.0rem",
       fontWeight: 500
       },
@@ -118,7 +104,7 @@ const useStyles = makeStyles(theme => ({
     },
     fgap: {
       flexShrink: 100, flexBasis: "2.5rem", minWidth: "1.5em",
-      [theme.breakpoints.down('xs')]: {
+      [theme.breakpoints.down('sm')]: {
         flexBasis: "1.0rem", 
         minWidth: "0.4rem"
       }
@@ -127,7 +113,7 @@ const useStyles = makeStyles(theme => ({
       height: 250,
     },
     title : {
-        color: theme.palette.text.hint,
+        color: theme.palette.text.disabled,
         fontWeight: 500,
         borderBottom: "3px solid",
     },
@@ -155,7 +141,7 @@ const useStyles = makeStyles(theme => ({
         padding: 0
     },
     sourceIconWrap : {
-        //border: "1px solid " + theme.palette.text.hint,
+        //border: "1px solid " + theme.palette.text.disabled,
         //borderRadius: 3
     },
     fab: {
@@ -207,7 +193,7 @@ function ScrambleView(props: { state: AnalyzerState, setState: (newState: Analyz
     
       <Box style={{display: "flex", alignItems: "center", flexGrow: 1}}>
         <TextField
-          size="small"
+          size="medium"
           fullWidth
           multiline
           maxRows={3}
@@ -215,6 +201,9 @@ function ScrambleView(props: { state: AnalyzerState, setState: (newState: Analyz
           value={value}
           onChange={onScrambleChange}
           variant="filled"
+          inputProps={{
+            sx: {fontSize: "1.2rem", fontWeight: 500}
+          }}
         />
       </Box>
       <Box style={{}} className={classes.fgap} />
@@ -229,21 +218,20 @@ function ScrambleView(props: { state: AnalyzerState, setState: (newState: Analyz
     </Box> )
 }
 
-const bases = ""
 function ConfigView(props: { state: AnalyzerState, setState: (newState: AnalyzerState) => void}) {
   let { state, setState } = props
   let classes = useStyles()
   let fb_ori_str = state.orientation + "," + state.pre_orientation
-  let handleFBOri = (event: React.ChangeEvent<{ value: unknown }>) => {
-    let value: string[]= (event.target.value as string).split(",")
+  let handleFBOri = (event: SelectChangeEvent<String>) => {
+    let value: string[]= (event.target.value).split(",")
     setState({...state, orientation: value[0], pre_orientation: value[1]})
   }
   let display_mode_str = state.show_mode
-  let handle_display_mode = (event: React.ChangeEvent<{ value: unknown }>) =>  {
+  let handle_display_mode = (event: SelectChangeEvent<String>) =>  {
     let value = (event.target.value as string)
     setState({...state, show_mode: value})
   }
-  let handle_num_solution = (event: React.ChangeEvent<{ value: unknown }>) =>  {
+  let handle_num_solution = (event: SelectChangeEvent<number>) =>  {
     let value = Number.parseInt(event.target.value as string)
     setState({...state, num_solution: value || state.num_solution})
   }
@@ -387,7 +375,7 @@ function StageSolutionView(props: { solution: SolutionDesc }) {
     <Box style={{display: "flex", marginBottom: "2px"}}>
       {tags.filter(x=>x).map( (t, i) => <Chip variant="outlined" size="small" color="primary" label={t} key={i} />) }
       <Box style={{marginLeft: 5}}>
-        <Typography>
+        <Typography sx={{fontSize: "1.1rem"}}>
           {premove + " " + solution.moves.map(m => m.name).join(" ")}
         </Typography>
       </Box>
@@ -448,16 +436,11 @@ function FullSolutionView(props: { state: AnalyzerState, setState: (newState: An
   
 }
 
-const worker_raw = new MyWorker()
-const worker = Comlink.wrap(worker_raw)
-
 function AnalyzerView(props: { state: AppState, dispatch: React.Dispatch<Action> } ) {
     let { state: appState, dispatch: appDispatch } = props
     
     const theme = useTheme()
     let [ state, setState ] = React.useState(initialState)
-
-    let [ solutions, setSolutions ] = React.useState<SolutionDesc[]>([])
 
     let classes = useStyles()
 
@@ -467,26 +450,15 @@ function AnalyzerView(props: { state: AppState, dispatch: React.Dispatch<Action>
 
     let ycube = FaceletCube.from_cubie(cubieCube.changeBasis(new MoveSeq("y")))
 
-    let solutions_to_display = solutions.slice()
+    const analyzerData = useAnalyzer(state)
+
+    let solutions_to_display = analyzerData.isRunning ? [] : (analyzerData.solutions || [])
+
     if (state.show_mode === "combined") {
       solutions_to_display = solutions_to_display.sort( (x, y) => x.score - y.score).slice(0, state.num_solution)
     } else {
      /// solutions_to_display = solutions.slice(0, Math.ceil(config.num_solution / oris.length))
     }
-    React.useEffect(() => {
-      async function effect() {
-
-        let t = Date.now()
-        let curr_solutions = await (worker as any).analyze(state) as SolutionDesc[]
-        // console.log("web worker finished after " + (Date.now() - t) + " ms")
-        //console.log("result = ", curr_solutions)
-
-        setSolutions(curr_solutions)
-        //l/et curr_solutions = await analyzer_worker(state, cubieCube)
-        //
-      }
-      effect()
-    }, [state.scramble, state.stage, state.post_scramble, state.num_solution, state.orientation, state.pre_orientation])
 
     const gt_md = useMediaQuery(theme.breakpoints.up('md'));
     const gt_sm = useMediaQuery(theme.breakpoints.up('sm'));

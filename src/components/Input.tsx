@@ -5,9 +5,9 @@ import {
     Divider,
     Button, Box,
     FormLabel, Dialog, DialogTitle, DialogContent, DialogActions
-} from '@material-ui/core';
+} from '@mui/material';
 
-import SettingsIcon from '@material-ui/icons/Settings';
+import SettingsIcon from '@mui/icons-material/Settings';
 
 import { AppState, Config, Action } from '../Types';
 import { ColorScheme } from '../lib/CubeLib';

@@ -1,16 +1,15 @@
 import React from 'react'
 import { AppState, Mode, Action } from "../Types";
 
-import { Box, Typography,Button, makeStyles } from '@material-ui/core';
-import { Dialog, DialogTitle, DialogContent, DialogActions } from '@material-ui/core';
-import { Grid, Container } from '@material-ui/core';
+import { Box, Typography, Button } from '@mui/material';
+import makeStyles from '@mui/styles/makeStyles';
+import { Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
+import { Grid, Container } from '@mui/material';
 
 import CmllTrainerView from './CmllTrainerView';
 import BlockTrainerView from './BlockTrainerView';
 import PanoramaView from './PanoramaView';
 
-
-//import 'typeface-roboto';
 
 import FavListView from './FavListView';
 import TopBarView from './TopBarView';
@@ -69,12 +68,25 @@ const useStyles = makeStyles(theme => ({
 }))
 
 
-const modes : Mode[] = ["analyzer", "fbdr", "fs", "fb", "ss", "cmll", "4c", "eopair", "tracking"]
+// const modes : Mode[] = ["analyzer", "fs", "fb", "fbdr", "fbss", "ss", "cmll", "4c", "eopair", "tracking"]
+
+export const tab_modes : [Mode, string][] = [
+  ["fb", "First Block (Fixed)"],
+  ["analyzer", "First Block Analyzer (x2y / CN)"],
+  ["fs", "First Block Square"],
+  ["fbdr", "First Block Last Pair (+ DR edge)"],
+  ["fbss", "First Block Last Pair + Second Square"],
+  ["ss", "Second Block Square"],
+  ["cmll", "CMLL"],
+  ["4c", "LSE 4c"],
+  ["eopair", "EOLR / EOLRb"],
+  ["tracking", "Tracking Trainer (Beta)"]
+]
 
 function _getInitialHashLocation() {
-  const default_idx = 2
+  const default_idx = tab_modes.findIndex(x => x[0] === "fbdr")
   if (window.location.hash) {
-    let idx = (modes as string[]).indexOf(window.location.hash.slice(1))
+    let idx = tab_modes.findIndex(x => x[0] === window.location.hash.slice(1))
     if (idx === -1) {
       window.location.hash = "";
       return default_idx;
@@ -149,9 +161,9 @@ function AppView(props: { state: AppState, dispatch: React.Dispatch<Action> } ) 
   let classes = useStyles()
 
   const handleChange = React.useCallback( (newValue:number) => {
-    if (newValue < modes.length) {
+    if (newValue < tab_modes.length) {
       setValue(newValue)
-      let mode = modes[newValue]
+      let mode = tab_modes[newValue][0]
       dispatch({type: "mode", content: mode})
     }
   }, [dispatch])
@@ -160,7 +172,7 @@ function AppView(props: { state: AppState, dispatch: React.Dispatch<Action> } ) 
 
   const [value, setValue] = React.useState(_getInitialHashLocation());
   React.useEffect( () => {
-    dispatch({type: "mode", content: modes[_getInitialHashLocation()]})
+    dispatch({type: "mode", content: tab_modes[_getInitialHashLocation()][0]})
   }, [])
 
   const handleInfoOpen = () => { setOpen(true) }
@@ -179,7 +191,13 @@ function AppView(props: { state: AppState, dispatch: React.Dispatch<Action> } ) 
   }
 
   const [ showFav, setFav ] = React.useState(false)
-
+  const createTabPanels = (elements: any[]) => {
+    return <React.Fragment>
+    {
+      elements.map( (el, i) => <TabPanel key={i} value={value} index={i} className={classes.page}>{el}</TabPanel>)
+    }
+    </React.Fragment>
+  }
   return (
     <main>
       <Dialog open={open} onClose={handleInfoClose} >
@@ -196,7 +214,6 @@ function AppView(props: { state: AppState, dispatch: React.Dispatch<Action> } ) 
       <TopBarView onChange={handleChange} value={value}
         handleInfoOpen={handleInfoOpen} toggleBright={toggleBright} toggleFav={toggleFav}
       />
-
 
       <Box paddingY={2}>
       <Container maxWidth={showFav ? "lg" : "md" }>
@@ -220,41 +237,26 @@ function AppView(props: { state: AppState, dispatch: React.Dispatch<Action> } ) 
         </Grid>
 
         <Grid item md={showFav ? 8 : 12} sm={showFav ? 8 : 12} xs={12}>
-        <TabPanel value={value} index={0} className={classes.page}>
-          <AnalyzerView {...{state, dispatch}} />
-        </TabPanel>
-        <TabPanel value={value} index={1} className={classes.page}>
-          <BlockTrainerView {...{state, dispatch}} />
-        </TabPanel>
-        <TabPanel value={value} index={2} className={classes.page}>
-          <BlockTrainerView {...{state, dispatch}} />
-        </TabPanel>
-        <TabPanel value={value} index={3} className={classes.page}>
-          <BlockTrainerView {...{state, dispatch}} />
-        </TabPanel>
-        <TabPanel value={value} index={4} className={classes.page}>
-          <BlockTrainerView {...{state, dispatch}} />
-        </TabPanel>
-        <TabPanel value={value} index={5} className={classes.page}>
-          <CmllTrainerView {...{state, dispatch}} />
-        </TabPanel>
-        <TabPanel value={value} index={6} className={classes.page}>
-          <BlockTrainerView {...{state, dispatch}} />
-        </TabPanel>
-        <TabPanel value={value} index={7} className={classes.page}>
-          <BlockTrainerView {...{state, dispatch}} />
-        </TabPanel>
-        <TabPanel value={value} index={8} className={classes.page}>
-          <TrackerView {...{state, dispatch}} />
-        </TabPanel>
+        {
+          createTabPanels([
+            <BlockTrainerView {...{state, dispatch}} />, // fs
+            <AnalyzerView {...{state, dispatch}} />,
+            <BlockTrainerView {...{state, dispatch}} />, // fbdr
+            <BlockTrainerView {...{state, dispatch}} />, // fb
+            <BlockTrainerView {...{state, dispatch}} />, // fbss
+            <BlockTrainerView {...{state, dispatch}} />, // ss
+            <CmllTrainerView {...{state, dispatch}} />,
+            <BlockTrainerView {...{state, dispatch}} />,
+            <BlockTrainerView {...{state, dispatch}} />,
+            <TrackerView {...{state, dispatch}} />
+          ])
+        }
+        
         </Grid>
       </Grid>
       )
       }
       </Container></Box>
-
-
-
     </main>
   )
 }

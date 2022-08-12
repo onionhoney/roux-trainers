@@ -3,13 +3,15 @@ export default class Selector {
     flags: number[];
     kind: string;
     label?: string;
+    annotation?: string;
 
-    constructor(config: {names: string[], flags: number[], kind: string, label?: string}) {
-        const { names, flags, kind, label } = config
+    constructor(config: {names: string[], flags: number[], kind: string, label?: string, annotation? : string}) {
+        const { names, flags, kind, label, annotation } = config
         this.names = names
         this.flags = flags
         this.kind = kind
         this.label = label
+        this.annotation = annotation
     }
 
     getActiveNames() {

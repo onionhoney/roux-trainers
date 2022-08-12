@@ -1,7 +1,7 @@
 import React, { Dispatch } from 'react'
 
-import { makeStyles } from '@material-ui/core';
-import { GridList, GridListTile} from '@material-ui/core';
+import makeStyles from '@mui/styles/makeStyles';
+import { ImageList, ImageListItem} from '@mui/material';
 
 import { CaseDesc } from "../lib/Algs";
 import { AppState, Action } from '../Types';
@@ -46,13 +46,14 @@ function VisualCube(props: VisualCubeConfig) {
 function PanoramaTable(props: {algs: CaseDesc[]}){
     let classes = useStyles()
     let { algs } = props
-    return <GridList cellHeight={160} className={classes.gridList} cols={3}>
+    //  /* cellHeight={160} className={classes.gridList} cols={3}>
+    return <ImageList>
             {algs.map((alg) => (
-                <GridListTile key={alg.id} cols={1}>
+                <ImageListItem key={alg.id} cols={1}>
                     <VisualCube alg={alg.algs[0]} stage="f2b" sch="yrbwog"/>
-                </GridListTile>
+                </ImageListItem>
             ))}
-        </GridList>
+        </ImageList>
 }
 
 export default function PanoramaView(props: { state: AppState, dispatch: Dispatch<Action> }) {

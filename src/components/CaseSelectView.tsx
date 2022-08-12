@@ -1,15 +1,17 @@
-import Grid from '@material-ui/core/Grid'
-import Box from '@material-ui/core/Box'
+import Grid from '@mui/material/Grid'
+import Box from '@mui/material/Box'
 import React from 'react'
 import CaseVisualizer from './CaseVisualizer'
 
 import { AppState, Action, Config } from "../Types";
 import { makeDialog } from './Dialog';
 import SRVisualizer from 'sr-visualizer';
-import { Button, ButtonGroup, Divider, makeStyles, Typography, useMediaQuery } from '@material-ui/core';
+
+import { Button, ButtonGroup, Divider, Typography, useMediaQuery } from '@mui/material';
+import makeStyles from '@mui/styles/makeStyles';
 import Selector from '../lib/Selector';
-import CheckCircleIcon from '@material-ui/icons/CheckCircle';
-import CancelIcon from '@material-ui/icons/Cancel';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CancelIcon from '@mui/icons-material/Cancel';
 import { theme } from '../theme';
 
 type CaseSelectSettings = {

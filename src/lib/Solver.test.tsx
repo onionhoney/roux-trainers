@@ -3,14 +3,14 @@ import { CubeUtil, CubieCube, FaceletCube, Move } from './CubeLib'
 import { SeqEvaluator } from "./Evaluator"
 import { CachedSolver } from './CachedSolver'
 import { cartesianProduct } from './Math'
-import { SwapCalls } from '@material-ui/icons'
+import { SwapCalls } from '@mui/icons-material'
 import { corners_coord, edges_coord } from './Defs'
 
 it('solves fbdr case', () => {
     //let cube = CubeUtil.get_random_fs()
     let cube = new CubieCube().apply("F")
     let solver = FbdrSolver()
-    let pruner = solver.getPruner()[0]
+    let pruner = solver.getPruners()[0]
     //console.log("Pruner estimate = ", pruner.query(cube))
 
     //console.log("here")

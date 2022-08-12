@@ -4,14 +4,21 @@ import { KeyMapping } from "./KeyMapping";
 import { CubieCube, Move, ColorScheme } from "./lib/CubeLib";
 import { Evaluator } from "./lib/Evaluator";
 
-export type Slider = {
-    l: number, r: number, step: number, value: number
+export type SliderOpt = {
+    l: number, r: number, value: number, label: string, extend_l?: boolean, extend_r?: boolean
 }
 
 export type Config = {
     showCube: Selector,
     theme: Selector,
     evaluator: Selector,
+    fbdrLevelSelector: SliderOpt,
+    fbssLevelSelector: SliderOpt,
+    fbLevelSelector: SliderOpt,
+    fsLevelSelector: SliderOpt,
+    ssLevelSelector: SliderOpt,
+    // lse4cLevelSelector: SliderOpt,
+    // eolrLevelSelector: SliderOpt,
     cmllSelector: Selector,
     cmllCaseSelector: Selector,
     cmllAufSelector: Selector,
@@ -94,6 +101,7 @@ export type AppState = {
         state: CubieCube,
         ori: string,
         history: Move[],
+        levelSuccess: boolean,
     },
     case: {
         state: CubieCube,
