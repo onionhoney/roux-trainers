@@ -204,6 +204,7 @@ export const nmcll_to_cmll_mapping : [string, [string, string][]][] = [
         ["t_back_row", "U"]
     ]]
 ]
+
 const cmll_algs_raw_lookup = Object.fromEntries(cmll_algs_raw)
 const nmcll_algs: CaseDesc[] = nmcll_to_cmll_mapping.map(([group_name, cases]) => {
         return cases.map(([cmll_name, parity]) =>

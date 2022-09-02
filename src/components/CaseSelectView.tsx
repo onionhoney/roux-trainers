@@ -118,6 +118,6 @@ function CaseSelectContent(props: { state: AppState, dispatch: React.Dispatch<Ac
   )
 }
 
-const CaseSelectDialog = makeDialog(CaseSelectContent, {fullWidth: true})
+const CaseSelectDialog = makeDialog(CaseSelectContent) // {fullWidth: true})
 
 export default CaseSelectDialog;
