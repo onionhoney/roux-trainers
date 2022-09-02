@@ -8,7 +8,7 @@ import ReactGA from 'react-ga';
 if (process.env.NODE_ENV === 'production') {
   ReactGA.initialize('UA-209793005-2', );
 } else {
-  console.log("In dev mode now, won't send GA")
+  console.log("In dev/test mode now, won't send GA")
 }
 
 ReactDOM.render(

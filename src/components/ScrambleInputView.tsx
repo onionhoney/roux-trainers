@@ -18,6 +18,7 @@ import { theme } from '../theme';
 
 
 import { Action } from '../Types';
+import { MoveSeq } from '../lib/CubeLib';
 
 const useStyles = makeStyles(theme => ({
 
@@ -53,7 +54,15 @@ export function ScrambleInputView(props: { display: string, scrambles: string[],
     }
     const handleClose = () => {
         setEditing(false)
+    }
+    const handleSubmit = () => {
+        setEditing(false)
         props.dispatch({type: "scrambleInput", content: value.split("\n").filter(s => s.trim())})
+    }
+    const handleInvert = () => {
+        setEditing(false)
+        const inverted = (value.split("\n").map(x => new MoveSeq(x).inv().toString()))
+        props.dispatch({type: "scrambleInput", content: inverted})
     }
     React.useEffect(  () => {
         setValue(props.scrambles.join("\n"))
@@ -117,7 +126,7 @@ export function ScrambleInputView(props: { display: string, scrambles: string[],
             onKeyUp={onKeyPress}
             /* onEntered={onEntered} */
             >
-          <DialogTitle> Input your own scrambles (one per line) </DialogTitle>
+          <DialogTitle> Input your own solution / scrambles (one per line) </DialogTitle>
           <DialogContent>
                 <TextField
                     inputRef={textField}
@@ -129,6 +138,7 @@ export function ScrambleInputView(props: { display: string, scrambles: string[],
                     InputProps={{
                         className:classes.setupEdit
                     }}
+                    autoFocus
                 
                     value={value}
                     onChange={onChange}
@@ -137,8 +147,11 @@ export function ScrambleInputView(props: { display: string, scrambles: string[],
           </DialogContent>
           <DialogActions>
               <Box padding={1}>
-              <Button onClick={handleClose} color="primary" variant="outlined" fullWidth >
-                  Confirm
+              <Button onClick={handleInvert} color="primary" variant="outlined" fullWidth >
+                  Use as solution
+              </Button>
+              <Button onClick={handleSubmit} color="primary" variant="outlined" fullWidth >
+                  Use as scramble
               </Button>
               </Box>
           </DialogActions>

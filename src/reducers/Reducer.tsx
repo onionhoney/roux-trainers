@@ -49,9 +49,9 @@ export function reducer(state: AppState, action: Action): AppState {
             let newConfig = {...state.config, ...action.content}
 
             // enforce constraints across selectors
-            if (newConfig.fbPairSolvedSelector.flags[1] === 1) {
-                newConfig.fbdrSelector.flags = [1, 0, 0]
-            }
+            //if (newConfig.fbPairSolvedSelector.flags[1] === 1) {
+            //    newConfig.fbdrSelector.flags = [1, 0, 0]
+            //}
             setConfig(newConfig)
             let newState = reduceByConfig(state, newConfig)
             return {

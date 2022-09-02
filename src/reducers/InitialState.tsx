@@ -39,6 +39,7 @@ export const getInitialState = (mode?: Mode): AppState => {
             state: new CubieCube(),
             desc: []
         },
+        prev: null,
         config: getConfig(),
         favList: getFavList(),
         keyMapping: (mode === "4c" || mode === "eopair") ? new LSEKeyMapping() : new DefaultKeyMapping(),

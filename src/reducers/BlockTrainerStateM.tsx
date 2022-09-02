@@ -1,6 +1,6 @@
 import { AppState, FavCase, SliderOpt } from "../Types";
 import { alg_generator_from_group, CaseDesc } from "../lib/Algs";
-import { Face, Typ, FBpairPos } from "../lib/Defs";
+import { Face, Typ, FBpairPosBackFS, FBpairPosFrontFS } from "../lib/Defs";
 import { CubieCube, CubeUtil, Mask, FaceletCube, MoveSeq } from '../lib/CubeLib';
 import { Evaluator, getEvaluator } from "../lib/Evaluator";
 import { CachedSolver } from "../lib/CachedSolver";
@@ -18,8 +18,8 @@ type RandomCubeT = {
 export abstract class BlockTrainerStateM extends AbstractStateM {
     abstract solverL: number;
     abstract solverR: number;
-    scrambleMargin: number = 1;
-    scrambleCount: number = 1;
+    scrambleMargin: number = 2;
+    scrambleCount: number = 3;
     algDescWithMoveCount: string = "";
     expansionFactor = 5;
     premoves: string[] = [""];
@@ -93,7 +93,8 @@ export abstract class BlockTrainerStateM extends AbstractStateM {
                 .map(sol => ({pre: pm, sol: sol, score: this.evaluator.evaluate(sol)}) )).flat()
             solutions.sort((a, b) => a.score - b.score);
             const toString = (sol: any) =>
-                (sol.pre === "" ? "" : "(" + sol.pre + ") ") + sol.sol.toString(this.algDescWithMoveCount);
+                (sol.pre === "" ? "" : "(" + sol.pre + ") ") +
+                sol.sol.toString(this.algDescWithMoveCount) //+ sol.score.toFixed(2);
             const algs = solutions.slice(0, selectedSolutionCap).map(toString);
             let algdesc: CaseDesc = {
                 id: `${solverName}`,
@@ -121,11 +122,18 @@ export abstract class BlockTrainerStateM extends AbstractStateM {
             const scramble = options.scrambleSolver === "min2phase"?
             CachedSolver.get("min2phase").solve(cube,0,0,0)[0].inv() :
             (()=>{
-            const solutionLength = new MoveSeq(algDescs[0].algs[0]).remove_setup().moves.length;
-            return rand_choice(
-                CachedSolver.get(options.scrambleSolver || solverNames[0])
-                .solve(cube, Math.min(this.solverR, Math.max(this.solverL, solutionLength + this.scrambleMargin)),
-                    this.solverR, this.scrambleCount || 1)).inv()
+                const solutionLength = new MoveSeq(algDescs[0].algs[0]).remove_setup().moves.length;
+                //console.log(options)
+                //console.log("SOLVING CUBE ", cube)
+                let result = rand_choice(
+                    CachedSolver.get(options.scrambleSolver || solverNames[0])
+                    .solve(cube, Math.min(this.solverR, Math.max(this.solverL, solutionLength + this.scrambleMargin)),
+                        this.solverR, this.scrambleCount || 1))?.inv()
+                //if (result === undefined) {
+                //    result = rand_choice(CachedSolver.get(options.scrambleSolver || solverNames[0])
+                //    .solve(cube, 0, this.solverR, this.scrambleCount || 1)).inv()
+                //}
+                return result
             })()
             setup = scramble.toString()
         }
@@ -250,7 +258,9 @@ export class FbdrStateM extends BlockTrainerStateM {
     solverL = 8;
     solverR = 10;
     _get_pair_solved_front() {
-        let [cp, co, ep, eo] = rand_choice(FBpairPos);
+        let [cp, co, ep, eo] = rand_choice(FBpairPosBackFS);
+        // for solved back-FS, ignore CP=5 and C=(1,0)
+        // for solved front-FS, ignore CP=4 and C=(0,0)
         //let mask = Mask.copy(Mask.fs_front_mask)
         let cube = CubeUtil.get_random_with_mask(Mask.fs_back_mask);
         for (let i = 0; i < 8; i++) {
@@ -269,6 +279,29 @@ export class FbdrStateM extends BlockTrainerStateM {
                 cube.eo[ep] = eo;
             }
         }
+        return cube;
+    }
+    _get_pair_solved_back() {
+        let [cp, co, ep, eo] = rand_choice(FBpairPosFrontFS)
+        //let mask = Mask.copy(Mask.fs_front_mask)
+        let cube = CubeUtil.get_random_with_mask(Mask.fs_front_mask);
+        for (let i = 0; i < 8; i++) {
+            if (cube.cp[i] === 5) {
+                cube.cp[i] = cube.cp[cp];
+                cube.co[i] = cube.co[cp];
+                cube.cp[cp] = 5;
+                cube.co[cp] = co;
+            }
+        }
+        for (let i = 0; i < 12; i++) {
+            if (cube.ep[i] === 9) {
+                cube.ep[i] = cube.ep[ep];
+                cube.eo[i] = cube.eo[ep];
+                cube.ep[ep] = 9;
+                cube.eo[ep] = eo;
+            }
+        }
+        console.log("pair for frontFS", [cp, co, ep, eo])
         return cube;
     }
     _edge_piece_in_pattern(cube: CubieCube, idx: number, pattern: [number, number][]) {
@@ -325,27 +358,37 @@ export class FbdrStateM extends BlockTrainerStateM {
         this.allowed_dr = this.state.config.fbdrPosSelector3.flags.map( (value, i) => [value, i])
             .filter( ([value, i]) => value ).map( ([value, i]) => this.edgePositionMap[i] )
 
+        this.solverL = (pairSolved) ? (fbOnly ? 5 : 7) : (fbOnly ? 7 : 8)
+        if (pairSolved) {
+
+        }
         // decide which random scramble generator to use. but prioritize use input if there's any
         let cube
         if (active === "FS at back") {
             cube = (pairSolved) ? this._get_pair_solved_front() : this._get_random_fs_back();
         }
         else if (active === "FS at front") {
-            cube = this._get_random_fs_front();
+            cube = (pairSolved) ? this._get_pair_solved_back() : this._get_random_fs_front();
         }
         else {
-            cube = rand_choice([ () => this._get_random_fs_back(), () => this._get_random_fs_front()])();
+            cube = (pairSolved) ? 
+                   rand_choice([ () => this._get_pair_solved_front(), () => this._get_pair_solved_back()])()
+                   : rand_choice([ () => this._get_random_fs_back(), () => this._get_random_fs_front()])();
         }
         return {cube, solvers, ssolver};
     }
 }
 export class FbStateM extends BlockTrainerStateM {
-    solverL: number = 9;
+    solverL: number = 8;
     solverR: number = 11;
     //premoves = ["", "x", "x'", "x2"];
     premoves = ["", "x", "x'", "x2"];
     levelMaxAttempt = 2000;
 
+    constructor(state: AppState) {
+        super(state)
+        this.evaluator = getEvaluator("movement")
+    }
     _find_center_connected_edges(cube: CubieCube, is_l_only: boolean) {
         let centers = is_l_only ? [ Face.L ] : [ Face.F, Face.B, Face.L, Face.R]
         let edges = CubeUtil.stickers.filter(c => c[2] === Typ.E && centers.includes(c[3])

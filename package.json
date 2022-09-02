@@ -41,7 +41,7 @@
     "worker-plugin": "^5.0.1"
   },
   "scripts": {
-    "start": "react-app-rewired start",
+    "start": "react-app-rewired --openssl-legacy-provider start",
     "build": "react-app-rewired build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",

@@ -17,11 +17,10 @@ import { Face } from '../lib/Defs';
 import { MultiSelect, SingleSelect } from './SelectorViews';
 import CaseSelect from './CaseSelectView';
 import { ColorPanel } from './Input';
-import { rand_int } from '../lib/Math';
 import CaseSelectDialog from './CaseSelectView';
 import { cmll_algs_raw, nmcll_display_parity, nmcll_to_cmll_mapping } from '../lib/Algs';
 
-import {Face as VFace} from 'sr-visualizer';
+import CaseVisualizer from './CaseVisualizer';
 
 const useStyles = makeStyles(theme => ({
     container: {
@@ -61,10 +60,11 @@ const useStyles = makeStyles(theme => ({
 const cmll_name_to_alg = Object.fromEntries(cmll_algs_raw)
 const nmcll_display_algs = nmcll_to_cmll_mapping.map( ([x, y], i) => {
   let parity = nmcll_display_parity[i]
-  let alg = cmll_name_to_alg[y[0]]
+  let alg = cmll_name_to_alg[y[0][0]]
   alg = parity[2] + " " + alg + " " + parity[1]
   return [x, alg] as [string, string]
 })
+console.log(nmcll_display_algs)
 
 function NMCLLSelect(props:  { state: AppState, dispatch: React.Dispatch<Action> } ) {
   const {state, dispatch} = props
@@ -195,6 +195,7 @@ function CmllTrainerView(props: { state: AppState, dispatch: React.Dispatch<Acti
         alg += moves_c.toString()
       }
     }
+    const colorSchemeColors = state.colorScheme.getColorsForOri(state.cube.ori)
     return (
     <Box className={classes.container}>
     <Grid container >
@@ -205,9 +206,9 @@ function CmllTrainerView(props: { state: AppState, dispatch: React.Dispatch<Acti
                 width={400}
                 height={350}
                 cube={facelet}
-                colorScheme={state.colorScheme.getColorsForOri(state.cube.ori)}
+                colorScheme={colorSchemeColors}
                 theme={state.config.theme.getActiveName()}
-                facesToReveal={[Face.L]}
+                facesToReveal={[/*Face.L*/]}
               />
               </Box>
             </Paper>
@@ -258,6 +259,18 @@ function CmllTrainerView(props: { state: AppState, dispatch: React.Dispatch<Acti
           <Typography style={{whiteSpace: 'pre-line', fontSize: 18, fontWeight: 500}}>
             { alg }
           </Typography>
+        </Box>
+
+        <Box borderColor="primary.main" 
+                style={{transition: "all .3s ease" }}>
+                <CaseVisualizer 
+                  name=""
+                  size={100}
+                  alg={alg}
+                  mask="cmll"
+                  color={colorSchemeColors}
+                  cubeOptions={{}}
+                />
         </Box>
 
       </Grid>

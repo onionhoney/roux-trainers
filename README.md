@@ -44,6 +44,12 @@
 - (v1.6) 7/11/2021: You can train CMLL by case now. And by NMCLL case too if you want.
     - We added a case selection menu to help you pick cases conveniently.
     - We also let you select cases based on the L/R face shape, to assist users of NMCLL-based recognition methods. As usual, we're the first ever trainer to do so. 
+
+- (v1.8) 09/01/2022: Minor fixes and functionality enhancements
+    - Now you can conveniently enter your solution as scramble input. we'll invert it automatically for you.
+    - Fixed up NMCMLL case alignment so the hyperorientation pattern will always show up in your chosen color.
+    - FB+DR trainer's solved pair mode now supports pairs at the back too.
+    - Added some experimental alg evaluators: a dynamic programming algorithm on grip position, and a piece movement counter.
 =======
 
 If you have ideas on how to improve the app just shoot a message and let me know. <3

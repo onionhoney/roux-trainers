@@ -1,27 +1,19 @@
 import React, { Fragment } from 'react'
 
 import CubeSim from './CubeSim'
-import { Button, Typography, useTheme, FormControl, FormLabel } from '@mui/material';
+import { Button, Typography, useTheme, FormControl } from '@mui/material';
 import makeStyles from '@mui/styles/makeStyles';
 import Divider from '@mui/material/Divider';
 
 import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
 import Box from '@mui/material/Box';
-import Checkbox from '@mui/material/Checkbox';
-
-import FavoriteIcon from '@mui/icons-material/Favorite';
-import CheckIcon from '@mui/icons-material/Check';
 
 import { CubeUtil, CubieCube, FaceletCube, Mask, MoveSeq } from '../lib/CubeLib';
 
 import { AppState,  Action, FavCase, Mode} from "../Types";
 import 'typeface-roboto-mono';
 import { Face } from '../lib/Defs';
-
-import { SingleSelect, MultiSelect } from './SelectorViews';
-import { ColorPanel } from './Input';
-import { CaseDesc } from '../lib/Algs';
 
 import { SelectChangeEvent } from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
@@ -45,6 +37,8 @@ import EditIcon from '@mui/icons-material/Edit';
 
 import SearchIcon from '@mui/icons-material/Search';
 import useMediaQuery from '@mui/material/useMediaQuery';
+
+import { ColorPanel } from './Input';
 
 const useStyles = makeStyles(theme => ({
     container: {
@@ -511,38 +505,32 @@ function AnalyzerView(props: { state: AppState, dispatch: React.Dispatch<Action>
                 </Box>
             </Box>
             <Box style={{}} className={classes.fgap} />
-           
               <StageSolutionListView solutions={solutions_to_display} state={state} setState={setState}/>
-           
           </Box>
         </Grid>
-
-
+        {/* colorScheme=appState.colorScheme.getColorsForOri(appState.cube.ori)} */}
         <Grid item md={6} xs={12} style={{display: "flex", justifyContent: "center"}}>
           <Box style={{backgroundColor: "rgba(0, 0, 0, 0)"}}>
             <CubeSim
               width={canvas_wh[0]}
               height={canvas_wh[1]}
               cube={faceletCube}
-              colorScheme={appState.colorScheme.getColorsForOri(appState.cube.ori)}
+              colorScheme={appState.colorScheme.getColorsForOri("WG")}
               hintDistance={ 6 }
               theme={appState.config.theme.getActiveName()}
 
               facesToReveal={ [Face.L, Face.B, Face.D]  }
             />
           </Box>
-
-
         </Grid>
       </Grid>
       </Paper>
-
-
 
       <Box height={20}/>
       <Divider/>
       <Box height={20}/>
 
+      {/* <ColorPanel {...{state: appState, dispatch: appDispatch}} /> */}
 
     </Box>
     );

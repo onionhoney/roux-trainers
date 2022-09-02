@@ -173,17 +173,35 @@ let f_face : FaceletT = [
 
 export {u_face, f_face}
 
-const FBpairPos : [number, number, number, number][] = [
+// for solved back-FS, ignore CP=5 and C=(1,0)
+// for solved front-FS, ignore CP=4 and C=(0,0)
+const FBpairPosBackFS : [number, number, number, number][] = [
     [0, 0, 8, 1], [0, 1, 1, 0], [ 0, 2 , 0, 1],
+    // [1, 0, 9, 1],
     [1, 1, 2, 0], [1, 2, 1, 1],
     [2, 0, 10, 1], [2, 1, 3, 0], [2, 2, 2, 1],
     [3, 0, 11, 0], [3, 1, 0, 0], [3, 2, 3, 1],
-    [4, 0, 8, 0], [4, 1, 4, 0],
+    //[4, 0, 8, 0], 
+    [4, 1, 4, 0],
+    // [5, 0, 9, 0], [5, 2, 6, 0],
     [6, 0, 10, 0], [6, 1, 6, 0], [6, 2, 7, 1],
     [7, 0, 11, 1], [7, 1, 7, 0], [7, 2, 4, 1]
 ]
+// Reason for failing: sampling the solved state would crash our solver, which refuses to expand solution on solved state
+const FBpairPosFrontFS : [number, number, number, number][] = [
+    //[0, 0, 8, 0], 
+    [0, 1, 1, 1], [0, 2, 0, 0],
+    [1, 0, 9, 1], [1, 1, 2, 1], [1, 2, 1, 0],
+    [2, 0, 10, 0], [2, 1, 3, 1], [2, 2, 2, 0],
+    [3, 0, 11, 1], [3, 1, 0, 1], [3, 2, 3, 0],
+    //[4, 0, 8, 1], [4, 1, 4, 1],
+    //[5, 0, 9, 0], 
+    [5, 2, 6, 0],
+    [6, 0, 10, 1], [6, 1, 6, 1], [6, 2, 7, 0],
+    [7, 0, 11, 0], [7, 1, 7, 1], [7, 2, 4, 0]
+]
 
-export {FBpairPos}
+export {FBpairPosBackFS, FBpairPosFrontFS}
 
 export type FaceletCubeT = Array<Array<Face>>
 

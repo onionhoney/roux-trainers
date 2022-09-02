@@ -350,7 +350,9 @@ function BlockTrainerView(props: { state: AppState, dispatch: React.Dispatch<Act
 
       <Grid container spacing={1}>
         <Grid item xs={5} sm={4} md={3} marginLeft={1}>
-          <Button onFocus={(evt) => evt.target.blur() } className={classes.button} size="large" variant="contained" color="primary" onClick={handleSpace} sx={{borderRadius: 0}}>
+          <Button onFocus={(evt) => evt.target.blur() } className={classes.button} 
+            size="large" variant="contained" color="primary" 
+            onClick={handleSpace} sx={{borderRadius: 0}}>
               {spaceButtonText}
           </Button>
         </Grid>

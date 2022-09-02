@@ -117,7 +117,7 @@ export const initialConfig : Config = (() => {
         }),
         nmcllSelector: new Selector({
             names: ["o_1", "o_2", "s_1", "s_2", "s_3", "as_1", "as_2", "as_3", "t_1", "t_2", "t_3", 
-                    "l_1", "l_2", "l_3", "u_1", "u_2", "u_3", "pi_1", "pi_2", "pi_3", "h_1", "h_2", "h_3"],
+                    "u_1", "u_2", "u_3", "l_1", "l_2", "l_3", "pi_1", "pi_2", "pi_3", "h_1", "h_2", "h_3"],
             flags: Array(23).fill(1),
             kind: "nmcll",
         }),
@@ -179,7 +179,7 @@ export const initialConfig : Config = (() => {
         }),
         fbPairSolvedSelector: new Selector({
             label: "Last Pair pattern",
-            names: ["Random", "Solved(FS at back only)"],
+            names: ["Random", "Solved"],
             flags: [1, 0],
             kind: "fb-pair-solved"
         }),

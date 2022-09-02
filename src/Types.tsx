@@ -48,19 +48,27 @@ export type InfoT = {cube: CubieCube, desc: CaseDesc[]}
 
 export type FavCase = {mode: Mode, setup: string, solver: string[] }
 
+export type CubeState = {
+    state: CubieCube,
+    ori: string,
+    history: Move[],
+    levelSuccess: boolean,
+}
+export type CaseState = {
+    state: CubieCube,
+    desc: CaseDesc[]
+}
+export type CubeCaseState = {
+    cube: CubeState,
+    case: CaseState
+}
+
 export type AppState = {
     name: StateT,
     mode: Mode,
-    cube: {
-        state: CubieCube,
-        ori: string,
-        history: Move[],
-        levelSuccess: boolean,
-    },
-    case: {
-        state: CubieCube,
-        desc: CaseDesc[]
-    },
+    cube: CubeState,
+    case: CaseState,
+    prev: CubeCaseState | null,
     scrambleInput: string[],
     config: Config,
     keyMapping: KeyMapping,

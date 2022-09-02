@@ -1,10 +1,10 @@
 import { AppState, StateT  } from "../Types";
 import { Config } from '../Config';
-import { alg_generator_from_group, alg_generator_from_cases, CaseDesc, createAlg, nmcll_to_cmll_mapping } from "../lib/Algs";
+import { alg_generator_from_group, alg_generator_from_cases, CaseDesc, createAlg, alg_generator_from_cases_contain} from "../lib/Algs";
 import { CubieCube, Move, CubeUtil, MoveSeq } from '../lib/CubeLib';
 import { AbstractStateM } from "./AbstractStateM";
 import {initialize as min2phase_init, solve as min2phase_solve} from "../lib/min2phase/min2phase-wrapper"
-import { arrayEqual } from "../lib/Math";
+import { arrayEqual, rand_choice } from "../lib/Math";
 
 export abstract class CmllStateM extends AbstractStateM {
     _get2PhaseSolution(cube: CubieCube): CaseDesc {
@@ -33,22 +33,27 @@ export abstract class CmllStateM extends AbstractStateM {
         let { config } = state;
         let { cmllCaseSelector, triggerSelector, cmllAufSelector, orientationSelector, nmcllSelector, hyperOriSelector } = config;
 
+        const isHyperOri = hyperOriSelector.getActiveName() !== "off" ;
+        const isHyperOriFB = hyperOriSelector.getActiveName() !== "F/B" ;
         let generator = (() => {
-            if (hyperOriSelector.getActiveName() === "off") {
+            if (!isHyperOri) {
                 return alg_generator_from_cases(cmllCaseSelector.kind, cmllCaseSelector.getActiveNames());
             } else {
-                const lookup = Object.fromEntries(nmcll_to_cmll_mapping)
-                const activeNames = (nmcllSelector.getActiveNames().map(x => lookup[x]).flat())
-                return alg_generator_from_cases(nmcllSelector.kind, activeNames)
+                return alg_generator_from_cases_contain(nmcllSelector.kind, nmcllSelector.getActiveNames().map(x => `nmcll-${x}`))
             }
         })();
         let trig_generator = alg_generator_from_group(triggerSelector);
-        let u_auf_generator = alg_generator_from_group(cmllAufSelector);
+        let u_auf_generator =alg_generator_from_group(cmllAufSelector);
         let ori_generator = alg_generator_from_group(orientationSelector);
+        let post_auf_generator = () => {
+            const choices = (isHyperOriFB) ? ["U", "U'"] : ["", "U2"]
+            return rand_choice(choices)
+        }
         let trigger_alg: CaseDesc = trig_generator();
         let cmll_alg: CaseDesc = generator();
         let u_auf_alg: CaseDesc = u_auf_generator();
-        let alg_str = trigger_alg.algs + " " + u_auf_alg.algs + " " + cmll_alg.algs;
+        let post_auf_alg = post_auf_generator();
+        let alg_str = trigger_alg.algs + " " + u_auf_alg.algs + " " + cmll_alg.algs + post_auf_alg;
         let moves: Move[] = new MoveSeq(alg_str).inv().moves;
 
         let lse_cube: CubieCube

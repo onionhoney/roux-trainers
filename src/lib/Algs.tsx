@@ -1,3 +1,4 @@
+import { Cases } from "@mui/icons-material";
 import Selector from "../lib/Selector";
 import { rand_choice } from "./Math";
 
@@ -70,31 +71,144 @@ export const cmll_algs_raw : [string,string][] = [
     ["solved", ""]
 ]
 
-export const nmcll_to_cmll_mapping : [string, string[]][] = [
-    ["o_1", ["h_rows", "pi_columns", "h_columns"]],
-    ["o_2", ["pi_x_checkerboard"]],
-    ["s_1", ["as_right_bar", "t_right_bar", "l_diag",  "as_forward_slash"]],
-    ["s_2", ["u_forward_slash", "as_left_bar", "l_pure", "as_x_checkerboard"]],
-    ["s_3", ["u_back_slash", "t_left_bar", "as_back_slash", "as_columns"]],
-    ["as_1", ["t_left_bar", "s_left_bar", "l_diag", "s_back_slash"]],
-    ["as_2", ["u_back_slash", "s_right_bar", "as_left_bar", "s_x_checkerboard"]],
-    ["as_3", ["s_forward_slash", "t_right_bar", "as_right_bar", "s_columns", ]],
-    ["t_1", ["u_back_row", "t_back_row", "h_row", "pi_right_bar"]],
-    ["t_2", ["u_front_row", "as_back_slash", "s_forward_slash", "pi_left_bar"]],
-    ["t_3", ["t_front_row", "as_forward_slash", "s_back_slash", "h_row"]],
-    ["u_1", ["u_rows", "t_rows", "pi_left_bar", "h_column"]],
-    ["u_2", ["t_columns", "s_columns", "as_columns", "pi_right_bar"]],
-    ["u_3", ["u_x_checkerboard", "s_x_checkerboard", "as_x_checkerboard", "h_column"]],
-    ["l_1", ["l_inverse", "as_right_bar", "s_right_bar", "pi_forward_slash"]],
-    ["l_2", ["l_mirror", "as_left_bar", "s_left_bar", "pi_back_slash"]],
-    ["l_3", ["l_back_commutator", "l_front_commutator", "pi_forward_slash", "pi_back_slash"]],
-    ["pi_1", ["o_adjacent_swap", "u_front_row", "t_columns", "pi_x_checkerboard"]],
-    ["pi_2", ["u_back_row", "l_front_commutator", "l_back_commutator", "t_rows"]],
-    ["pi_3", ["o_adjacent_swap", "l_mirror", "l_inverse", "pi_columns"]],
-    ["h_1", ["solved", "t_front_row", "h_rows"]],
-    ["h_2", ["o_diagonal_swap", "u_x_checkerboard", "h_columns"]],
-    ["h_3", ["u_rows", "t_back_row"]],
+export const nmcll_to_cmll_mapping : [string, [string, string][]][] = [
+    ["o_1", 
+       [["h_rows", ""],
+        ["pi_columns", ""],
+        ["h_columns", ""],
+       ]
+    ],
+    ["o_2", 
+        [["pi_x_checkerboard", "U"]],
+    ],
+    ["s_1", [
+        ["as_right_bar", "U"],
+        ["t_right_bar", "U"],
+        ["l_diag","U"],
+        ["as_forward_slash", "U"]
+    ]],
+    ["s_2", [
+        ["u_forward_slash", "U"],
+        ["as_left_bar", "U"],
+        ["l_pure", ""],
+        ["as_x_checkerboard", "U"]
+    ]],
+    ["s_3", [
+        ["u_back_slash", "U"],
+        ["t_left_bar", ""],
+        ["as_back_slash", "U"],
+        ["as_columns", ""]
+    ]],
+    ["as_1", [
+        ["t_left_bar", "U"],
+        ["s_left_bar", ""],
+        ["l_diag", ""],
+        ["s_back_slash", "U"]
+    ]],
+    ["as_2", [
+        ["u_back_slash", ""], 
+        ["s_right_bar", "U"],
+        ["l_pure", "U"],
+        ["s_x_checkerboard", "U"]
+    ]],
+    ["as_3", [
+        ["s_forward_slash", "U"],
+        ["t_right_bar", ""],
+        ["u_forward_slash", ""],
+        ["s_columns", ""]
+    ]],
+    ["t_1", [
+        ["u_back_row", "U"],
+        ["t_back_row", ""],
+        ["h_row", ""],
+        ["pi_right_bar", "U"],
+    ]],
+    ["t_2", [
+        ["u_front_row", "U"],
+        ["as_back_slash", ""],
+        ["s_forward_slash", ""],
+        ["pi_left_bar", "U"]
+    ]],
+    ["t_3", [
+        ["t_front_row", "U"],
+        ["as_forward_slash", ""],
+        ["s_back_slash", ""],
+        ["h_row", "U"]
+    ]],
+    ["u_1", [
+        ["u_rows", ""],
+        ["t_rows", ""],
+        ["pi_left_bar", ""],
+        ["h_column", "U"],
+    ]],
+    ["u_2", [
+        ["t_columns", ""],
+        ["s_columns", "U"],
+        ["as_columns", "U"],
+        ["pi_right_bar", ""],
+    ]],
+    ["u_3", [
+        ["u_x_checkerboard", "U"],
+        ["s_x_checkerboard", ""],
+        ["as_x_checkerboard", ""],
+        ["h_column", ""],
+    ]],
+    ["l_1", [
+        ["l_inverse", ""],
+        ["as_right_bar", ""],
+        ["s_right_bar", ""],
+        ["pi_forward_slash", "U"],
+    ]],
+    ["l_2", [
+        ["l_mirror", ""],
+        ["as_left_bar", ""],
+        ["s_left_bar", "U"],
+        ["pi_back_slash", ""],
+    ]],
+    ["l_3", [
+        ["l_back_commutator", ""],
+        ["l_front_commutator", ""],
+        ["pi_forward_slash", ""],
+        ["pi_back_slash", "U"],
+    ]],
+    ["pi_1", [
+        ["o_adjacent_swap", ""],
+        ["u_front_row", ""],
+        ["t_columns", "U"],
+        ["pi_x_checkerboard", ""],
+    ]],
+    ["pi_2", [
+        ["u_back_row", ""],
+        ["l_front_commutator", "U"],
+        ["l_back_commutator", "U"],
+        ["t_rows", "U"],
+    ]],
+    ["pi_3", [
+        ["o_adjacent_swap", "U"],
+        ["l_mirror", "U"],
+        ["l_inverse", "U"],
+        ["pi_columns", "U"],
+    ]],
+    ["h_1", [
+        ["solved", "U"],
+        ["t_front_row", ""],
+        ["h_rows", "U"]
+    ]],
+    ["h_2", [
+        ["o_diagonal_swap", "U"],
+        ["u_x_checkerboard", ""],
+        ["h_columns", "U"]
+    ]],
+    ["h_3", [
+        ["u_rows", "U"],
+        ["t_back_row", "U"]
+    ]]
 ]
+const cmll_algs_raw_lookup = Object.fromEntries(cmll_algs_raw)
+const nmcll_algs: CaseDesc[] = nmcll_to_cmll_mapping.map(([group_name, cases]) => {
+        return cases.map(([cmll_name, parity]) =>
+        [`nmcll-${group_name}-${cmll_name}`, cmll_algs_raw_lookup[cmll_name] + " " + parity])
+    }).flat().map( ([x, y]) => createAlg(x, y, "nmcll"))
 
 export const nmcll_display_parity : [string, string, string][] = [
  ["o_1", "U", ""],
@@ -156,8 +270,8 @@ let ori_algs: CaseDesc[] =
 let lookup_algset = (kind : string) => {
     switch (kind) {
         case "cmll": 
-        case "cmll_case":
-        case "nmcll": return cmll_algs;
+        case "cmll_case": return cmll_algs;
+        case "nmcll": return nmcll_algs;
         case "trigger": return trigger_algs;
         case "orientation": return ori_algs;
         case "u_auf": return u_auf_algs;
@@ -188,9 +302,9 @@ let alg_generator_from_group = (selector: Selector) => {
     return next
 }
 
-let alg_generator_from_cases = (kind: string, activeNames: string[]) => {
+let alg_generator_from_cases_exact = (kind: string, activeNames: string[]) => {
     let activeNamesSet = new Set(activeNames)
-    // console.log("generating from active caes", activeNamesSet)
+    console.log("generating from active caes", activeNamesSet)
     let algs = lookup_algset(kind).filter(c => activeNamesSet.has(c.id) )
     let next = () => {
         if (algs.length === 0) {
@@ -202,4 +316,19 @@ let alg_generator_from_cases = (kind: string, activeNames: string[]) => {
     return next
 }
 
-export { alg_generator_from_group , alg_generator_from_cases }
+let alg_generator_from_cases_contain = (kind: string, activeNames: string[]) => {
+    let activeNamesSet = new Set(activeNames)
+    console.log("generating from active caes", activeNamesSet)
+    let algs = lookup_algset(kind).filter(c => activeNames.some(name => c.id.includes(name)) )
+    let next = () => {
+        if (algs.length === 0) {
+            return empty_alg
+        } else {
+            return rand_choice(algs)
+        }
+    }
+    return next
+}
+
+export { alg_generator_from_group , alg_generator_from_cases_exact as alg_generator_from_cases, lookup_algset,
+alg_generator_from_cases_contain }
