@@ -1,7 +1,7 @@
 {
   "files": {
-    "main.js": "/roux-trainers/static/js/main.b4a496d3.chunk.js",
-    "main.js.map": "/roux-trainers/static/js/main.b4a496d3.chunk.js.map",
+    "main.js": "/roux-trainers/static/js/main.c9d74032.chunk.js",
+    "main.js.map": "/roux-trainers/static/js/main.c9d74032.chunk.js.map",
     "runtime-main.js": "/roux-trainers/static/js/runtime-main.800f274a.js",
     "runtime-main.js.map": "/roux-trainers/static/js/runtime-main.800f274a.js.map",
     "static/css/2.658d00ee.chunk.css": "/roux-trainers/static/css/2.658d00ee.chunk.css",
@@ -10,14 +10,14 @@
     "index.html": "/roux-trainers/index.html",
     "static/css/2.658d00ee.chunk.css.map": "/roux-trainers/static/css/2.658d00ee.chunk.css.map",
     "static/js/2.415fb382.chunk.js.LICENSE.txt": "/roux-trainers/static/js/2.415fb382.chunk.js.LICENSE.txt",
-    "static/js/analyzer-worker.e92698e4.chunk.worker.js": "/roux-trainers/static/js/analyzer-worker.e92698e4.chunk.worker.js",
-    "static/js/analyzer-worker.e92698e4.chunk.worker.js.map": "/roux-trainers/static/js/analyzer-worker.e92698e4.chunk.worker.js.map",
+    "static/js/analyzer-worker.321d7f0f.chunk.worker.js": "/roux-trainers/static/js/analyzer-worker.321d7f0f.chunk.worker.js",
+    "static/js/analyzer-worker.321d7f0f.chunk.worker.js.map": "/roux-trainers/static/js/analyzer-worker.321d7f0f.chunk.worker.js.map",
     "static/media/index.css": "/roux-trainers/static/media/roboto-mono-latin-700italic.a2b3b9b9.woff"
   },
   "entrypoints": [
     "static/js/runtime-main.800f274a.js",
     "static/css/2.658d00ee.chunk.css",
     "static/js/2.415fb382.chunk.js",
-    "static/js/main.b4a496d3.chunk.js"
+    "static/js/main.c9d74032.chunk.js"
   ]
 }
