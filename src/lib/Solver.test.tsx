@@ -27,6 +27,18 @@ it('solves fbdr case', () => {
     console.assert(solver.is_solved(solved_cube) === true, "Cube expected to be solved but not")
     //console.log(solutions)
 })
+// it('solves tricky fb case optimally', () => {
+//     let cube = new CubieCube().apply("B M' B' r2 F' R F' U'")
+//     let cube2 = new CubieCube().apply("B M' B' r2 F' R F' U' x")
+//     let cube3 = new CubieCube().apply("B M' B' r2 F' R F' U' x2")
+//     let cube4 = new CubieCube().apply("B M' B' r2 F' R F' U' x'")
+//     let solver = FbSolver()
+//     let solution_len = [cube, cube2, cube3, cube4].map(cube => solver.solve(cube, 0, 9, 3)[0].length())
+//     console.log(solution_len)
+
+//     solution_len.sort()
+//     expect(solution_len[0]).toEqual(solution_len[solution_len.length - 1])
+// })
 
 let corner_desc = (co:number, cp:number) => {
     const faces = "UDFBLR"
@@ -41,6 +53,8 @@ let edge_desc = (eo:number, ep:number) => {
     else return s.slice(eo) + s.slice(0, eo)
 }
 
+const gen_sb_cases = false
+if (gen_sb_cases) {
 it('gens sb wrong slot', () => {
     let cube = new CubieCube();
     // front slot : corner = 7, edge = 11
@@ -157,3 +171,5 @@ it('gens all ss cases', () => {
     console.log(result.join("\n"))
     console.log("Done")
 })
+
+}

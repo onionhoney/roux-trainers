@@ -94,7 +94,7 @@ export abstract class BlockTrainerStateM extends AbstractStateM {
             solutions.sort((a, b) => a.score - b.score);
             const toString = (sol: any) =>
                 (sol.pre === "" ? "" : "(" + sol.pre + ") ") +
-                sol.sol.toString(this.algDescWithMoveCount) //+ sol.score.toFixed(2);
+                sol.sol.toString(this.algDescWithMoveCount); // + sol.score.toFixed(2);
             const algs = solutions.slice(0, selectedSolutionCap).map(toString);
             let algdesc: CaseDesc = {
                 id: `${solverName}`,
@@ -301,7 +301,7 @@ export class FbdrStateM extends BlockTrainerStateM {
                 cube.eo[ep] = eo;
             }
         }
-        console.log("pair for frontFS", [cp, co, ep, eo])
+        //console.log("pair for frontFS", [cp, co, ep, eo])
         return cube;
     }
     _edge_piece_in_pattern(cube: CubieCube, idx: number, pattern: [number, number][]) {
@@ -387,7 +387,7 @@ export class FbStateM extends BlockTrainerStateM {
 
     constructor(state: AppState) {
         super(state)
-        this.evaluator = getEvaluator("movement")
+        //this.evaluator = getEvaluator("movement")
     }
     _find_center_connected_edges(cube: CubieCube, is_l_only: boolean) {
         let centers = is_l_only ? [ Face.L ] : [ Face.F, Face.B, Face.L, Face.R]

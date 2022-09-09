@@ -13,9 +13,9 @@ export class SeqEvaluator extends Evaluator {
             ["r", 1], ["r'", 1], ["r2", 1.3],
             ["L", 1], ["L'", 1], ["L2", 1.4],
             ["F", 1.4], ["F'", 1.4], ["F2", 1.8],
-            ["B", 1.6], ["B'", 1.6], ["B2", 2.2],
+            ["B", 1.6], ["B'", 1.6], ["B2", 2.0],
             ["D", 1.4], ["D'", 1.4], ["D2", 1.7],
-            ["M", 1.5], ["M'", 1.2], ["M2", 1.8],
+            ["M", 1.5], ["M'", 1.2], ["M2", 1.6],
             ["S", 1.7], ["S'", 1.7], ["S2", 3.0],
             ["E", 1.5], ["E'", 1.5], ["E2", 2.4],
         ];
@@ -30,7 +30,8 @@ export class SeqEvaluator extends Evaluator {
             const value = (SeqEvaluator.moveCost.get(m.name)) || 1.4;
             sum += value;
         }
-        return sum;
+        // 090822: solutions should be primarily sorted by HTM to guarantee that an optimal solution can always be returned by the solver
+        return moves.moves.length * 100 + sum;
     }
 
 }
