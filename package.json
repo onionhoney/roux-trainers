@@ -32,7 +32,7 @@
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-ga": "^3.3.0",
-    "react-scripts": "^4.0.3",
+    "react-scripts": "^5.0.1",
     "sr-visualizer": "^1.0.8",
     "three": "^0.125.0",
     "typeface-roboto": "0.0.75",
