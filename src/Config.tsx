@@ -10,6 +10,7 @@ export type Config = {
     showCube: Selector;
     theme: Selector;
     evaluator: Selector;
+    moveCountHint: Selector;
     fbdrLevelSelector: SliderOpt;
     fbssLevelSelector: SliderOpt;
     fbLevelSelector: SliderOpt;
@@ -36,6 +37,8 @@ export type Config = {
     ssEOSelector: Selector;
     ssPosSelector: Selector;
     fbOnlySelector: Selector;
+    // fbStratSelector: Selector;
+    fbBasisSelector: Selector;
     fbdrScrambleSelector: Selector;
     ssPairOnlySelector: Selector;
     fbPairSolvedSelector: Selector;
@@ -105,10 +108,16 @@ export const initialConfig : Config = (() => {
             kind: "theme"
         }),
         evaluator: new Selector({
-            label: "solution sorting metrics",
-            names: ["sequential", "two-gram", "QTM", "default"],
-            flags: [1,0, 0, 0],
+            label: "Solution Sorting Metrics",
+            names: ["Default", "QTM"],
+            flags: [1, 0],
             kind: "evaluator"
+        }),
+        moveCountHint: new Selector({
+            label: "Show Movecount Hint",
+            names: ["Show", "Hide"],
+            flags: [1, 0],
+            kind: "movecount_hint"
         }),
         cmllSelector: new Selector({
             names: ["o", "s", "as", "t", "l", "u", "pi", "h"],
@@ -131,6 +140,7 @@ export const initialConfig : Config = (() => {
             flags: [1, 1, 1, 1],
             kind: "u_auf"
         }),
+        //TODO: show L face
         cmllCubeMaskSelector: new Selector({
             names: ["Show", "Hide", "Hide LSE"],
             flags: [1, 0, 0],
@@ -158,6 +168,18 @@ export const initialConfig : Config = (() => {
             ],
             flags: arr_ori_flag,
             kind: "orientation"
+        }),
+        // fbStratSelector: new Selector({
+        //     label: "Strategy for solving FB",
+        //     names: ["Any", "Half-Line", "Line", "DL"],
+        //     flags: [1, 0, 0, 0],
+        //     kind: "fb-strat"
+        // }),
+        fbBasisSelector: new Selector({
+            label: "Basis (piece considered solved) for FB. Default is L-center solved.",
+            names: ["Default", "DL", "BL"],
+            flags: [1, 0, 0],
+            kind: "fb-basis"
         }),
         fbdrSelector: new Selector({
             label: "Position of square",
@@ -231,15 +253,15 @@ export const initialConfig : Config = (() => {
             kind: "ss-position"
         }),
         ssPairOnlySelector: new Selector({
-            label: "Solve",
+            label: "Pieces to solve",
             names: ["SS", "DR fixed"],
             flags: [1, 0],
             kind: "sb-pair-only"
         }),
         solutionNumSelector: new Selector({
             label: "Number of solutions",
-            names: ["1", "3", "5", "10", "25"],
-            flags: [0, 0, 1, 0, 0],
+            names: ["1", "3", "5", "10", "25", "100"],
+            flags: [0, 0, 1, 0, 0, 0],
             kind: "solution-num"
         }),
         fbPieceSolvedSelector: new Selector({
@@ -293,8 +315,8 @@ export const initialConfig : Config = (() => {
         }),
         lseBarbieSelector: new Selector({
             label: "EOLR / EOLRb",
-            names: ["EOLR", "EOLRb"],
-            flags: [1, 0],
+            names: ["EOLR", "EOLRb", "EOdM"],
+            flags: [1, 0, 0],
             kind: "lse-barbie"
         }),
         lseEOLRScrambleSelector: new Selector({

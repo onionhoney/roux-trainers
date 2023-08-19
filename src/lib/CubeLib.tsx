@@ -367,6 +367,8 @@ export class Move {
         let lws = make_rot_set(lw)
         let uw = new Move([new Move(u), new Move(e)], "u")
         let uws = make_rot_set(uw)
+        let fw = new Move([new Move(f), new Move(s)], "f")
+        let fws = make_rot_set(fw)
 
         let x = new Move([new Move(r), ls[2], ms[2]], "x")
         let xs = make_rot_set(x)
@@ -380,7 +382,7 @@ export class Move {
             id,
             us, fs, rs, ls, ds, bs, ms, es, ss,
             xs, ys, zs,
-            rws, lws, uws
+            rws, lws, uws, fws
         ].flat()
         let moves_dict: { [key: string]: Move } = Object.create({})
         moves.forEach(m => moves_dict[m.name] = m)
@@ -916,6 +918,19 @@ let CubeUtil = (() => {
         return is_mask_solved2(cube, lse_mask, u_premove)
     }
 
+    const oris = ["", "y", "y'", "y2", "x2", "x2y", "x2y'", "x2y2",
+        "x", "xy", "xy'", "xy2", "x'", "x'y", "x'y'", "x'y2",
+        "z", "zy", "zy'", "zy2", "z'", "z'y", "z'y'", "z'y2"];
+    let rebase_to_edge = (cube: CubieCube, ep: number): [CubieCube, string] => {
+        for (let ori of oris) {
+            const cube_rebased = cube.apply(ori)
+            if ((cube_rebased.ep[ep] === ep)) {
+                return [cube_rebased, ori]
+            }
+        }
+        return [cube, ""]
+    }
+
     let get_random_with_mask = ({ co, eo, cp, ep }: Mask): CubieCube => {
         co = co || cp
         eo = eo || ep
@@ -982,7 +997,8 @@ let CubeUtil = (() => {
         get_random_with_mask,
         is_cube_solved,
         find_pairs,
-        stickers
+        stickers,
+        rebase_to_edge
     }
 })()
 

@@ -2,7 +2,7 @@ import { AppState, FavCase, SliderOpt } from "../Types";
 import { alg_generator_from_group, CaseDesc } from "../lib/Algs";
 import { Face, Typ, FBpairPosBackFS, FBpairPosFrontFS } from "../lib/Defs";
 import { CubieCube, CubeUtil, Mask, FaceletCube, MoveSeq } from '../lib/CubeLib';
-import { Evaluator, getEvaluator } from "../lib/Evaluator";
+import { Evaluator, SeqEvaluator, getEvaluator } from "../lib/Evaluator";
 import { CachedSolver } from "../lib/CachedSolver";
 import { rand_choice, arrayEqual } from '../lib/Math';
 import { AbstractStateM, StateFactory } from "./AbstractStateM";
@@ -67,7 +67,8 @@ export abstract class BlockTrainerStateM extends AbstractStateM {
             let level = Math.min(...solvers.map(solver => premoves.map(pm => 
                     CachedSolver.get(solver).solve(cube.apply(pm), 0, this.solverR, 1)[0].moves.length)).flat())
             if (this.checkLevelConstraint(level)) {
-                console.log(`generated random state after ${i+1} tries.`)
+                //TODO: add debug mode
+                console.debug(`generated random state after ${i+1} tries.`)
                 return {cube, solvers, ssolver}
             }
         }
@@ -77,8 +78,10 @@ export abstract class BlockTrainerStateM extends AbstractStateM {
 
     constructor(state: AppState) {
         super(state)
-        let evalName = this.state.config.evaluator.getActiveName()
-        this.evaluator = getEvaluator(evalName)
+        // Enable below only when we decide to support evaluator selection
+        //let evalName = this.state.config.evaluator.getActiveName()
+        //this.evaluator = getEvaluator(evalName)
+        this.evaluator = new SeqEvaluator()
     }
     _solve_with_solvers(cube: CubieCube, solverNames: string[]): CaseDesc[]{
         const state = this.state;
@@ -385,10 +388,10 @@ export class FbStateM extends BlockTrainerStateM {
     premoves = ["", "x", "x'", "x2"];
     levelMaxAttempt = 2000;
 
-    constructor(state: AppState) {
-        super(state)
-        //this.evaluator = getEvaluator("movement")
-    }
+    // constructor(state: AppState) {
+    //     super(state)
+    //     //this.evaluator = getEvaluator("movement")
+    // }
     _find_center_connected_edges(cube: CubieCube, is_l_only: boolean) {
         let centers = is_l_only ? [ Face.L ] : [ Face.F, Face.B, Face.L, Face.R]
         let edges = CubeUtil.stickers.filter(c => c[2] === Typ.E && centers.includes(c[3])
@@ -404,18 +407,32 @@ export class FbStateM extends BlockTrainerStateM {
             mask = Mask.dl_solved_mask;
         else if (active === "BL Solved")
             mask = Mask.bl_solved_mask;
+        //else if (active === "BL Pair Solved")
+        //    mask = Mask.bl_pair_solved_mask;
         else if (active === "Zhouheng Variant")
             mask = Mask.zhouheng_mask;
         else
             mask = Mask.empty_mask;
         let cube = CubeUtil.get_random_with_mask(mask);
+        let basis = this.state.config.fbBasisSelector.getActiveName();
+        cube = (basis === "Default") ? cube
+              : (basis === "DL") ? CubeUtil.rebase_to_edge(cube, 5)[0]
+              : CubeUtil.rebase_to_edge(cube, 9)[0] // BL
 
-        let solver = "fb";
-        if (active === "Zhouheng Variant") {
-            // B F'
-            cube = cube.apply("B F'");
-            solver = "fbdr";
+        let solver = (basis === "Default") ? "fb"
+                     : (basis === "DL") ? "fb@dl" 
+                     : "fb@bl";
+
+        if (basis === "Default") {
+            this.premoves = ["", "x", "x'", "x2"]
+        } else {
+            this.premoves = [""]
         }
+        // if (active === "Zhouheng Variant") {
+        //     // B F'
+        //     cube = cube.apply("B F'");
+        //     solver = "fbdr";
+        // }
         const hard_str = "Hard";
         const g_hard_str = "Hard over x2y (Scramble only)"
         if (active === g_hard_str) {
@@ -461,6 +478,26 @@ export class FsStateM extends BlockTrainerStateM {
             return {cube, solvers: ["fs-back"], ssolver: "fb"}
         } else {
             return {cube, solvers: ["fs-front", "fs-back"], ssolver: "fb"}
+        }
+    }
+}
+
+export class FsDrStateM extends BlockTrainerStateM {
+    solverL = 7;
+    solverR = 11;
+    premoves = ["", "x", "x'", "x2"];
+    levelMaxAttempt = 1000;
+
+    getLevelSelector() {return this.state.config.fsLevelSelector}
+    getRandomAnyLevel() {
+        let cube = CubeUtil.get_random_with_mask(Mask.empty_mask);
+        let name = this.state.config.fsSelector.getActiveName()
+        if (name === "Front FS") {
+            return {cube, solvers: ["fsdr-front"], ssolver: "fbdr"}
+        } else if (name === "Back FS") {
+            return {cube, solvers: ["fsdr-back"], ssolver: "fbdr"}
+        } else {
+            return {cube, solvers: ["fsdr-front", "fsdr-back"], ssolver: "fbdr"}
         }
     }
 }

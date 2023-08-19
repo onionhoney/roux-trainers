@@ -11,14 +11,14 @@ import Box from '@mui/material/Box';
 
 import { CubeUtil, CubieCube, FaceletCube, Mask, MoveSeq } from '../lib/CubeLib';
 
-import { AppState,  Action, FavCase, Mode} from "../Types";
+import { AppState, Action} from "../Types";
 import 'typeface-roboto-mono';
 import { Face } from '../lib/Defs';
 
 import { SelectChangeEvent } from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
 
-import { AnalyzerState, SolverConfig, SolutionDesc, initialState, analyze_roux_solve } from '../lib/Analyzer';
+import { AnalyzerState, SolutionDesc, initialState, analyze_roux_solve } from '../lib/Analyzer';
 
 import { useAnalyzer } from "../lib/Hooks";
 
@@ -37,8 +37,6 @@ import EditIcon from '@mui/icons-material/Edit';
 
 import SearchIcon from '@mui/icons-material/Search';
 import useMediaQuery from '@mui/material/useMediaQuery';
-
-import { ColorPanel } from './Input';
 
 const useStyles = makeStyles(theme => ({
     container: {
@@ -287,12 +285,9 @@ function ConfigView(props: { state: AnalyzerState, setState: (newState: Analyzer
 
 
 function SolutionInputView(props: { state: AnalyzerState, setState: (newState: AnalyzerState) => void}) {
-  let classes = useStyles()
   let [editing, setEditing] = React.useState(false)
   let [value, setValue] = React.useState("")
   let textField = React.useRef<HTMLInputElement | null>(null)
-  let container = React.useRef<HTMLInputElement | null>(null)
-  let editButton = React.useRef<HTMLElement | null>(null)
   const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
       setValue(event.target.value)
       event.stopPropagation()
@@ -302,14 +297,14 @@ function SolutionInputView(props: { state: AnalyzerState, setState: (newState: A
   }
   const handleClose = () => {
     setEditing(false)
-    let t = Date.now()
     let full_solution = analyze_roux_solve(new CubieCube().apply(props.state.scramble), new MoveSeq(value))
-    if (full_solution.length > 1 || full_solution.length === 1 && full_solution[0].solution.moves.length > 0 )
+    if ( (full_solution.length > 1) || (full_solution.length === 1 && full_solution[0].solution.moves.length > 0)) {
       props.setState({...props.state, full_solution})
+    }
   }
-  const onEntered = () => {
-      textField.current && textField.current.focus()
-  }
+  //const onEntered = () => {
+  //    textField.current && textField.current.focus()
+  //}
   return <Box>
     <Box >
           <Button variant={editing ? "contained" : "outlined"}
@@ -379,7 +374,7 @@ function StageSolutionView(props: { solution: SolutionDesc }) {
 
 
 function StageSolutionListView(props: { solutions: SolutionDesc[], state: AnalyzerState, setState: (newState: AnalyzerState) => void} ) {
-  let { solutions, state, setState } = props
+  let { solutions } = props
 
   return (
     <Box lineHeight={1}>
@@ -431,7 +426,7 @@ function FullSolutionView(props: { state: AnalyzerState, setState: (newState: An
 }
 
 function AnalyzerView(props: { state: AppState, dispatch: React.Dispatch<Action> } ) {
-    let { state: appState, dispatch: appDispatch } = props
+    let { state: appState } = props
     
     const theme = useTheme()
     let [ state, setState ] = React.useState(initialState)
@@ -441,8 +436,6 @@ function AnalyzerView(props: { state: AppState, dispatch: React.Dispatch<Action>
     let mask = Mask.solved_mask
     let cubieCube = new CubieCube().apply(state.scramble).apply(state.post_scramble)
     let faceletCube = FaceletCube.from_cubie(cubieCube, mask)
-
-    let ycube = FaceletCube.from_cubie(cubieCube.changeBasis(new MoveSeq("y")))
 
     const analyzerData = useAnalyzer(state)
 

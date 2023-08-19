@@ -8,14 +8,11 @@ import Divider from '@mui/material/Divider';
 import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
 import Box from '@mui/material/Box';
-import Checkbox from '@mui/material/Checkbox';
 
 import FavoriteIcon from '@mui/icons-material/Favorite';
-import CheckIcon from '@mui/icons-material/Check';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import IconButton from '@mui/material/IconButton';
-import { theme } from '../theme';
 
 
 import { FaceletCube, Mask, MoveSeq } from '../lib/CubeLib';
@@ -139,7 +136,7 @@ function getMask(state: AppState) : Mask {
       }
     }
     else if (state.mode === "fb") {
-      if (state.case.desc.length === 0 || state.case.desc[0].kind === "fb") {
+      if (state.case.desc.length === 0 || state.case.desc[0].kind === "fb" || state.case.desc[0].kind.startsWith("fb@")) {
         return Mask.fb_mask
       }
       else if (state.case.desc[0].kind === "fbdr") {
@@ -183,6 +180,7 @@ function BlockTrainerView(props: { state: AppState, dispatch: React.Dispatch<Act
        [ { algs: [""], setup:"Press next for new case", id: "", kind: ""} ]
 
     let spaceButtonText = (state.name === "hiding") ? "Reveal" : "Next"
+    let showMoveCountHint = state.config.moveCountHint.getActiveName() === "Show"
 
     let describe_reveal = function(algs: CaseDesc[]) {
       let get_algs = (d: CaseDesc) => d.algs;
@@ -202,7 +200,7 @@ function BlockTrainerView(props: { state: AppState, dispatch: React.Dispatch<Act
         .reduce( (a, b) => Math.min(a, b), 100 )
       return `(Min = ${minMove} STM)`
     }
-    let algText = (state.name === "hiding") ? describe_hide(desc)
+    let algText = (state.name === "hiding") ? (showMoveCountHint ? describe_hide(desc) : "")
       : (state.name === "revealed") ? describe_reveal(desc) : ""
 
     const handleSpace = () => {
@@ -256,22 +254,8 @@ function BlockTrainerView(props: { state: AppState, dispatch: React.Dispatch<Act
 
     let levelSelectionWarning = "We weren't able to generate your level within time limit. You can try again -- some levels are reachable within a few tries."
     let levelSelectionSuccess = state.cube.levelSuccess
-    return (
-    <Box className={classes.container}>
-      <Paper className={classes.paper} elevation={1}>
-        <Box style={{display: "flex"}}>
-          <Box style={{display: "flex", alignItems: "center"}}> <Box className={classes.title} style={{}}>
-            Scramble
-          </Box> </Box>
-          <Box style={{}} className={classes.fgap} />
-          <Box style={{display: "flex", alignItems: "center", flexGrow: 1}}>
-          <Typography className={classes.setup} >
-                {setup}
-          </Typography>
-             
-          </Box>
-          <Box style={{}} className={classes.fgap} />
 
+    const scramblePanel = 
           <Box style={{display: "flex", flexWrap: "wrap", padding: 0}}>
             <ScrambleInputView display = {setup}
                 dispatch={dispatch} scrambles={state.scrambleInput}/>
@@ -289,19 +273,40 @@ function BlockTrainerView(props: { state: AppState, dispatch: React.Dispatch<Act
                   {favSelected ? "✓" : ADD_STR}
               </Button> 
               :
-              <Button variant={favSelected ? "contained" : "outlined"}
-                  color="primary"
-                  size="small"
-                  name="fav"
-                  onClick={handleFav}
-              >
-                <Box marginTop={0.5}>
-                  <FavoriteIcon fontSize="small"/>
-                </Box>
-              </Button>
+              null
+              // <Button variant={favSelected ? "contained" : "outlined"}
+              //     color="primary"
+              //     size="small"
+              //     name="fav"
+              //     onClick={handleFav}
+              // >
+              //   <Box marginTop={0.5}>
+              //     <FavoriteIcon fontSize="small"/>
+              //   </Box>
+              // </Button>
             }
             </Box>
           </Box>
+
+    return (
+    <Box className={classes.container}>
+      <Paper className={classes.paper} elevation={1}>
+        <Box style={{display: "flex"}}>
+          <Box style={{display: "flex", flexDirection: "column", alignItems: "center"}}>
+            <Box className={classes.title} style={{}}>
+              Scramble
+            </Box> 
+          </Box>
+          <Box style={{}} className={classes.fgap} />
+          <Box style={{display: "flex", alignItems: "center", flexGrow: 1}}>
+            <Typography className={classes.setup} >
+                  {setup}
+            </Typography>
+          </Box>
+          <Box style={{}} className={classes.fgap} />
+
+          {gt_sm && scramblePanel}
+          
           
         </Box>
       </Paper>
@@ -367,6 +372,8 @@ function BlockTrainerView(props: { state: AppState, dispatch: React.Dispatch<Act
           </Grid> :
           null
         }
+
+
       </Grid>
 
       </Paper>
@@ -414,7 +421,9 @@ function ConfigPanelGroup(props: {state: AppState, dispatch: React.Dispatch<Acti
       <SingleSelect {...{state, dispatch, select: "ssSelector"}}> </SingleSelect>
       <SingleSelect {...{state, dispatch, select: "ssPairOnlySelector"}}> </SingleSelect>
       <SingleSelect {...{state, dispatch, select: "solutionNumSelector"}}> </SingleSelect>
+      {/* <SingleSelect {...{state, dispatch, select: "evaluator"}}> </SingleSelect> */}
       
+      <SingleSelect {...{state, dispatch, select: "moveCountHint"}}> </SingleSelect>
       <SingleSelect {...{state, dispatch, select: "showCube"}}> </SingleSelect>
       <MultiSelect {...{state, dispatch, select: "ssPosSelector", options: {manipulators: DRManip} }}> </MultiSelect>
       <ColorPanel {...{state, dispatch}} />
@@ -443,6 +452,8 @@ function ConfigPanelGroup(props: {state: AppState, dispatch: React.Dispatch<Acti
       <SingleSelect {...{state, dispatch, select: select3}}> </SingleSelect>
       <SingleSelect {...{state, dispatch, select: select4}}> </SingleSelect>
       <SingleSelect {...{state, dispatch, select: select5}}> </SingleSelect>
+      {/* <SingleSelect {...{state, dispatch, select: "evaluator"}}> </SingleSelect> */}
+      <SingleSelect {...{state, dispatch, select: "moveCountHint"}}> </SingleSelect>
       <SingleSelect {...{state, dispatch, select: "showCube"}}> </SingleSelect>
 
       <MultiSelect {...{state, dispatch, select: pos1, options: {manipulators: LPEdgeManip} }}> </MultiSelect>
@@ -452,15 +463,16 @@ function ConfigPanelGroup(props: {state: AppState, dispatch: React.Dispatch<Acti
       </Fragment>
     )
   } else if (state.mode === "fb") {
-    let select1 = "fbPieceSolvedSelector"
-    let select2 = "solutionNumSelector"
-
     return (
       <Fragment>
         <SliderSelect {...{state, dispatch, select: "fbLevelSelector"}} /> 
+        {/* <SingleSelect {...{state, dispatch, select: "fbStratSelector"}} />  */}
 
-        <SingleSelect {...{ state, dispatch, select: select1 }}> </SingleSelect>
-        <SingleSelect {...{ state, dispatch, select: select2 }}> </SingleSelect>
+        <SingleSelect {...{ state, dispatch, select: "fbPieceSolvedSelector" }}> </SingleSelect>
+        {/* <SingleSelect {...{state, dispatch, select: "fbBasisSelector"}} />  */}
+        <SingleSelect {...{ state, dispatch, select: "solutionNumSelector"}}> </SingleSelect>
+      {/* <SingleSelect {...{state, dispatch, select: "evaluator"}}> </SingleSelect> */}
+        <SingleSelect {...{state, dispatch, select: "moveCountHint"}}> </SingleSelect>
         <SingleSelect {...{state, dispatch, select: "showCube"}}> </SingleSelect>
 
         <ColorPanel {...{state, dispatch}} />
@@ -478,6 +490,8 @@ function ConfigPanelGroup(props: {state: AppState, dispatch: React.Dispatch<Acti
 
         <SingleSelect {...{ state, dispatch, select: select1 }}> </SingleSelect>
         <SingleSelect {...{ state, dispatch, select: select2 }}> </SingleSelect>
+        {/* <SingleSelect {...{state, dispatch, select: "evaluator"}}> </SingleSelect> */}
+        <SingleSelect {...{state, dispatch, select: "moveCountHint"}}> </SingleSelect>
         <SingleSelect {...{state, dispatch, select: "showCube" }}> </SingleSelect>
 
         <ColorPanel {...{state, dispatch}} />
@@ -485,7 +499,27 @@ function ConfigPanelGroup(props: {state: AppState, dispatch: React.Dispatch<Acti
 
       </Fragment>
     )
-   } else if (state.mode === "fbss") {
+   } else if (state.mode === "fsdr") {
+    let select1 = "fsSelector"
+    let select2 = "solutionNumSelector"
+
+    return (
+      <Fragment>
+        <SliderSelect {...{state, dispatch, select: "fsLevelSelector"}} /> 
+
+        <SingleSelect {...{ state, dispatch, select: select1 }}> </SingleSelect>
+        <SingleSelect {...{ state, dispatch, select: select2 }}> </SingleSelect>
+        {/* <SingleSelect {...{state, dispatch, select: "evaluator"}}> </SingleSelect> */}
+        <SingleSelect {...{state, dispatch, select: "moveCountHint"}}> </SingleSelect>
+        <SingleSelect {...{state, dispatch, select: "showCube" }}> </SingleSelect>
+
+        <ColorPanel {...{state, dispatch}} />
+
+
+      </Fragment>
+    )
+   }  
+   else if (state.mode === "fbss") {
     let select1 = "fbssLpSelector"
     let select2 = "fbssSsSelector"
     let select3 = "solutionNumSelector"
@@ -496,6 +530,8 @@ function ConfigPanelGroup(props: {state: AppState, dispatch: React.Dispatch<Acti
         <SingleSelect {...{ state, dispatch, select: select1 }}> </SingleSelect>
         <SingleSelect {...{ state, dispatch, select: select2 }}> </SingleSelect>
         <SingleSelect {...{ state, dispatch, select: select3 }}> </SingleSelect>
+        {/* <SingleSelect {...{state, dispatch, select: "evaluator"}}> </SingleSelect> */}
+        <SingleSelect {...{state, dispatch, select: "moveCountHint"}}> </SingleSelect>
         <ColorPanel {...{state, dispatch}} />
 
 
@@ -514,6 +550,8 @@ function ConfigPanelGroup(props: {state: AppState, dispatch: React.Dispatch<Acti
         <SingleSelect {...{ state, dispatch, select: select2 }}> </SingleSelect>
         <SingleSelect {...{ state, dispatch, select: select3 }}> </SingleSelect>
         <SingleSelect {...{ state, dispatch, select: select4 }}> </SingleSelect>
+        {/* <SingleSelect {...{state, dispatch, select: "evaluator"}}> </SingleSelect> */}
+        <SingleSelect {...{state, dispatch, select: "moveCountHint"}}> </SingleSelect>
         <SingleSelect {...{state, dispatch, select: "showCube"}}> </SingleSelect>
 
         <ColorPanel {...{state, dispatch}} />
@@ -533,6 +571,8 @@ function ConfigPanelGroup(props: {state: AppState, dispatch: React.Dispatch<Acti
         <SingleSelect {...{ state, dispatch, select: select3 }}> </SingleSelect>
         <SingleSelect {...{ state, dispatch, select: select4 }}> </SingleSelect>
         <SingleSelect {...{ state, dispatch, select: select5 }}> </SingleSelect>
+        {/* <SingleSelect {...{state, dispatch, select: "evaluator"}}> </SingleSelect> */}
+        <SingleSelect {...{state, dispatch, select: "moveCountHint"}}> </SingleSelect>
         <SingleSelect {...{state, dispatch, select: "showCube"}}> </SingleSelect>
 
         <ColorPanel {...{state, dispatch}} />

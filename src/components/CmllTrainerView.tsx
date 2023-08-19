@@ -64,7 +64,7 @@ const nmcll_display_algs = nmcll_to_cmll_mapping.map( ([x, y], i) => {
   alg = parity[2] + " " + alg + " " + parity[1]
   return [x, alg] as [string, string]
 })
-console.log(nmcll_display_algs)
+//console.log(nmcll_display_algs)
 
 function NMCLLSelect(props:  { state: AppState, dispatch: React.Dispatch<Action> } ) {
   const {state, dispatch} = props

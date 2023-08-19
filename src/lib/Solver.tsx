@@ -1,7 +1,7 @@
 import { CubieCube, Move, MoveSeq } from './CubeLib';
 import { arrayEqual } from './Math';
 
-import { PrunerT, fbdrPrunerConfig, fbssPrunerConfigs, fsPrunerConfig, sbPrunerConfig, ssPrunerConfig, ssDpPrunerConfig, fbPrunerConfig, lsePrunerConfig, PrunerConfig, eolrPrunerConfig, PrunerDef, lpSbPrunerConfigs } from './Pruner';
+import { PrunerT, fbdrPrunerConfig, fbssPrunerConfigs, fsPrunerConfig, fsDrPrunerConfig, sbPrunerConfig, ssPrunerConfig, ssDpPrunerConfig, fbPrunerConfig, lsePrunerConfig, PrunerConfig, eolrPrunerConfig, PrunerDef, lpSbPrunerConfigs, fbAtDLPrunerConfig, fbAtBLPrunerConfig, eodmPrunerConfig } from './Pruner';
 
 import {initialize as min2phase_init, solve as min2phase_solve} from "../lib/min2phase/min2phase-wrapper"
 import { __DEV__ } from '../settings';
@@ -54,7 +54,8 @@ function Solver(config: SolverConfig) : SolverT{
     function generateNextMoveTable() {
         function getAvailableMove(name : string) {
             switch (name[0]) {
-                case "U": return moveset.filter(k => k.name[0] !== "U");
+                case "U": return moveset.filter(k => k.name[0] !== "U" && k.name[0] !== "u");
+                case "u": return moveset.filter(k => k.name[0] !== "u");
                 case "D": return moveset.filter(k => k.name[0] !== "U" && k.name[0] !== "D");
                 case "R": {
                     let base = moveset.filter(k => k.name[0] !== "R" && k.name[0] !== "r");
@@ -67,11 +68,19 @@ function Solver(config: SolverConfig) : SolverT{
                 case "L": return moveset.filter(k => k.name[0] !== "R" && k.name[0] !== "M" && k.name[0] !== "L" && k.name[0] !== "r");
                 case "r": return moveset.filter(k => k.name[0] !== "R" && k.name[0] !== "M" && k.name[0] !== "L" && k.name[0] !== "r");
                 case "M": return moveset.filter(k => k.name[0] !== "R" && k.name[0] !== "M" && k.name[0] !== "L" && k.name[0] !== "r");
-                case "F": return moveset.filter(k => k.name[0] !== "F");
+                // f precede F. f'F represented as S'. S' must be standalone (no F/f/S allowed in its neighbor)
+                case "F": return moveset.filter(k => k.name[0] !== "F" && k.name[0] !== "f" && k.name[0] !== "S");
+                case "f": {
+                    const base = moveset.filter(k => k.name[0] !== "S" && k.name[0] !== "f")
+                    if (name === "f'") return base.filter(k => k.name !== "F")
+                    else if (name === "f") return base.filter(k => k.name !== "F'")
+                    else if (name === "f2") return base.filter(k => k.name !== "F2")
+                    else return base
+                }
+                case "S": return moveset.filter(k => k.name[0] !== "F" && k.name[0] !== "B" && k.name[0] !== "S" && k.name[0] !== "f");
                 case "B": return moveset.filter(k => k.name[0] !== "F" && k.name[0] !== "B");
 
                 case "E": return moveset.filter(k => k.name[0] !== "U" && k.name[0] !== "D" && k.name[0] !== "E");
-                case "S": return moveset.filter(k => k.name[0] !== "F" && k.name[0] !== "B" && k.name[0] !== "S");
                 default: return moveset
             }
         }
@@ -209,7 +218,12 @@ export function solverFactory2(prunerConfigs: PrunerConfig[]) {
     return solver
 }
 
+
 let FbSolver = () => solverFactory(fbPrunerConfig)
+
+let FbSolverAtDL = () => solverFactory(fbAtDLPrunerConfig)
+
+let FbSolverAtBL = () => solverFactory(fbAtBLPrunerConfig)
 
 let FbdrSolver = () => solverFactory(fbdrPrunerConfig)
 
@@ -224,11 +238,14 @@ let LpsbSolver = (is_front: boolean) => solverFactory2(lpSbPrunerConfigs(is_fron
 let SbSolver = () => solverFactory(sbPrunerConfig)
 
 let FsSolver = (is_front: boolean) => solverFactory(fsPrunerConfig(is_front))
+let FsDrSolver = (is_front: boolean) => solverFactory(fsDrPrunerConfig(is_front))
 
 let LSESolver = () => solverFactory(lsePrunerConfig)
 
 let EOLRSolver = (center_flag: number, barbie_mode?: string) =>
     solverFactory(eolrPrunerConfig(center_flag, barbie_mode))
+
+let EOdMSolver = () => solverFactory(eodmPrunerConfig)
 
 let Min2PhaseSolver : () => SolverT = function() {
     // polyfill for min2phase
@@ -256,4 +273,4 @@ let Min2PhaseSolver : () => SolverT = function() {
 
 
 
-export { FbdrSolver, FbSolver, SbSolver, FbssSolver, FsSolver, SsSolver, SsDpSolver, Min2PhaseSolver, LSESolver, EOLRSolver, LpsbSolver }
+export { FbdrSolver, FbSolver, FbSolverAtDL, FbSolverAtBL, SbSolver, FbssSolver, FsSolver, FsDrSolver, SsSolver, SsDpSolver, Min2PhaseSolver, LSESolver, EOLRSolver, LpsbSolver, EOdMSolver }

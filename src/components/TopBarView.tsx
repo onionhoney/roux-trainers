@@ -2,24 +2,20 @@ import React from "react";
 
 import makeStyles from '@mui/styles/makeStyles';
 import Toolbar from '@mui/material/Toolbar';
-import FormControl from '@mui/material/FormControl';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
-import InputLabel from '@mui/material/InputLabel';
 
-import AppBar from '@mui/material/AppBar';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import InfoIcon from '@mui/icons-material/Info';
 import BookmarkIcon from '@mui/icons-material/Bookmark';
 import Brightness6Icon from '@mui/icons-material/Brightness6';
 import IconButton from "@mui/material/IconButton";
-import Container from "@mui/material/Container";
 import { SelectChangeEvent } from '@mui/material/Select';
 import { tab_modes } from "./AppView";
 
+import { theme } from '../theme';
+import useMediaQuery from '@mui/material/useMediaQuery';
 
 const useStyles = makeStyles(theme => {
     let is_bright = theme.palette.primary.main === '#556cd6';
@@ -47,9 +43,9 @@ const useStyles = makeStyles(theme => {
     select: {
       backgroundColor: is_bright ? "#657ce9" : "#9095b2", //9297b3", //9FA4C2",
       color: theme.palette.background.paper,
-      paddingLeft: 35,
-      marginRight: 5,
-      marginLeft: 15,
+      paddingLeft: theme.breakpoints.down('sm') ? 15 : 35,
+      marginRight: theme.breakpoints.down('sm') ? -5 : 5,
+      marginLeft: theme.breakpoints.down('sm') ? 10 : 15,
       height: 60,
       fontWeight: 400,
       fontSize: "1.0rem",
@@ -71,14 +67,15 @@ function TopBarView(props: { value: number, onChange: (x: number) => void,
         onChange(tab_idx)
         //
     }
+    const is_sm = useMediaQuery(theme.breakpoints.down('sm'));
     return (
         <div>
-                <Box boxShadow={4} >
+            <Box boxShadow={4} >
             <Toolbar className={classes.bar} >
-            <Typography style={{fontSize: "0.9rem", fontFamily: "Public Sans", flexShrink: 10}} >
-                Roux Trainer
+            <Typography style={{wordWrap: "break-word", fontSize: "0.9rem", fontFamily: "Public Sans"}} >
+              {is_sm ? "Roux 🐱" : "Roux Trainer"}
             </Typography>
-            <Box paddingX={0.5}/>
+            <Box paddingX={is_sm ? 0: 0.5}/>
             <Box>
                 <Select
                      fullWidth
@@ -90,20 +87,20 @@ function TopBarView(props: { value: number, onChange: (x: number) => void,
                 >
                     { tab_modes.map( (s, i) => 
                       <MenuItem key={i} value={s[1]} sx={{mx: 1.5}} style={{fontSize: "1.1rem", marginBottom: 5}}>
-                        {s[1]}
+                        {is_sm ? s[2] : s[1]}
                       </MenuItem> 
                     )}
                 </Select>
             </Box>
             <Box style={{flexGrow: 10}}> </Box>
             <Box>
-              <IconButton onClick={toggleFav} size="large">
+              <IconButton onClick={toggleFav} size={is_sm ? "small" : "large"}>
                   <BookmarkIcon />
               </IconButton>
-              <IconButton onClick={toggleBright} size="large">
+              <IconButton onClick={toggleBright} size={is_sm ? "small" : "large"}>
                   <Brightness6Icon/>
               </IconButton>
-              <IconButton onClick={handleInfoOpen} size="large">
+              <IconButton onClick={handleInfoOpen} size={is_sm ? "small" : "large"}>
                   <InfoIcon />
               </IconButton>
             </Box>

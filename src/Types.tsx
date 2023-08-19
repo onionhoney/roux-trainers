@@ -9,7 +9,7 @@ export type SliderOpt = {
 
 export type StateT = "solving" | "solved" | "hiding" | "revealed" | "revealed_all"
 
-export type Mode = "cmll" | "fs" | "fbdr" | "ss" | "fb" | "fbss" | "experimental" | "4c" | "eopair" | "analyzer" | "tracking"
+export type Mode = "cmll" | "fs" | "fsdr" | "fbdr" | "ss" | "fb" | "fbss" | "experimental" | "4c" | "eopair" | "analyzer" | "tracking"
 
 type KeyAction = {
     type: "key",

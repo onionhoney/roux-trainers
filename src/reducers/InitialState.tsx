@@ -16,6 +16,7 @@ export const getInitialState = (mode?: Mode): AppState => {
             case "eopair":
             case "fbss":
             case "fs":
+            case "fsdr":
                 return "revealed";
             case "experimental":
                 return "revealed";

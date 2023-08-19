@@ -3,7 +3,7 @@ import { AppState, Mode, Action } from "../Types";
 
 import { Box, Typography, Button } from '@mui/material';
 import makeStyles from '@mui/styles/makeStyles';
-import { Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
+import { Dialog, DialogContent, DialogActions } from '@mui/material';
 import { Grid, Container } from '@mui/material';
 
 import CmllTrainerView from './CmllTrainerView';
@@ -14,10 +14,11 @@ import PanoramaView from './PanoramaView';
 import FavListView from './FavListView';
 import TopBarView from './TopBarView';
 import AnalyzerView from './AnalyzerView';
-import TrackerView from './TrackerView';
 
 import Markdown from 'markdown-to-jsx';
+import useMediaQuery from '@material-ui/core/useMediaQuery/useMediaQuery';
 
+import { theme } from '../theme';
 
 interface TabPanelProps {
   value: number,
@@ -67,20 +68,18 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-
-// const modes : Mode[] = ["analyzer", "fs", "fb", "fbdr", "fbss", "ss", "cmll", "4c", "eopair", "tracking"]
-
-export const tab_modes : [Mode, string][] = [
-  ["fb", "First Block (Fixed)"],
-  ["analyzer", "First Block Analyzer (x2y / CN)"],
-  ["fs", "First Block Square"],
-  ["fbdr", "First Block Last Pair (+ DR edge)"],
-  ["fbss", "First Block Last Pair + Second Square"],
-  ["ss", "Second Block Square"],
-  ["cmll", "CMLL"],
-  ["4c", "LSE 4c"],
-  ["eopair", "EOLR / EOLRb"],
-  ["tracking", "Tracking Trainer (Beta)"]
+export const tab_modes : [Mode, string, string][] = [
+  ["fb", "First Block (Fixed)", "FB (fixed)"],
+  ["analyzer", "First Block Analyzer (x2y | CN)", "FB analyzer (x2y | CN)"],
+  ["fs", "First Block Square", "FB square"],
+  ["fsdr", "First Block Square + DR edge", "FB square + DR"],
+  ["fbdr", "First Block Last Pair (+ DR edge)", "FB last pair (+DR)"],
+  ["fbss", "First Block Last Pair + Second Square", "FB last pair + SS"],
+  ["ss", "Second Block Square", "SB square"],
+  ["cmll", "CMLL", "CMLL"],
+  ["4c", "LSE 4c", "LSE 4c"],
+  ["eopair", "EOLR / EOLRb", "EOLR(b)"]
+  //["tracking", "Tracking Trainer (Beta)", "Tracking"]
 ]
 
 function _getInitialHashLocation() {
@@ -173,7 +172,7 @@ function AppView(props: { state: AppState, dispatch: React.Dispatch<Action> } ) 
   const [value, setValue] = React.useState(_getInitialHashLocation());
   React.useEffect( () => {
     dispatch({type: "mode", content: tab_modes[_getInitialHashLocation()][0]})
-  }, [])
+  }, [dispatch])
 
   const handleInfoOpen = () => { setOpen(true) }
   const handleInfoClose = () => { setOpen(false) }
@@ -215,7 +214,7 @@ function AppView(props: { state: AppState, dispatch: React.Dispatch<Action> } ) 
         handleInfoOpen={handleInfoOpen} toggleBright={toggleBright} toggleFav={toggleFav}
       />
 
-      <Box paddingY={2}>
+      <Box paddingY={2} paddingX={0}>
       <Container maxWidth={showFav ? "lg" : "md" }>
 
       {
@@ -231,7 +230,7 @@ function AppView(props: { state: AppState, dispatch: React.Dispatch<Action> } ) 
       )
       :
       (
-      <Grid container className={classes.container} spacing={3}>
+      <Grid container className={classes.container} spacing={ 3}>
         <Grid item hidden={!showFav} md={4} sm={4} xs={12} >
         <FavListView {...{state, dispatch}} />
         </Grid>
@@ -239,16 +238,17 @@ function AppView(props: { state: AppState, dispatch: React.Dispatch<Action> } ) 
         <Grid item md={showFav ? 8 : 12} sm={showFav ? 8 : 12} xs={12}>
         {
           createTabPanels([
-            <BlockTrainerView {...{state, dispatch}} />, // fs
-            <AnalyzerView {...{state, dispatch}} />,
-            <BlockTrainerView {...{state, dispatch}} />, // fbdr
             <BlockTrainerView {...{state, dispatch}} />, // fb
+            <AnalyzerView {...{state, dispatch}} />,
+            <BlockTrainerView {...{state, dispatch}} />, // fs
+            <BlockTrainerView {...{state, dispatch}} />, // fsdr
+            <BlockTrainerView {...{state, dispatch}} />, // fbdr
             <BlockTrainerView {...{state, dispatch}} />, // fbss
             <BlockTrainerView {...{state, dispatch}} />, // ss
             <CmllTrainerView {...{state, dispatch}} />,
             <BlockTrainerView {...{state, dispatch}} />,
             <BlockTrainerView {...{state, dispatch}} />,
-            <TrackerView {...{state, dispatch}} />
+            /*<TrackerView {...{state, dispatch}} /> */
           ])
         }
         

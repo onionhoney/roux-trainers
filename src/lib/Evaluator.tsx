@@ -13,10 +13,11 @@ export class SeqEvaluator extends Evaluator {
             ["r", 1], ["r'", 1], ["r2", 1.3],
             ["L", 1], ["L'", 1], ["L2", 1.4],
             ["F", 1.4], ["F'", 1.4], ["F2", 1.8],
+            ["f", 1.4], ["f'", 1.4], ["f2", 1.8],
             ["B", 1.6], ["B'", 1.6], ["B2", 2.0],
-            ["D", 1.4], ["D'", 1.4], ["D2", 1.7],
+            ["D", 1.3], ["D'", 1.3], ["D2", 1.6],
             ["M", 1.5], ["M'", 1.2], ["M2", 1.6],
-            ["S", 1.7], ["S'", 1.7], ["S2", 3.0],
+            ["S", 3.0], ["S'", 1.3], ["S2", 2.0],
             ["E", 1.5], ["E'", 1.5], ["E2", 2.4],
         ];
         let costMap = new Map(pairs);
@@ -43,12 +44,12 @@ export class QTMEvaluator extends Evaluator {
         for (let m of moves.moves) {
             sum += m.name[1] === "2" ? 2 : 1;
         }
-        return sum;
+        return sum * 100 + moves.moves.length;
     }
 }
 
-export class DefaultEvaluator extends Evaluator {
-    name = "default";
+export class RawEvaluator extends Evaluator {
+    name = "raw";
     evaluate(moves: MoveSeq) {
         return moves.moves.length;
     }
@@ -267,13 +268,13 @@ export class MovementEvaluator extends Evaluator {
 //ames: ["sequential", "two-gram", "QTM", "default"],
 export function getEvaluator(s: string) {
     switch (s) {
-        case "sequential": return new SeqEvaluator();
+        case "Default": return new SeqEvaluator();
         case "two-gram": return new TwoGramEvaluator();
-        case "qtm": return new QTMEvaluator();
+        case "QTM": return new QTMEvaluator();
         case "dp": return new DPEvaluator();
         case "movement": return new MovementEvaluator();
-        case "default": 
+        case "raw": return new RawEvaluator(); 
         default :
-            return new DefaultEvaluator();
+            return new SeqEvaluator();
     }
 } 

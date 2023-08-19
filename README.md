@@ -57,6 +57,15 @@
     - FB+DR trainer's solved pair mode now supports pairs at the back too.
     - Added some experimental alg evaluators: a dynamic programming algorithm on grip position, and a piece movement counter. Won't be used in production yet.
 
+- (v2.0) 08/19/2023:
+    - Version 2 because I said so!
+        - Seriously though, V2 (hopefully) marks the beginning of a paradigm shift: let's move to a community-based contribution pattern so that changes are no longer solely driven by my personal motivations.
+    - Enter the FS+DR mode! Gives you a new way to look at block-building starts. 
+    - In EOLR(b) mode, you can now train for EOdM if you'd like.
+    - Enhancement to mobile UI experience. (still ongoing)
+    - Tweaks to user settings (you can now toggle movecount hint, and generate up to 100 solutions)
+    - Enhancement to visual cube. (Press down keys {1,2,3,9,0} to peek at other faces without rotating)
+
 =======
 
 If you have ideas on how to improve the app just shoot a message and let me know. <3

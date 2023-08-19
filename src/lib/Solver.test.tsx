@@ -53,7 +53,7 @@ let edge_desc = (eo:number, ep:number) => {
     else return s.slice(eo) + s.slice(0, eo)
 }
 
-const gen_sb_cases = false
+const gen_sb_cases = false 
 if (gen_sb_cases) {
 it('gens sb wrong slot', () => {
     let cube = new CubieCube();

@@ -107,6 +107,7 @@ export class EOLRStateM extends BlockTrainerStateM {
         let eolrMCMode = this.state.config.lseEOLRMCSelector.getActiveName()
         let compare = eolrMCMode === EOLRMode.NONMC_SHORTER_ONLY || eolrMCMode === EOLRMode.MC_SHORTER_ONLY
         let useBarbie = this.state.config.lseBarbieSelector.getActiveName() === "EOLRb"
+        let eodmMode = this.state.config.lseBarbieSelector.getActiveName() === "EOdM"
         let useFullScramble = this.state.config.lseEOLRScrambleSelector.getActiveName() === "Random State"
 
         while (true) {
@@ -133,7 +134,7 @@ export class EOLRStateM extends BlockTrainerStateM {
             break
         }
 
-        const ssolver = useFullScramble? "lse" : "lse-ab4c";
+        const ssolver = (useFullScramble || eodmMode) ? "lse" : "lse-ab4c";
         let solver : string
         switch (eolrMCMode) {
             case EOLRMode.NONMC_ONLY: solver = useBarbie ? "eolrac-b" : "eolrac"; break;
@@ -143,6 +144,12 @@ export class EOLRStateM extends BlockTrainerStateM {
             case EOLRMode.MC_SHORTER_ONLY: solver = useBarbie ? "eolr-b" : "eolr"; break;
             default: solver = "eolr";
         }
+
+        // in case of EOdM, override all of above
+        if (eodmMode) {
+            solver = "eodm"
+        }
+
         return {cube, solvers: [solver], ssolver}
     }
 }

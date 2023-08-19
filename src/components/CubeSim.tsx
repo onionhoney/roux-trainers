@@ -27,7 +27,6 @@ to be passed to the App, which then decides whether to trigger state change or l
 
 */
 
-
 type AxesInfo = [THREE.Vector3, THREE.Euler]
 const TAU = Math.PI * 2;
 const axesInfo: [THREE.Vector3, THREE.Euler][] = [
@@ -41,8 +40,17 @@ const axesInfo: [THREE.Vector3, THREE.Euler][] = [
 ];
 
 
+enum CameraState {
+    HOME,
+    PEEK_UFL,
+    PEEK_DFL,
+    PEEK_DFR,
+    PEEK_UBR,
+    PEEK_UBL
+}
 type ConfigT = {width: number, height: number, colorScheme: Array<string>, mode?: string,
-    faces?: Face[], theme?: string, hintDistance?: number,     enableControl? : boolean
+    faces?: Face[], theme?: string, hintDistance?: number,     enableControl? : boolean,
+    cameraState?: CameraState
 }
 
 const roundedFace = ((rounded?: number[], cornerRadius?: number, ) => {
@@ -70,8 +78,8 @@ const roundedFace = ((rounded?: number[], cornerRadius?: number, ) => {
     }
     //vertices.push(new Vector3(0, 0, 0))
 
-    let vertices_float32 = new Float32Array( vertices.length * 3)
-    let vertices_attr = new THREE.BufferAttribute(vertices_float32, 3).copyVector3sArray( vertices)
+    //let vertices_float32 = new Float32Array( vertices.length * 3)
+    //let vertices_attr = new THREE.BufferAttribute(vertices_float32, 3).copyVector3sArray( vertices)
     // console.log(vertices_attr)
     let faces = []
     for (let i = 0; i< vertices.length; i++) {
@@ -85,8 +93,26 @@ const roundedFace = ((rounded?: number[], cornerRadius?: number, ) => {
     return geo
 })
 
+const getCameraPosFromState = function (cstate: CameraState) : [number[], THREE.Vector3]{
+    const cameraPosUFR = [2.5, 3.5, 3]
+    const cameraPosUFL = [-2, 3.5, 3]
+    const cameraPosDFL = [-2, -3.5, 3]
+    const cameraPosDFR = [2, -3.5, 3]
+    const cameraPosUBR = [2.5, 3.5, -3]
+    const cameraPosUBL = [-2, 3.5, -3]
 
-
+    const upVecLookingDownUB = new THREE.Vector3(0, 0, -1)
+    const upVecLookingDownUBL = new THREE.Vector3(0, 0.1, -1)
+    const upVecDefault = new THREE.Vector3(0, 1, 0)
+    switch (cstate) {
+        case CameraState.HOME: return [cameraPosUFR, upVecDefault]
+        case CameraState.PEEK_DFL: return [cameraPosDFL, upVecDefault]
+        case CameraState.PEEK_DFR: return [cameraPosDFR, upVecDefault]
+        case CameraState.PEEK_UFL: return [cameraPosUFL, upVecDefault]
+        case CameraState.PEEK_UBL: return [cameraPosUBL, upVecLookingDownUBL]
+        default: return [cameraPosUBR, upVecLookingDownUB]
+    }
+}
 const redraw_cube = function (cube: FaceletCubeT, config: ConfigT ) {
     let { width, height, colorScheme, mode, faces, theme, enableControl} = config
     let hintDistance = config.hintDistance || 3
@@ -94,6 +120,7 @@ const redraw_cube = function (cube: FaceletCubeT, config: ConfigT ) {
 
     mode = mode || "FRU"
     let facesToReveal = faces || [Face.L, Face.B, Face.D]
+    //facesToReveal = [Face.L]
 
     const scene = new THREE.Scene()
     const angle = 50
@@ -113,7 +140,17 @@ const redraw_cube = function (cube: FaceletCubeT, config: ConfigT ) {
 
     const angleScale = Math.sin(70 / 180 * Math.PI)  /  Math.sin(angle / 180 * Math.PI)
     const scale = (hintDistance > 5) ? .96 * angleScale : .9 * angleScale
-    const cameraPosition = (mode === "FRU") ? new THREE.Vector3(2.5 * scale, 3.5 * scale, 3 * scale) : new THREE.Vector3(0 / 1.1, 3 / 1.1, 3 / 1.1)
+
+    const cameraState = config.cameraState || CameraState.HOME
+    const [cameraPositionRaw, cameraUp] = getCameraPosFromState(cameraState)
+    const cameraPosition = (mode === "FRU") ?
+        new THREE.Vector3(cameraPositionRaw[0] * scale, 
+                          cameraPositionRaw[1] * scale,
+                          cameraPositionRaw[2] * scale) :
+        new THREE.Vector3(0 / 1.1, 3 / 1.1, 3 / 1.1)
+
+    //console.log("Setting camera up ", cameraUp, " camera pos", cameraPosition)
+    camera.up.copy(cameraUp)
     camera.position.copy(cameraPosition)
     camera.aspect = width / height;
     camera.lookAt(new THREE.Vector3(0, 0, 0))
@@ -237,6 +274,7 @@ const redraw_cube = function (cube: FaceletCubeT, config: ConfigT ) {
 
     const updateCubeAndColor = (cube: FaceletCubeT, colorScheme: Array<string>) => {
         scene.remove(cubeG)
+        cubeG.clear()
         cubeG = drawCube(cube, colorScheme)
         scene.add(cubeG)
         renderer.render(scene, camera)
@@ -272,7 +310,8 @@ let drawCube = (function(){
         }
         else if (config.width === config_cache.width && config.height === config_cache.height &&
             arrayEqual(config.faces || [], config_cache.faces || []) && config.theme === config_cache.theme &&
-            config.hintDistance === config_cache.hintDistance && config.enableControl === config_cache.enableControl) {
+            config.hintDistance === config_cache.hintDistance && config.enableControl === config_cache.enableControl
+            && config.cameraState === config_cache.cameraState) {
 
             painter?.updateCubeAndColor(cube, config.colorScheme)
             config_cache = config
@@ -297,15 +336,54 @@ type Painter = {
 
 function CubeSim(props: Config) {
     const mount = React.useRef<HTMLDivElement | null>(null)
+    const [cameraState, setCameraState] = React.useState<CameraState>(CameraState.HOME);
     let { width, height, colorScheme, facesToReveal, hintDistance, theme} = props
     let cubePainter = React.useMemo(drawCube, [])
-
 
     const gt_xs = useMediaQuery(useTheme().breakpoints.up('sm'));
     const enableControl = gt_xs
 
     let painter = cubePainter(props.cube, {
-            width, height, colorScheme, faces: facesToReveal, theme, hintDistance, enableControl })
+            width, height, colorScheme, faces: facesToReveal, theme, hintDistance, enableControl,
+            cameraState})
+
+    useEffect( () => {
+        let dom = window //painter.getRenderer().domElement
+        function downHandler ( event: KeyboardEvent){
+            let suppressLogging = 0
+            // intercept keyboard event for local control
+            if (event.key === "1") {
+                setCameraState(CameraState.PEEK_DFL);
+            }
+            if (event.key === "2") {
+                setCameraState(CameraState.PEEK_DFR);
+            }
+            if (event.key === "3") {
+                setCameraState(CameraState.PEEK_UFL);
+            }
+            if (event.key === "9") {
+                setCameraState(CameraState.PEEK_UBL);
+            }
+            if (event.key === "0") {
+                setCameraState(CameraState.PEEK_UBR);
+            }
+            else {
+                suppressLogging = 1
+            }
+            if (~suppressLogging) {
+                //console.log("CubeSim camera rotateion with key ", event.key)
+            }
+        }
+        function upHandler (event: KeyboardEvent) {
+            setCameraState(CameraState.HOME);
+        }
+        dom.addEventListener('keydown', downHandler);
+        dom.addEventListener('keyup', upHandler);
+        return () => {
+            dom.removeEventListener('keydown', downHandler);
+            dom.addEventListener('keyup', upHandler);
+        };
+    });
 
     useEffect( () => {
         let dom = mount.current!

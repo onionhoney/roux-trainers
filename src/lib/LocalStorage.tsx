@@ -70,10 +70,13 @@ let configManager = function() {
 
         if ( vers !== version) {
             // version out of date
-            // let's preserve orientation
+            // let's preserve orientation and theme
             let config = initialConfig
             if (item1.orientationSelector) {
                 config = {...initialConfig, orientationSelector: new Selector(item1.orientationSelector) }
+            }
+            if (item1.theme) {
+                config = {...config, theme: new Selector(item1.theme)}
             }
             window.localStorage.setItem(key, serializeConfig(config));
             window.localStorage.setItem(versionKey, version)

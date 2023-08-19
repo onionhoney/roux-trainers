@@ -1,9 +1,10 @@
 import { Pruner, PrunerConfig, PrunerT } from './Pruner';
-import { FbdrSolver, SolverT, FsSolver, SsSolver, SsDpSolver, SbSolver, FbSolver, FbssSolver, LpsbSolver, Min2PhaseSolver, LSESolver, EOLRSolver} from './Solver';
+import { FbdrSolver, SolverT, FsSolver, FsDrSolver, SsSolver, SsDpSolver, SbSolver, FbSolver, FbSolverAtBL, FbSolverAtDL, FbssSolver, LpsbSolver, Min2PhaseSolver, LSESolver, EOLRSolver, EOdMSolver} from './Solver';
 
 let all_solvers = [
 "fbdr","fb", "fs-front", "fs-back", "ss-front", "ss-back", "min2phase",
-"lse", "eolrac", "eolrmc", "eolr", "eolrac-b", "eolrmc-b", "eolr-b", "sb" ]
+"fsdr-front", "fsdr-back",
+"lse", "eolrac", "eolrmc", "eolr", "eolrac-b", "eolrmc-b", "eolr-b", "sb", "eodm" ]
 
 let CachedPruner = function() {
     let cache : Map<string, PrunerT> = new Map()
@@ -27,8 +28,12 @@ let CachedSolver = function() {
             switch (s) {
                 case "fbdr": cache.set(s, FbdrSolver()); break
                 case "fb": cache.set(s, FbSolver()); break
+                case "fb@dl": cache.set(s, FbSolverAtDL()); break
+                case "fb@bl": cache.set(s, FbSolverAtBL()); break
                 case "fs-front": cache.set(s, FsSolver(true)); break
                 case "fs-back": cache.set(s, FsSolver(false)); break
+                case "fsdr-front": cache.set(s, FsDrSolver(true)); break
+                case "fsdr-back": cache.set(s, FsDrSolver(false)); break
                 case "ss-front": cache.set(s, SsSolver(true)); break
                 case "ss-back": cache.set(s, SsSolver(false)); break
                 case "ssdp-front": cache.set(s, SsDpSolver(true)); break
@@ -48,6 +53,7 @@ let CachedSolver = function() {
                 case "eolrac-b": cache.set(s, EOLRSolver(0x01, "barbie")); break
                 case "eolrmc-b": cache.set(s, EOLRSolver(0x10, "barbie")); break
                 case "eolr-b": cache.set(s, EOLRSolver(0x11, "barbie")); break
+                case "eodm" : cache.set(s, EOdMSolver()); break
             }
         }
         return cache.get(s) as SolverT

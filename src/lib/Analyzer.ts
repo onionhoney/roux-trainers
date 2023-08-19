@@ -161,6 +161,11 @@ function analyze_fb(state: AnalyzerState, cube: CubieCube): SolutionDesc[] {
     ...sol, orientation: ori, stage: "fb"
     })).sort( (x, y) => x.score - y.score)).flat()
 
+    //TODO: support analysis of FS
+    //let solutions = oris.map(ori => [solve("fs-front", cube.changeBasis(new MoveSeq(ori)), config),
+    //                                 solve("fs-back", cube.changeBasis(new MoveSeq(ori)), config)].flat().map(sol => ({
+    //    ...sol, orientation: ori, stage: "fb"
+    //    })).sort( (x, y) => x.score - y.score)).flat()
     return solutions
 }
 
