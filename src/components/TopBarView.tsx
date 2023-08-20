@@ -57,6 +57,9 @@ const useStyles = makeStyles(theme => {
         marginLeft: 10,
         fontSize: "0.9rem",
       },
+      [theme.breakpoints.down(400)]: {
+        maxWidth: 160,
+      }
       //borderBottom: "1px solid " + theme.palette.background.default,
     }
 })})
