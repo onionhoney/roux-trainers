@@ -43,13 +43,13 @@ const useStyles = makeStyles(theme => {
     select: {
       backgroundColor: is_bright ? "#657ce9" : "#9095b2", //9297b3", //9FA4C2",
       color: theme.palette.background.paper,
-      paddingLeft: 35,
+      paddingLeft: 25,
       marginRight: 5,
       marginLeft: 15,
       height: 60,
       fontWeight: 400,
       fontSize: "1.0rem",
-      paddingTop: 4,
+      paddingTop: 6,
       paddingBottom: 7,
       [theme.breakpoints.down('sm')]: {
         paddingLeft: 15,
