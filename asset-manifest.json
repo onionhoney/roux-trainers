@@ -1,7 +1,7 @@
 {
   "files": {
-    "main.js": "/roux-trainers/static/js/main.279a6014.chunk.js",
-    "main.js.map": "/roux-trainers/static/js/main.279a6014.chunk.js.map",
+    "main.js": "/roux-trainers/static/js/main.f662b6f7.chunk.js",
+    "main.js.map": "/roux-trainers/static/js/main.f662b6f7.chunk.js.map",
     "runtime-main.js": "/roux-trainers/static/js/runtime-main.800f274a.js",
     "runtime-main.js.map": "/roux-trainers/static/js/runtime-main.800f274a.js.map",
     "static/css/2.658d00ee.chunk.css": "/roux-trainers/static/css/2.658d00ee.chunk.css",
@@ -18,6 +18,6 @@
     "static/js/runtime-main.800f274a.js",
     "static/css/2.658d00ee.chunk.css",
     "static/js/2.5eff31d8.chunk.js",
-    "static/js/main.279a6014.chunk.js"
+    "static/js/main.f662b6f7.chunk.js"
   ]
 }
