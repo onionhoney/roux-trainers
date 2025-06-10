@@ -22,9 +22,12 @@ export type Config = {
     cmllCaseSelector: Selector;
     cmllAufSelector: Selector;
     cmllCubeMaskSelector: Selector;
+    cmll2D3DSelector: Selector;
+    cmllKataSelector: Selector;
     nmcllSelector: Selector;
     triggerSelector: Selector;
     hyperOriSelector: Selector;
+    ollcpCaseSelector: Selector;
     orientationSelector: Selector;
     fbdrSelector: Selector;
     fsSelector: Selector;
@@ -54,6 +57,7 @@ export type Config = {
 };
 
 const cmll_alg_names = cmll_algs_raw.map(x => x[0])
+const ollcp_alg_names = cmll_algs_raw.map(x => x[0])
 
 export const EOLRMode = {
     NONMC_SHORTER_ONLY: "Only show cases where non-MC is optimal",
@@ -125,7 +129,7 @@ export const initialConfig : Config = (() => {
             kind: "cmll",
         }),
         nmcllSelector: new Selector({
-            names: ["o_1", "o_2", "s_1", "s_2", "s_3", "as_1", "as_2", "as_3", "t_1", "t_2", "t_3", 
+            names: ["o_1", "o_2", "s_1", "s_2", "s_3", "as_1", "as_2", "as_3", "t_1", "t_2", "t_3",
                     "u_1", "u_2", "u_3", "l_1", "l_2", "l_3", "pi_1", "pi_2", "pi_3", "h_1", "h_2", "h_3"],
             flags: Array(23).fill(1),
             kind: "nmcll",
@@ -146,6 +150,16 @@ export const initialConfig : Config = (() => {
             flags: [1, 0, 0],
             kind: "cube_mask"
         }),
+        cmll2D3DSelector: new Selector({
+            names: ["2D", "3D"],
+            flags: [0, 1],
+            kind: "cmll_vis_type"
+        }),
+        cmllKataSelector: new Selector({
+            names: ["off", "on"],
+            flags: [1, 0],
+            kind: "cmll_kata_type"
+        }),
         triggerSelector: new Selector({
             names: ["RUR'", "RU'R'", "R'U'R", "R'UR", "RU2R'", "R'U2R"],
             flags: [0, 0, 0, 0, 0, 0],
@@ -155,6 +169,11 @@ export const initialConfig : Config = (() => {
             names: ["off", "L/R", "F/B"],
             flags: [1 ,0, 0],
             kind: "hyperori"
+        }),
+        ollcpCaseSelector: new Selector({
+            names: ollcp_alg_names,
+            flags: Array(ollcp_alg_names.length).fill(1),
+            kind: "ollcp_case"
         }),
         orientationSelector: new Selector({
             label: "Color Scheme (U-F)",

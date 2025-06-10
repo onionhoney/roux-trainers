@@ -8,7 +8,9 @@ export const getInitialState = (mode?: Mode): AppState => {
     mode = mode || "fbdr";
     let initialStateName: StateT = function () {
         switch (mode) {
-            case "cmll": return "solved";
+            case "cmll":
+            case "misc-algs":
+                return "solved";
             case "fbdr":
             case "ss":
             case "fb":

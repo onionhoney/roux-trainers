@@ -1,7 +1,8 @@
-
 import { CubeUtil, CubieCube, Mask, Move, MoveSeq } from './CubeLib';
 import { CachedSolver } from '../lib/CachedSolver';
 import { getEvaluator } from '../lib/Evaluator';
+
+export type fbStageT = "fb" | "fs" | "pseudo-fs" | "fs-combo" | "felinep1"
 
 export type AnalyzerState = {
     scramble: string,
@@ -11,7 +12,9 @@ export type AnalyzerState = {
     orientation: string,
     pre_orientation: string,
     num_solution: number,
-    show_mode: string //"foreach" | "combined"
+    fb_stage: fbStageT
+    show_mode: string, //"foreach" | "combined"
+    hide_solutions: boolean
 }
 export let initialState : AnalyzerState = {
     scramble: "",
@@ -21,7 +24,9 @@ export let initialState : AnalyzerState = {
     orientation: "x2y",
     pre_orientation: "",
     num_solution: 1,
-    show_mode: "foreach"
+    fb_stage: "fb",
+    show_mode: "foreach",
+    hide_solutions: true
 }
 
 export type SolverConfig = {
@@ -31,19 +36,20 @@ export type SolverConfig = {
     lower_limit?: number,
     evaluator?: string
   }
-  
+
 export type SolutionDesc = {
     solution: MoveSeq,
     premove: string,
     score: number,
     orientation?: string,
-    stage: string
+    stage: string,
+    fb_tag?: string
 }
-  
+
 function is_fb_solved(cube: CubieCube, oris: MoveSeq[]) {
     for (let ori of oris) {
         let cube1 = cube.changeBasis(ori).apply(ori.inv())
-        if (CubeUtil.is_solved(cube1, Mask.fb_mask)) return ori  
+        if (CubeUtil.is_solved(cube1, Mask.fb_mask)) return ori
     }
     return null
 }
@@ -95,7 +101,7 @@ export function analyze_roux_solve(cube: CubieCube, solve: MoveSeq) {
             let stage = stages[stage_idx]
             let masks = getMasksForStage(stage)
             if (masks.some(mask => CubeUtil.is_solved(cube, mask))) {
-                solution.push({ ...defaultSolution, 
+                solution.push({ ...defaultSolution,
                     solution: new MoveSeq(current_moves),
                     stage
                 })
@@ -104,7 +110,7 @@ export function analyze_roux_solve(cube: CubieCube, solve: MoveSeq) {
             }
         } else {
             if (CubeUtil.is_cmll_solved(cube)) {
-                solution.push({ ...defaultSolution, 
+                solution.push({ ...defaultSolution,
                     solution: new MoveSeq(current_moves),
                     stage: "cmll"
                 })
@@ -115,7 +121,7 @@ export function analyze_roux_solve(cube: CubieCube, solve: MoveSeq) {
         if (stage_idx >= stages.length) break
     }
     if (current_moves.length > 0) {
-        solution.push({ ...defaultSolution, 
+        solution.push({ ...defaultSolution,
             solution: new MoveSeq(current_moves),
             stage: "unknown"
         })
@@ -128,12 +134,13 @@ function solve(solver_str: string, cube: CubieCube, config: SolverConfig) {
     let { premoves, num_solution, upper_limit } = config
     let ev = getEvaluator(config.evaluator || "sequential")
     let solver_num_solution = (num_solution < 10) ? 10 : num_solution
-    let solutions = (premoves || [""]).map(pm => 
+    let solutions = (premoves || [""]).map(pm =>
         solver.solve(cube.apply(pm), 0, upper_limit, solver_num_solution)
             .map(x => ({premove: pm, solution: x, score: ev.evaluate(x)}))
     ).flat()
-    return solutions.sort( (x, y) => x.score - y.score).slice(0, num_solution) 
+    return solutions.sort( (x, y) => x.score - y.score).slice(0, num_solution)
 }
+
 
 const get_oris = (ori: string, preori?: string) => {
     let oris : string[] = []
@@ -141,7 +148,7 @@ const get_oris = (ori: string, preori?: string) => {
         oris = (preori === "") ? ["", "y", "y'", "y2", "x2", "x2y", "x2y'", "x2y2"] :
         (preori === "x") ? ["x", "xy", "xy'", "xy2", "x'", "x'y", "x'y'", "x'y2"] :
         ["z", "zy", "zy'", "zy2", "z'", "z'y", "z'y'", "z'y2"]
-    
+
     } else if (ori === "cn") {
         oris = ["", "y", "y'", "y2", "x2", "x2y", "x2y'", "x2y2",
                 "x", "xy", "xy'", "xy2", "x'", "x'y", "x'y'", "x'y2",
@@ -157,15 +164,48 @@ function analyze_fb(state: AnalyzerState, cube: CubieCube): SolutionDesc[] {
     }
     let oris = get_oris(state.orientation, state.pre_orientation)
 
-    let solutions = oris.map(ori => solve("fb", cube.changeBasis(new MoveSeq(ori)), config).map(sol => ({
-    ...sol, orientation: ori, stage: "fb"
-    })).sort( (x, y) => x.score - y.score)).flat()
+    let solutions : SolutionDesc[] = []
+    if (state.fb_stage === "fb") {
+        solutions = oris.map(ori => solve("fb", cube.changeBasis(new MoveSeq(ori)), config).map(sol => ({
+        ...sol, orientation: ori, stage: "fb"
+        })).sort( (x, y) => x.score - y.score)).flat()
+    } else {
+        const fb_stage_solvers : Record<fbStageT, string[]>= {
+            "fb": ["fb"],
+            "fs": ["fs-front", "fs-back"],
+            "pseudo-fs": ["fs-pseudo-front", "fs-pseudo-back"],
+            "felinep1": ["felinep1-front", "felinep1-back"],
+            "fs-combo": ["fs-front", "fs-back", "fs-pseudo-front", "fs-pseudo-back", "felinep1-front", "felinep1-back"],
+        }
+        const needs_fb_tag = state.fb_stage === "fs-combo"
+        // label the fb_tag if we are in fs-combo mode
+        const fb_tag : Record<string, string> = {
+            "fs-pseudo-front": "Ps",
+            "fs-pseudo-back": "Ps",
+            "felinep1-front": "Line",
+            "felinep1-back": "Line",
+            "fs-front": "FS",
+            "fs-back": "FS",
+            "fb": "FB"
+        }
+        const solvers = fb_stage_solvers[state.fb_stage]
 
-    //TODO: support analysis of FS
-    //let solutions = oris.map(ori => [solve("fs-front", cube.changeBasis(new MoveSeq(ori)), config),
-    //                                 solve("fs-back", cube.changeBasis(new MoveSeq(ori)), config)].flat().map(sol => ({
-    //    ...sol, orientation: ori, stage: "fb"
-    //    })).sort( (x, y) => x.score - y.score)).flat()
+        solutions = oris
+            .map(ori =>
+                solvers
+                    .map(s => solve(s, cube.changeBasis(new MoveSeq(ori)), config)
+                        .map(sol => ({
+                            ...sol,
+                            orientation: ori,
+                            fb_tag: fb_tag[s],
+                            stage: "fb"
+                        })))
+                    .flat()
+                    .sort((x, y) => x.score - y.score)
+            )
+            .flat()
+    }
+
     return solutions
 }
 

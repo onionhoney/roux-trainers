@@ -133,7 +133,7 @@ export class CubieCube {
         ${CubieCube.generate_apply_partial_func(move.coc, move.cpc, C_MOD, "co", "cp")}
         ${CubieCube.generate_apply_partial_func(move.eoc, move.epc, E_MOD, "eo", "ep")}
         ${CubieCube.generate_apply_partial_func_perm(move.tpc, T_MOD, "tp")}
-        return ({ co: co_new, cp: cp_new, eo: eo_new, 
+        return ({ co: co_new, cp: cp_new, eo: eo_new,
             ep: ep_new, tp: tp_new })
         `) as (c: CubieCube) => CubieCube
     }
@@ -215,7 +215,7 @@ export class CubieCube {
             }
             while (!expected.has(piece.toString())) {
                 piece = CubieCube._backward_rotate_coord(piece)
-     
+
                 ori++;
                 if (ori >= 10) {
                     console.warn("can't match piece", piece, expected)
@@ -229,7 +229,7 @@ export class CubieCube {
 
         for (let coord_pair of fm) {
             let pos = coord_pair[0], piece = coord_pair[1]
-            let coord : Face[][] = (pos.length === 2) ? custom_edges_coord : 
+            let coord : Face[][] = (pos.length === 2) ? custom_edges_coord :
                         (pos.length === 3) ? custom_corners_coord :
                          custom_centers_coord ;
             let [newOri,newpos,newPerm] = match_pos_piece(pos, piece, coord, pos.length);
@@ -271,12 +271,12 @@ export class CubieCube {
             let face_mapping = Object.fromEntries(move.tpc)
             //console.log("applying face mapping for ", move.name, face_mapping)
             //console.log("before", pp(mapping))
-            let result = mapping.map( ([face_pos, face_target]) => 
+            let result = mapping.map( ([face_pos, face_target]) =>
                 [face_pos.map(f => face_mapping[f] ?? f ),
                  face_target.map(f => face_mapping[f] ?? f) ]
             )
             //console.log('after', pp(result))
-            return result as any 
+            return result as any
         } , facelet_mapping)
         //console.log(s.toString(), facelet_mapping, transformed_mapping)
         let cube = this._from_facelet_mapping(transformed_mapping, corners_coord, edges_coord, centers_coord)
@@ -651,6 +651,75 @@ let FaceletCube = function () {
             return faces.map((facelet) => from_cubie_partial(cube, facelet))
     }
 
+    let as_actrm = (fcube: FaceletCubeT, faces: 'lr' | 'fb', uu_only: boolean): FaceletCubeT => {
+        // U_face index 0
+        // algorithm: for U face and 0..2 of FBLR face, filter by lr|fb + u sticker
+        // additionally, if uu_only == 1, filter 0..2 of FBLR face by lr|fb only.
+        const U_IDX = 0
+        const F_IDX = 2
+        const nmcll_faces = (faces === 'lr') ? [Face.L, Face.R] : [Face.F, Face.B]
+        const u_or_nmcll_faces = [Face.U, ...nmcll_faces]
+        return fcube.map((stickers, idx) => {
+            if (idx === U_IDX) {
+                return stickers.map(s => u_or_nmcll_faces.includes(s) ? s : Face.X)
+            }
+            if (idx >= F_IDX) {
+                return stickers.map((s, fidx) =>
+                    ((uu_only ? nmcll_faces : u_or_nmcll_faces).includes(s) || fidx > 2)
+                   ? s
+                   : Face.X)
+            }
+            return [...stickers]
+        })
+    }
+
+    let as_kata = (fcube: FaceletCubeT) => {
+        // find out where are the recog stickers and grey out the rest
+        console.log(fcube)
+        let {F,B,L,R,U} = Face
+        const shape_maps = [
+            // prioritize all recog stickers on U (Pi, H)
+            [[U, 0], [U, 2], [U, 6], [U, 8]],
+            // next, find recog stickers in T shape
+            [[U, 0], [U, 2], [L, 2], [R, 0]],
+            [[U, 2], [U, 8], [B, 2], [F, 0]],
+            [[U, 6], [U, 8], [L, 0], [R, 2]],
+            [[U, 0], [U, 6], [B, 0], [F, 2]],
+            // default: recog stickers for L
+            [[U, 2], [U, 6], [F, 2], [B, 2]],
+            [[U, 0], [U, 8], [L, 2], [R, 2]],
+            // default: recog stickers for O (solved)
+            [[F, 0], [F, 2], [R, 0], [R, 2]],
+        ]
+        let found = false;
+        for (let map of shape_maps) {
+            let match_count = 0;
+            for (let [f, i] of map) {
+                match_count += (fcube[f][i] !== Face.U) ? 1 : 0;
+            }
+            if (match_count === map.length) {
+                // found recog shape, now make all non-U pieces X
+                for (let f of [Face.L, Face.R, Face.F, Face.B, Face.U]) {
+                    for (let i = 0; i < ((f === Face.U) ? 9 : 3); i++) {
+                        if (fcube[f][i] !== Face.U) {
+                            let is_recog = Array(4).fill(0).map((_, j) => (map[j][0] === f && map[j][1] === i)).includes(true)
+                            if (!is_recog) {
+                                fcube[f][i] = Face.X;
+                            }
+                        }
+                    }
+                }
+                found = true;
+                break;
+            }
+        }
+        //console.log(fcube)
+        if (!found) {
+            alert("recog shape not found")
+        }
+        return fcube;
+    }
+
     let to_unfolded_cube_str = (faceletCube: FaceletCubeT): String => {
         let face_count = [0, 0, 0, 0, 0, 0];
         let str_face_map: { [key: string]: Face } = {
@@ -678,6 +747,9 @@ let FaceletCube = function () {
         from_cubie,
         to_unfolded_cube_str,
         color_of_sticker,
+        color_of_e,
+        as_actrm,
+        as_kata,
         faces: {
             u_face, d_face, l_face, r_face, f_face, b_face
         }
@@ -814,10 +886,10 @@ let CubeUtil = (() => {
         let co = co_ || cp
         let eo = eo_ || ep
         let tp = tp_ || Array(6).fill(1)
-        let c_true = co.every( (_, i) =>  (cp[i] === 0 || cube.cp[i] === i) 
+        let c_true = co.every( (_, i) =>  (cp[i] === 0 || cube.cp[i] === i)
                         && (co[i] === 0 || cube.co[i] === 0) )
         if (!c_true) return false
-        let e_true = eo.every( (_, i) =>  (ep[i] === 0 || cube.ep[i] === i) 
+        let e_true = eo.every( (_, i) =>  (ep[i] === 0 || cube.ep[i] === i)
         && (eo[i] === 0 || cube.eo[i] === 0) )
         if (!e_true) return false
         let t_true = tp.every( (_, i) =>  (tp[i] === 0 || cube.tp[i] === i) )
@@ -988,7 +1060,7 @@ let CubeUtil = (() => {
         return cube.apply(rand_choice(m2_premove))
     }
 
- 
+
 
     return {
         is_cmll_solved,
@@ -1028,7 +1100,7 @@ export class ColorScheme extends Storage {
         "O": "#ff8800",
         "Y": "#ffff00",
         "W": "#ffffff",
-        "X": "#cccccc"
+        "X": "#bfbfbf"
     }
     name = "colorscheme";
     colors: {[key:string]:string} = {};

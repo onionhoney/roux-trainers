@@ -18,7 +18,8 @@ type CaseSelectSettings = {
   selector: string,
   algs: [string, string][],
   groups: string[],
-  cubeOptions?: Partial<SRVisualizer.CubeOptions>
+  cubeOptions?: Partial<SRVisualizer.CubeOptions>,
+  visualizeMask: string
 }
 
 function splitAlgIntoGroups(algs: [string, string][], groups: string[], flags: number[]) {
@@ -43,7 +44,7 @@ const useStyles = makeStyles(theme => {
 })
 
 function CaseSelectContent(props: { state: AppState, dispatch: React.Dispatch<Action>, settings: CaseSelectSettings }) {
-  let { selector, groups, algs } = props.settings
+  let { selector, groups, algs, visualizeMask } = props.settings
   const sel = (props.state.config as any)[selector] as Selector
   const algGroups = splitAlgIntoGroups(algs, groups, sel.flags)
   const handleSelectGroup = (groupname: string, value: number) => () => {
@@ -95,16 +96,16 @@ function CaseSelectContent(props: { state: AppState, dispatch: React.Dispatch<Ac
           <Box display="flex" flexDirection="row" flexWrap="wrap">
           {
             algGroups[groupname].map( ([[name, alg], idx]) =>
-              <Box border={1} borderColor="primary.main" 
-                key={name} 
+              <Box border={1} borderColor="primary.main"
+                key={name}
                 onClick={handleSelectCase(idx)}
                 style={{transition: "all .3s ease" }}
                 className={sel.flags[idx] ? classes.caseBoxOn : ""}>
-                <CaseVisualizer 
+                <CaseVisualizer
                   name={name}
                   size={100}
                   alg={alg}
-                  mask="cmll"
+                  mask={visualizeMask}
                   cubeOptions={props.settings.cubeOptions || {}}
                 />
               </Box>

@@ -1,9 +1,34 @@
-import { FbdrSolver, FbSolver, solverFactory2 } from './Solver'
+import { FbdrSolver, FbSolver, solverFactory2, CenterSolver } from './Solver'
 import { CubeUtil, CubieCube, FaceletCube, Move } from './CubeLib'
 import { SeqEvaluator } from "./Evaluator"
 import { CachedSolver } from './CachedSolver'
 import { cartesianProduct } from './Math'
 import { corners_coord, edges_coord } from './Defs'
+import { get_shortened_rotation, get_orientation_fb_colors } from '../components/AnalyzerView'
+
+it('solves center case', () => {
+    let cube = new CubieCube().apply("U R F")
+    let solver = CenterSolver()
+    let solutions = solver.solve(cube, 0, 3, 1)
+    console.log(solutions.map(s => s.toString()))
+
+    let cube2 = new CubieCube().apply("x y z")
+    let solver2 = CenterSolver()
+    let solutions2 = solver2.solve(cube2, 0, 3, 3)
+    console.log(solutions2.map(s => s.toString()))
+
+    let cube3 = new CubieCube().apply("x2 z2")
+    let solver3 = CenterSolver()
+    let solutions3 = solver3.solve(cube3, 0, 3, 3)
+    console.log(solutions3.map(s => s.toString()))
+
+    console.log("shortening ", "x y z")
+    expect(get_shortened_rotation("x y z").trimRight()).toEqual("x2 y")
+    expect(get_shortened_rotation("x y z").trimRight()).toEqual("x2 y")
+    expect(get_orientation_fb_colors("x y z").join("-")).toEqual("W-B")
+    expect(get_orientation_fb_colors("x x'").join("-")).toEqual("Y-O")
+    expect(get_orientation_fb_colors("x y2").join("-")).toEqual("B-R")
+})
 
 it('solves fbdr case', () => {
     //let cube = CubeUtil.get_random_fs()
@@ -53,7 +78,7 @@ let edge_desc = (eo:number, ep:number) => {
     else return s.slice(eo) + s.slice(0, eo)
 }
 
-const gen_sb_cases = false 
+const gen_sb_cases = false
 if (gen_sb_cases) {
 it('gens sb wrong slot', () => {
     let cube = new CubieCube();

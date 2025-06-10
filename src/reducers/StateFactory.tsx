@@ -3,7 +3,7 @@ import { AppState, Mode } from '../Types';
 import { FbdrStateM, FbStateM, FsStateM, FsDrStateM, FbssStateM} from './BlockTrainerStateM';
 import { SsStateM } from './SsStateM';
 import { LSEStateM, EOLRStateM } from './LSETrainerStateM';
-import { SolvingStateM, SolvedStateM } from './CmllStateM';
+import { CmllSolvingStateM, CmllSolvedStateM } from './CmllStateM';
 
 StateFactory.create = function(state: AppState) {
         let mode: Mode = state.mode;
@@ -20,10 +20,17 @@ StateFactory.create = function(state: AppState) {
                 return new FsDrStateM(state);
             case "fb":
                 return new FbStateM(state);
-            case "cmll": {
+            case "cmll":{
                 switch (state.name) {
-                    case "solving": return new SolvingStateM(state);
-                    case "solved": return new SolvedStateM(state);
+                    case "solving": return new CmllSolvingStateM(state);
+                    case "solved": return new CmllSolvedStateM(state);
+                    default: throw new Error("impossible");
+                }
+            }
+            case "misc-algs":{
+                switch (state.name) {
+                    case "solving": return new CmllSolvingStateM(state);
+                    case "solved": return new CmllSolvedStateM(state);
                     default: throw new Error("impossible");
                 }
             }

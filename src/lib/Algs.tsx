@@ -68,17 +68,60 @@ export const cmll_algs_raw : [string,string][] = [
     ["l_front_commutator", "R U2 R D R' U2 R D' R2'"],
     ["l_diag", "U2 R' U' R U R' F' R U R' U' R' F R2"],
     ["l_back_commutator", "U' R' U2 R' D' R U2 R' D R2"],
-    ["solved", ""]
+    //["solved", ""] // commenting out as it's unclear why we're ever interested in a solved state
+]
+
+export const ollcp_algs_raw : [string,string][] = [
+    ["34_T_1" , "R' U' R U' R' U F R U' R' U2 R U R' F' R"],
+    ["34_T_2" , "R' U' R' F R F' R U' R' U R U' R' U2 R"],
+    ["34_T_3" , "F R F' r U r' U R' U' r U' r'"],
+    ["34_T_4" , "F' U' F U r U R' U' M"],
+    ["34_T_5" , "R U' R' F R U R' U' R U R' U' F' U R U' R'"],
+    ["34_T_6" , "R U R2 U' R' F R U R U' F'"],
+    ["39_L_1" , "R U R' U R U2' R2 U' F U R U' R' F' R"],
+    ["39_L_2" , "F R U R' U' F' R' U' R U' R' U2 R"],
+    ["39_L_3" , "R U' r' U' F' U F r R'"],
+    ["39_L_4" , "r U R U' r' F U R' U' F'"],
+    ["39_L_5" , "R U2 R' U' R U R' F2 r U r' F"],
+    ["39_L_6" , "R' U' R U' R U R' U' R' U2 F R F'"],
+    ["45_U_1" , "R U R' U' R' F R2 U' R' U' R U2 R' U' F'"],
+    ["45_U_2" , "F R U R' U' F'"],
+    ["45_U_3" , "R' U' R F R' U R U' R U R' U' F'"],
+    ["45_U_4" , "R' F R U R' U' F' U R2 U2 R' U' R U' R'  "],
+    ["45_U_5" , "R' U' R U' R' U2 R r U R' U R U2 r'"],
+    ["45_U_6" , "R' U2 R U2 F R U R' U' R' U R U' F'"],
+    ["51_Pi_1", "R' U2 R U2 R U R' U' R' F R F' R' U R"],
+    ["51_Pi_2", "R' U' R' F R F' R U' R' U2 R"],
+    ["51_Pi_3", "R U2 R' U2 R' F R2 U R' U' F'"],
+    ["51_Pi_4", "R U R' U R U' R' F' U F R U R' U' R U' R'"],
+    ["51_Pi_5", "f R U R' U' R U R' U' f'"],
+    ["51_Pi_6", "R' U2 R U2 F R U R' U' F' R' U R"],
+    ["56_H_1" , "F R U R' U' R F' r U R' U' r'"],
+    ["56_H_2" , "f U R U' R' U R U' R' S' U R U' R' F'"],
+    ["56_H_3" , "r U R' U R U r' U' r U r' F' U F"],
+    ["56_H_4" , "r' U' r U' R' U R U' R' U R r' U r"],
+    ["13_S_1" , "F U R U2 R' U' R U R' F'"],
+    ["13_S_2" , "R' U2 R U R' U R U' f R U R' U' f'"],
+    ["13_S_3" , "R U R' U' R' F R F' R U R' U R U2 R'"],
+    ["13_S_4" , "r U' r' U' r U r' F' U F"],
+    ["13_S_5" , "R' U' r U' R' U' R U r' U' R U' R' U' R"],
+    ["13_S_6" , "F U R U' R2 F' R U R U' R'"],
+    ["14_AS_1", "U F R U' R' U R U R' F' R U2 R' U' R U' R'"],
+    ["14_AS_2", "R U R' U R U' R' U R' F R F' R U2 R'"],
+    ["14_AS_3", "U2 R' U' R F U R U' R' F' U' R' U R"],
+    ["14_AS_4", "U R' U R U' M' F U R' U' R F' M"],
+    ["14_AS_5", "U' R U R' U r' U' R2 U' R2 U2 r"],
+    ["14_AS_6", "U' R U2 R' U2 R U' R' F' U' F R U R'"],
 ]
 
 export const nmcll_to_cmll_mapping : [string, [string, string][]][] = [
-    ["o_1", 
+    ["o_1",
        [["h_rows", ""],
         ["pi_columns", ""],
         ["h_columns", ""],
        ]
     ],
-    ["o_2", 
+    ["o_2",
         [["pi_x_checkerboard", "U"]],
     ],
     ["s_1", [
@@ -106,7 +149,7 @@ export const nmcll_to_cmll_mapping : [string, [string, string][]][] = [
         ["s_back_slash", "U"]
     ]],
     ["as_2", [
-        ["u_back_slash", ""], 
+        ["u_back_slash", ""],
         ["s_right_bar", "U"],
         ["l_pure", "U"],
         ["s_x_checkerboard", "U"]
@@ -213,7 +256,7 @@ const nmcll_algs: CaseDesc[] = nmcll_to_cmll_mapping.map(([group_name, cases]) =
 
 export const nmcll_display_parity : [string, string, string][] = [
  ["o_1", "U", ""],
- ["o_2", "", ""], 
+ ["o_2", "", ""],
  ["s_1", "", "U"],
  ["s_2", "U", "U"],
  ["s_3", "", "U"],
@@ -228,13 +271,13 @@ export const nmcll_display_parity : [string, string, string][] = [
  ["u_3", "", "U2"],
  ["l_1", "U", ""],
  ["l_2", "U", "U2"],
- ["h_3", "", ""], 
+ ["h_3", "", ""],
  ["pi_1","", "U2"],
  ["pi_2","U", "U'"],
  ["pi_3","", "U2"],
  ["l_3", "U", ""],
- ["h_1", "", ""], 
- ["h_2", "", ""], 
+ ["h_1", "", ""],
+ ["h_2", "", ""],
 ]
 const cmll_algs : CaseDesc[] = cmll_algs_raw.map( ([x, y]) => createAlg(x, y, "cmll"))
 
@@ -270,7 +313,7 @@ let ori_algs: CaseDesc[] =
 
 let lookup_algset = (kind : string) => {
     switch (kind) {
-        case "cmll": 
+        case "cmll":
         case "cmll_case": return cmll_algs;
         case "nmcll": return nmcll_algs;
         case "trigger": return trigger_algs;

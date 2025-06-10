@@ -5,7 +5,7 @@
   "dependencies": {
     "@emotion/react": "^11.4.1",
     "@emotion/styled": "^11.3.0",
-    "@koale/useworker": "^3.2.1",
+    "@koale/useworker": "^4.1.2",
     "@material-ui/core": "^4.7.0",
     "@material-ui/icons": "^4.9.1",
     "@material-ui/lab": "^4.0.0-alpha.46",
@@ -46,7 +46,8 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "start2": "react-app-rewired start",
-    "deploy": "gh-pages -d build;gh-pages -d build -o gitee",
+    "deploy": "gh-pages -d build",
+    "deploy2": "gh-pages -d build;gh-pages -d build -o gitee",
     "publish": "npm run build; npm run deploy"
   },
   "eslintConfig": {

@@ -1,7 +1,7 @@
 import { CubieCube, Move, MoveSeq } from './CubeLib';
 import { arrayEqual } from './Math';
 
-import { PrunerT, fbdrPrunerConfig, fbssPrunerConfigs, fsPrunerConfig, fsDrPrunerConfig, sbPrunerConfig, ssPrunerConfig, ssDpPrunerConfig, fbPrunerConfig, lsePrunerConfig, PrunerConfig, eolrPrunerConfig, PrunerDef, lpSbPrunerConfigs, fbAtDLPrunerConfig, fbAtBLPrunerConfig, eodmPrunerConfig } from './Pruner';
+import { PrunerT, fbdrPrunerConfig, fbssPrunerConfigs, fsPrunerConfig, fsDrPrunerConfig, fsPseudoPrunerConfig, fELineP1PrunerConfig, sbPrunerConfig, ssPrunerConfig, ssDpPrunerConfig, fbPrunerConfig, lsePrunerConfig, PrunerConfig, eolrPrunerConfig, lpSbPrunerConfigs, fbAtDLPrunerConfig, fbAtBLPrunerConfig, eodmPrunerConfig, centerPrunerConfig } from './Pruner';
 
 import {initialize as min2phase_init, solve as min2phase_solve} from "../lib/min2phase/min2phase-wrapper"
 import { __DEV__ } from '../settings';
@@ -188,7 +188,7 @@ function solverFactory(prunerConfig: PrunerConfig) {
     pruner.init()
 
     let is_solved = (cube: CubieCube) => pruner.query(cube) === 0;
-    
+
     let config = {
         is_solved,
         moveset: prunerConfig.moveset.map(s => Move.all[s]),
@@ -238,6 +238,8 @@ let LpsbSolver = (is_front: boolean) => solverFactory2(lpSbPrunerConfigs(is_fron
 let SbSolver = () => solverFactory(sbPrunerConfig)
 
 let FsSolver = (is_front: boolean) => solverFactory(fsPrunerConfig(is_front))
+let FsPseudoSolver = (is_front: boolean) => solverFactory(fsPseudoPrunerConfig(is_front))
+let FELineP1Solver = (is_front: boolean) => solverFactory(fELineP1PrunerConfig(is_front))
 let FsDrSolver = (is_front: boolean) => solverFactory(fsDrPrunerConfig(is_front))
 
 let LSESolver = () => solverFactory(lsePrunerConfig)
@@ -246,6 +248,8 @@ let EOLRSolver = (center_flag: number, barbie_mode?: string) =>
     solverFactory(eolrPrunerConfig(center_flag, barbie_mode))
 
 let EOdMSolver = () => solverFactory(eodmPrunerConfig)
+
+let CenterSolver = () => solverFactory(centerPrunerConfig)
 
 let Min2PhaseSolver : () => SolverT = function() {
     // polyfill for min2phase
@@ -273,4 +277,4 @@ let Min2PhaseSolver : () => SolverT = function() {
 
 
 
-export { FbdrSolver, FbSolver, FbSolverAtDL, FbSolverAtBL, SbSolver, FbssSolver, FsSolver, FsDrSolver, SsSolver, SsDpSolver, Min2PhaseSolver, LSESolver, EOLRSolver, LpsbSolver, EOdMSolver }
+export { FbdrSolver, FbSolver, FbSolverAtDL, FbSolverAtBL, SbSolver, FbssSolver, FsSolver, FsDrSolver, FsPseudoSolver, FELineP1Solver, SsSolver, SsDpSolver, Min2PhaseSolver, LSESolver, EOLRSolver, LpsbSolver, EOdMSolver, CenterSolver }

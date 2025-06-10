@@ -13,12 +13,12 @@ import { CubeUtil, CubieCube, FaceletCube, Mask, MoveSeq } from '../lib/CubeLib'
 
 import { AppState, Action} from "../Types";
 import 'typeface-roboto-mono';
-import { Face } from '../lib/Defs';
+import { Face, Typ } from '../lib/Defs';
 
 import { SelectChangeEvent } from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
 
-import { AnalyzerState, SolutionDesc, initialState, analyze_roux_solve } from '../lib/Analyzer';
+import { AnalyzerState, SolutionDesc, initialState, analyze_roux_solve, fbStageT } from '../lib/Analyzer';
 
 import { useAnalyzer } from "../lib/Hooks";
 
@@ -38,11 +38,13 @@ import EditIcon from '@mui/icons-material/Edit';
 import SearchIcon from '@mui/icons-material/Search';
 import useMediaQuery from '@mui/material/useMediaQuery';
 
+import { ColorScheme } from '../lib/CubeLib';
+
 const useStyles = makeStyles(theme => ({
     container: {
       paddingTop: theme.spacing(0),
-      paddingBottom: theme.spacing(2),
-      backgroundColor: theme.palette.background.default, 
+      paddingBottom: theme.spacing(0),
+      backgroundColor: theme.palette.background.default,
       transition: "all .5s ease-in-out"
     },
     button: {
@@ -95,9 +97,9 @@ const useStyles = makeStyles(theme => ({
     condGap: {
     },
     fgap: {
-      flexShrink: 100, flexBasis: "2.5rem", minWidth: "1.5em",
+      flexShrink: 100, flexBasis: "1.5rem", minWidth: "1.5em",
       [theme.breakpoints.down('sm')]: {
-        flexBasis: "1.0rem", 
+        flexBasis: "1.0rem",
         minWidth: "0.4rem"
       }
     },
@@ -111,7 +113,7 @@ const useStyles = makeStyles(theme => ({
     },
     title1 : {
       fontWeight: 500,
-      marginTop: 7,         
+      marginTop: 7,
       border: "1px solid",
       borderRadius: 4,
       fontSize: "0.8rem"
@@ -146,7 +148,15 @@ const useStyles = makeStyles(theme => ({
     },
     formControl: {
       margin: theme.spacing(0),
-      minWidth: 120,
+      minWidth: 80,
+      maxWidth: 160,
+    },
+    menu: {
+        '& .MuiMenuItem-root': {
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+        },
     },
   }))
 
@@ -162,6 +172,8 @@ const resetState = (state: AnalyzerState) => {
 function ScrambleView(props: { state: AnalyzerState, setState: (newState: AnalyzerState) => void }) {
     let { state, setState } = props
     let classes = useStyles()
+    const theme = useTheme()
+    const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'))
     // Add event listeners
     let [ value, setValue ] = React.useState(state.scramble)
 
@@ -182,7 +194,7 @@ function ScrambleView(props: { state: AnalyzerState, setState: (newState: Analyz
 
     return (
     <Box style={{display: "flex"}}>
-    
+
       <Box style={{display: "flex", alignItems: "center", flexGrow: 1}}>
         <TextField
           size="medium"
@@ -199,20 +211,34 @@ function ScrambleView(props: { state: AnalyzerState, setState: (newState: Analyz
         />
       </Box>
       <Box style={{}} className={classes.fgap} />
-      <Button onFocus={(evt) => evt.target.blur() } onClick={handleGen}
-            size="medium" variant="contained" color="primary" >
-              Gen
-      </Button>
-      <Button onFocus={(evt) => evt.target.blur() } onClick={handleBegin}
-            size="medium" variant="contained" color="primary" >
-              GO
-      </Button>
+      <Box sx={{ display: 'flex', flexDirection: isSmallScreen ? 'column' : 'row', gap: isSmallScreen ? 0.5 : 0.5, alignItems: 'stretch' }}>
+        <Button onFocus={(evt) => evt.target.blur() } onClick={handleGen}
+              size="medium" variant="contained" color="primary" >
+                Gen
+        </Button>
+        <Button onFocus={(evt) => evt.target.blur() } onClick={handleBegin}
+              size="medium" variant="contained" color="primary" >
+                GO
+        </Button>
+      </Box>
     </Box> )
 }
 
 function ConfigView(props: { state: AnalyzerState, setState: (newState: AnalyzerState) => void}) {
   let { state, setState } = props
   let classes = useStyles()
+
+  const menuProps = {
+    PaperProps: {
+        style: {
+            maxWidth: 160,
+        },
+    },
+    className: classes.menu
+  };
+
+  const selectSx = { fontSize: "1.0rem" };
+
   let fb_ori_str = state.orientation + "," + state.pre_orientation
   let handleFBOri = (event: SelectChangeEvent<String>) => {
     let value: string[]= (event.target.value).split(",")
@@ -227,8 +253,16 @@ function ConfigView(props: { state: AnalyzerState, setState: (newState: Analyzer
     let value = Number.parseInt(event.target.value as string)
     setState({...state, num_solution: value || state.num_solution})
   }
+  let handle_fb_stage = (event: SelectChangeEvent<fbStageT>) =>  {
+    let value = (event.target.value as fbStageT)
+    setState({...state, fb_stage: value})
+  }
+  let handle_hide_solutions = (event: SelectChangeEvent<String>) =>  {
+    let value = (event.target.value as string)
+    setState({...state, hide_solutions: value === "true"})
+  }
   return (
-  <Box display="flex">
+  <Box display="flex" flexWrap="wrap" gap={0} sx={{ rowGap: 2}}>
     <Box className={classes.configItem}>
       <FormControl className={classes.formControl}>
         <InputLabel id="demo-simple-select-helper-label">FB Orientation</InputLabel>
@@ -237,10 +271,12 @@ function ConfigView(props: { state: AnalyzerState, setState: (newState: Analyzer
           id="demo-simple-select-helper"
           value={fb_ori_str}
           onChange={handleFBOri}
+          MenuProps={menuProps}
+          sx={selectSx}
         >
-          <MenuItem value={"x2y,"}>x2y on White/Yellow</MenuItem>
-          <MenuItem value={"x2y,x"}>x2y on Blue/Green</MenuItem>
-          <MenuItem value={"x2y,z"}>x2y on Red/Orange</MenuItem>
+          <MenuItem value={"x2y,"}>x2y on W/Y</MenuItem>
+          <MenuItem value={"x2y,x"}>x2y on B/G</MenuItem>
+          <MenuItem value={"x2y,z"}>x2y on R/O</MenuItem>
           <MenuItem value={"cn,"}>Color Neutral</MenuItem>
         </Select>
         <FormHelperText></FormHelperText>
@@ -248,14 +284,16 @@ function ConfigView(props: { state: AnalyzerState, setState: (newState: Analyzer
     </Box>
     <Box className={classes.configItem}>
       <FormControl className={classes.formControl}>
-      <InputLabel id="demo-simple-select-helper-label">Display Mode</InputLabel>
+      <InputLabel id="demo-simple-select-helper-label">Organize</InputLabel>
       <Select
         labelId="demo-simple-select-helper-label"
         id="demo-simple-select-helper"
         value={display_mode_str}
         onChange={handle_display_mode}
+        MenuProps={menuProps}
+        sx={selectSx}
       >
-        <MenuItem value={"foreach"}>Per orientation</MenuItem>
+        <MenuItem value={"foreach"}>By FB</MenuItem>
         <MenuItem value={"combined"}>Combined </MenuItem>
       </Select>
       <FormHelperText></FormHelperText>
@@ -269,6 +307,8 @@ function ConfigView(props: { state: AnalyzerState, setState: (newState: Analyzer
         id="demo-simple-select-helper"
         value={state.num_solution}
         onChange={handle_num_solution}
+        MenuProps={menuProps}
+        sx={selectSx}
       >
         <MenuItem value={1}>1</MenuItem>
         <MenuItem value={3}>3 </MenuItem>
@@ -279,7 +319,43 @@ function ConfigView(props: { state: AnalyzerState, setState: (newState: Analyzer
       <FormHelperText></FormHelperText>
     </FormControl>
     </Box>
-
+    <Box  className={classes.configItem}>
+    <FormControl className={classes.formControl}>
+      <InputLabel id="demo-simple-select-helper-label">FB Stage</InputLabel>
+      <Select
+        labelId="demo-simple-select-helper-label"
+        id="demo-simple-select-helper"
+        value={state.fb_stage}
+        onChange={handle_fb_stage}
+        MenuProps={menuProps}
+        sx={selectSx}
+      >
+        <MenuItem value={"fb"}>FB</MenuItem>
+        <MenuItem value={"fs"}>FS</MenuItem>
+        <MenuItem value={"pseudo-fs"}>Pseudo FS</MenuItem>
+        <MenuItem value={"felinep1"}>E-Line+1</MenuItem>
+        <MenuItem value={"fs-combo"}>FS/Line</MenuItem>
+      </Select>
+      <FormHelperText></FormHelperText>
+    </FormControl>
+    </Box>
+    <Box className={classes.configItem}>
+      <FormControl className={classes.formControl}>
+        <InputLabel id="hide-solutions-label">Hints?</InputLabel>
+        <Select
+          labelId="hide-solutions-label"
+          id="hide-solutions-select"
+          value={state.hide_solutions.toString()}
+          onChange={handle_hide_solutions}
+          MenuProps={menuProps}
+          sx={selectSx}
+        >
+          <MenuItem value={"true"}>Yes</MenuItem>
+          <MenuItem value={"false"}>No</MenuItem>
+        </Select>
+        <FormHelperText></FormHelperText>
+      </FormControl>
+    </Box>
   </Box>)
 }
 
@@ -311,15 +387,15 @@ function SolutionInputView(props: { state: AnalyzerState, setState: (newState: A
               color="primary"
               size="small"
               onClick={toggleEdit}
-              
+
               startIcon={<EditIcon />}
           >
               {"Input Your Solution"}
           </Button>
     </Box>
 
-    <Dialog open={editing} 
-            onClose={handleClose}  
+    <Dialog open={editing}
+            onClose={handleClose}
             /*onEntered={onEntered}*/
             maxWidth="sm"
             fullWidth
@@ -350,22 +426,103 @@ function SolutionInputView(props: { state: AnalyzerState, setState: (newState: A
 }
 
 
-function StageSolutionView(props: { solution: SolutionDesc }) {
-  let { solution, stage, premove, orientation } = props.solution
+// Generic memoization function
+function memoize<T, R>(fn: (arg: T) => R): (arg: T) => R {
+    const cache = new Map<string, R>();
+
+    return (arg: T) => {
+        const key = String(arg);
+        if (cache.has(key)) {
+            return cache.get(key)!;
+        }
+
+        const result = fn(arg);
+        cache.set(key, result);
+        return result;
+    };
+}
+
+// The actual rotation shortening function without caching logic
+function _shorten_rotation(rotation: string): string {
+    const rotation_inv = new MoveSeq(rotation).inv();
+    const cube = new CubieCube().apply(rotation_inv);
+    const solution = CachedSolver.get("center").solve(cube, 0, 3, 1)[0];
+    return solution.toString();
+}
+
+// Create the memoized version
+export const get_shortened_rotation = memoize(_shorten_rotation);
+
+// Add this color mapping at the top level
+const colorMap : { [key: string]: string } = ColorScheme.default_colors;
+/*{ [key: string]: string } = {
+  "W": "#FFFFFF",
+  "Y": "#FFD500",
+  "G": "#00B500",
+  "B": "#0000FF",
+  "O": "#FF5800",
+  "R": "#C41E3A"
+};*/
+
+// Add this component for the color squares
+function ColorPair({ colors }: { colors: string[] }) {
+  return (
+    <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.2}}>
+      {colors.map((color, i) => (
+        <Box
+          key={i}
+          sx={{
+            width: '1.0rem',
+            height: '1.1rem',
+            backgroundColor: colorMap[color],
+            border: '1px solid rgba(0,0,0,0.5)',
+            display: 'inline-block'
+          }}
+        />
+      ))}
+    </Box>
+  );
+}
+
+// Modify the _orientation_fb_name function to return colors instead of names
+function _orientation_fb_colors(orientation: string): string[] {
+    const cube = new CubieCube().apply(orientation)
+    const dl_d = FaceletCube.color_of_sticker(cube, [5, 0, Typ.E])
+    const dl_l = FaceletCube.color_of_sticker(cube, [5, 1, Typ.E])
+    const color_lookup = ["W", "Y", "G", "B", "O", "R"]
+    return [color_lookup[dl_d], color_lookup[dl_l]]
+}
+export const get_orientation_fb_colors = memoize(_orientation_fb_colors);
+
+function StageSolutionView(props: { solution: SolutionDesc, shortestLength?: number }) {
+  let { solution, stage, premove, orientation, fb_tag } = props.solution
   let getTags = () => {
     if (stage === "fb") {
-      return [ orientation ]
+      const colors = get_orientation_fb_colors(orientation || "")
+      return [<ColorPair key="colors" colors={colors} />, fb_tag].filter(Boolean)
     } else if (stage === "ss-front" || stage === "ss-back"){
       return [ stage ]
     } else return []
   }
   let tags = getTags()
+  const isShortest = props.shortestLength !== undefined && solution.moves.length === props.shortestLength
+  const shortened_rotation = get_shortened_rotation(orientation + " " + premove)
+
   return (
-    <Box style={{display: "flex", marginBottom: "2px"}}>
-      {tags.filter(x=>x).map( (t, i) => <Chip variant="outlined" size="small" color="primary" label={t} key={i} />) }
+    <Box style={{display: "flex", marginBottom: "2px", alignItems: "center"}}>
+      {tags.filter(x=>x).map( (t, i) =>
+        <Chip variant="outlined" size="small" color="primary" label={t} key={i}
+          sx={{ '& .MuiChip-label': { fontSize: '0.9rem', fontWeight: 500, padding: '0 8px',
+                                      minWidth: "6ch", textAlign: "center",
+                                      display: "flex",
+                                      alignItems: "center", justifyContent: "center" } }} />
+      )}
+      {/* add a little space between the tags and the solution */}
+      <Box style={{width: ".5ch"}} />
       <Box style={{marginLeft: 5}}>
-        <Typography sx={{fontSize: "1.1rem"}}>
-          {premove + " " + solution.moves.map(m => m.name).join(" ")}
+        <Typography sx={{fontSize: "1.3rem"}}>
+          {shortened_rotation + " " + solution.moves.map(m => m.name).join(" ")}
+          {isShortest && " (*)"}
         </Typography>
       </Box>
     </Box>
@@ -373,14 +530,91 @@ function StageSolutionView(props: { solution: SolutionDesc }) {
 }
 
 
-function StageSolutionListView(props: { solutions: SolutionDesc[], state: AnalyzerState, setState: (newState: AnalyzerState) => void} ) {
-  let { solutions } = props
+function StageSolutionListView(props: { solutions: SolutionDesc[], num_to_display: number, state: AnalyzerState, setState: (newState: AnalyzerState) => void} ) {
+  let { solutions, num_to_display, state } = props
+  const [isRevealed, setIsRevealed] = React.useState(!state.hide_solutions)
+
+  // Update isRevealed when hide_solutions changes
+  React.useEffect(() => {
+    setIsRevealed(!state.hide_solutions)
+  }, [state.hide_solutions, solutions])
+
+  // Find the shortest solution by STM length
+  const shortestSolution = solutions.length > 0 ?
+    solutions.reduce((shortest, current) =>
+      current.solution.moves.length < shortest.solution.moves.length ? current : shortest
+    ) : null
+
+  // For hints, generate a reader friendly text framing it as a quiz:
+  // for each shortest solution, parse the tag into the correspnding DL-edge color (we will build a utility function for this)
+  // then for each fb_tag, have a separate line to describe it in the form of "Can you spot the 3-STM ${fb_tag} solution in Blue-White or Green-Red block?"
+
+  //TODO; ordering in per-orientation FS-combo mode
+  const handleClick = () => {
+    setIsRevealed(true)
+  }
+
+  const shortest_length = shortestSolution?.solution.moves.length || 0
+  const shortest_solutions = solutions.filter(s => s.solution.moves.length === shortest_length)
+  //console.log("shortest solutions", shortest_solutions)
+  const tag_full_name : Record<string, string> = {
+    "FS": "FS",
+    "FB": "FB",
+    "Ps": "Pseudo FS",
+    "Line": "E-Line + 1c"
+  }
+  const shortest_solution_tag_names = shortest_solutions.map(s => ({tag: tag_full_name[s.fb_tag || "FB"], fb_name: get_orientation_fb_colors(s.orientation || "")}))
+  const shortest_tag_names = shortest_solution_tag_names.reduce((acc, curr) => {
+    if (!acc[curr.tag]) { acc[curr.tag] = new Set() }
+    acc[curr.tag].add(curr.fb_name.join("-"))
+    return acc
+  }, {} as Record<string, Set<string>>)
+  const shortest_tag_names_str = Object.entries(shortest_tag_names).map(([tag, fb_names]) => {
+    const colorPairs = [...fb_names].map(name => {
+      const [color1, color2] = name.split("-");
+      return <ColorPair key={name} colors={[color1, color2]} />;
+    });
+
+    return (
+      <React.Fragment key={tag}>
+        <Box sx={{ width: "100%", mb: 1 }}>
+          <Typography variant="body1" color="text.primary" sx={{ fontSize: "1.1rem", textAlign: "center" }} >
+            {`There exists ${shortest_length}-STM ${tag || "solution"} in: `}
+          </Typography>
+        </Box>
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2.0, justifyContent: "center", mb: 2 }}>
+          {colorPairs}
+        </Box>
+      </React.Fragment>
+    );
+  })
 
   return (
     <Box lineHeight={1}>
-      { solutions.map( (s, i) => <StageSolutionView solution={s} key={i}/>) }
+      {solutions.length > 0 && (
+        <Box onClick={!isRevealed ? handleClick : undefined} sx={{ cursor: !isRevealed ? 'pointer' : 'default' }}>
+          {!isRevealed ? (
+            <Box sx={{ width: "100%" }}>
+              {shortest_tag_names_str}
+              <Typography variant="body1" color="text.secondary" sx={{ mt: 1, fontSize: "1.0rem", textAlign: "center" }}>
+                (Click to reveal)
+              </Typography>
+            </Box>
+          ) : (
+            <Box>
+              {solutions.slice(0, num_to_display).map((s, i) => (
+                <StageSolutionView
+                  solution={s}
+                  key={i}
+                  shortestLength={shortestSolution?.solution.moves.length}
+                />
+              ))}
+            </Box>
+          )}
+        </Box>
+      )}
     </Box>
-  ) 
+  )
 }
 
 function FullSolutionView(props: { state: AnalyzerState, setState: (newState: AnalyzerState) => void} ) {
@@ -388,7 +622,7 @@ function FullSolutionView(props: { state: AnalyzerState, setState: (newState: An
   let classes = useStyles()
 
   let setStage = (i: number) => () => {
-    setState({...state, 
+    setState({...state,
       stage: state.full_solution[i].stage,
       post_scramble: state.full_solution.slice(0, i).map(x => x.premove + x.solution.toString()).join(" ")
     })
@@ -396,7 +630,7 @@ function FullSolutionView(props: { state: AnalyzerState, setState: (newState: An
   let [show, setShow] = React.useState(-1)
   let stageView = (sol: SolutionDesc, i: number) => {
     return (
-      <Box display="flex" key={i} className={classes.stage} 
+      <Box display="flex" key={i} className={classes.stage}
         onMouseLeave={ () => setShow(-1)} onMouseEnter={() => setShow(i)} onClick={() => setShow(show === i ? -1 : i)}>
         <Button variant={"text"}
               color="primary"
@@ -404,8 +638,8 @@ function FullSolutionView(props: { state: AnalyzerState, setState: (newState: An
               onClick={setStage(i)}
               style={{fontSize: "0.7rem", marginLeft: 5, border: (show === i) ? "1px solid" : "1px solid rgba(0, 0,0,0)"
             }} >
-        <Typography variant="subtitle1" className={classes.stageText}>{sol.solution.toString()} // {sol.stage}
-        </Typography>        
+        <Typography variant="subtitle1" className={classes.stageText}>{sol.solution.toString()} "//" {sol.stage}
+        </Typography>
         <SearchIcon fontSize="small"/>
         </Button>
 
@@ -422,12 +656,12 @@ function FullSolutionView(props: { state: AnalyzerState, setState: (newState: An
       </Box>
     </Box>
   )
-  
+
 }
 
 function AnalyzerView(props: { state: AppState, dispatch: React.Dispatch<Action> } ) {
     let { state: appState } = props
-    
+
     const theme = useTheme()
     let [ state, setState ] = React.useState(initialState)
 
@@ -440,16 +674,45 @@ function AnalyzerView(props: { state: AppState, dispatch: React.Dispatch<Action>
     const analyzerData = useAnalyzer(state)
 
     let solutions_to_display = analyzerData.isRunning ? [] : (analyzerData.solutions || [])
+    let num_solutions_to_display = solutions_to_display.length
 
     if (state.show_mode === "combined") {
-      solutions_to_display = solutions_to_display.sort( (x, y) => x.score - y.score).slice(0, state.num_solution)
+      solutions_to_display = solutions_to_display.sort( (x, y) => x.score - y.score) //.slice(0, state.num_solution)
+      num_solutions_to_display = state.num_solution
     } else {
      /// solutions_to_display = solutions.slice(0, Math.ceil(config.num_solution / oris.length))
     }
 
     const gt_md = useMediaQuery(theme.breakpoints.up('md'));
     const gt_sm = useMediaQuery(theme.breakpoints.up('sm'));
+    const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
+    console.log("isSmallScreen", isSmallScreen, theme.breakpoints)
     const canvas_wh = (gt_md) ? [400, 350] : (gt_sm) ? [400, 350] : [320, 280]
+
+    const configPanel = (
+      <Paper className={classes.paper} elevation={2}>
+        <ConfigView state={state} setState={setState}/>
+      </Paper>
+    );
+    const inputSolutionPanel = (
+      <Paper className={classes.paper2} elevation={1}>
+      <Box display="flex" >
+        {
+          state.full_solution.length >= 1 ? <>
+            <Box style={{display: "flex", flexDirection: "column", alignSelf: "flex-start"}}>
+              <Box className={classes.title} style={{}}>
+                My Solution
+              </Box>
+            </Box>
+            <Box style={{}} className={classes.fgap} />
+          </>
+        : null
+        }
+
+        <FullSolutionView state={state} setState={setState}/>
+      </Box>
+      </Paper>
+    )
 
     return (
     <Box className={classes.container}>
@@ -457,39 +720,18 @@ function AnalyzerView(props: { state: AppState, dispatch: React.Dispatch<Action>
         <ScrambleView state={state} setState={setState}/>
       </Paper>
 
-
-      <Paper className={classes.paper} elevation={2}>
-        <ConfigView state={state} setState={setState}/>
-      </Paper>
-
-      <Paper className={classes.paper2} elevation={1}>
-        <Box display="flex" >
-          {
-            state.full_solution.length >= 1 ? <>
-              <Box style={{display: "flex", flexDirection: "column", alignSelf: "flex-start"}}> 
-                <Box className={classes.title} style={{}}>
-                  My Solution
-                </Box> 
-              </Box>
-              <Box style={{}} className={classes.fgap} /> 
-            </>
-          : null
-          }
-
-          <FullSolutionView state={state} setState={setState}/>
-        </Box>
-
-      </Paper>
+      {!isSmallScreen && configPanel}
+      {/* {!isSmallScreen && inputSolutionPanel} */}
 
       <Paper className={ classes.paper}>
       <Grid container>
-        <Grid item md={6} sm={12} className={classes.condGap}>
+        <Grid item md={6} sm={12} xs={12} className={classes.condGap}>
           <Box style={{display: "flex" }}>
             <Box display="flex" >
-                <Box style={{display: "flex", flexDirection: "column", alignSelf: "flex-start"}}> 
+                <Box style={{display: "flex", flexDirection: "column", alignSelf: "flex-start"}}>
                   <Box className={classes.title} style={{}}>
                     Solutions
-                  </Box> 
+                  </Box>
                   <Box>
                   <Button className={classes.title1} size="small" variant="outlined" color="primary">
                     { state.stage }
@@ -498,7 +740,9 @@ function AnalyzerView(props: { state: AppState, dispatch: React.Dispatch<Action>
                 </Box>
             </Box>
             <Box style={{}} className={classes.fgap} />
-              <StageSolutionListView solutions={solutions_to_display} state={state} setState={setState}/>
+            <Box style={{flexGrow: 1}}>
+              <StageSolutionListView solutions={solutions_to_display} num_to_display={num_solutions_to_display} state={state} setState={setState}/>
+            </Box>
           </Box>
         </Grid>
         {/* colorScheme=appState.colorScheme.getColorsForOri(appState.cube.ori)} */}
@@ -517,12 +761,13 @@ function AnalyzerView(props: { state: AppState, dispatch: React.Dispatch<Action>
           </Box>
         </Grid>
       </Grid>
+
+      {/* <Box height={20}/>
+      <Divider/>
+      <Box height={20}/> */}
       </Paper>
 
-      <Box height={20}/>
-      <Divider/>
-      <Box height={20}/>
-
+      {isSmallScreen && configPanel}
       {/* <ColorPanel {...{state: appState, dispatch: appDispatch}} /> */}
 
     </Box>

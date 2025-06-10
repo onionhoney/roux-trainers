@@ -1,5 +1,5 @@
 import { Pruner, PrunerConfig, PrunerT } from './Pruner';
-import { FbdrSolver, SolverT, FsSolver, FsDrSolver, SsSolver, SsDpSolver, SbSolver, FbSolver, FbSolverAtBL, FbSolverAtDL, FbssSolver, LpsbSolver, Min2PhaseSolver, LSESolver, EOLRSolver, EOdMSolver} from './Solver';
+import { FbdrSolver, SolverT, FsSolver, FsDrSolver, FsPseudoSolver, FELineP1Solver, SsSolver, SsDpSolver, SbSolver, FbSolver, FbSolverAtBL, FbSolverAtDL, FbssSolver, LpsbSolver, Min2PhaseSolver, LSESolver, EOLRSolver, EOdMSolver, CenterSolver} from './Solver';
 
 let all_solvers = [
 "fbdr","fb", "fs-front", "fs-back", "ss-front", "ss-back", "min2phase",
@@ -32,6 +32,10 @@ let CachedSolver = function() {
                 case "fb@bl": cache.set(s, FbSolverAtBL()); break
                 case "fs-front": cache.set(s, FsSolver(true)); break
                 case "fs-back": cache.set(s, FsSolver(false)); break
+                case "fs-pseudo-front": cache.set(s, FsPseudoSolver(true)); break
+                case "fs-pseudo-back": cache.set(s, FsPseudoSolver(false)); break
+                case "felinep1-front": cache.set(s, FELineP1Solver(true)); break
+                case "felinep1-back": cache.set(s, FELineP1Solver(false)); break
                 case "fsdr-front": cache.set(s, FsDrSolver(true)); break
                 case "fsdr-back": cache.set(s, FsDrSolver(false)); break
                 case "ss-front": cache.set(s, SsSolver(true)); break
@@ -54,6 +58,8 @@ let CachedSolver = function() {
                 case "eolrmc-b": cache.set(s, EOLRSolver(0x10, "barbie")); break
                 case "eolr-b": cache.set(s, EOLRSolver(0x11, "barbie")); break
                 case "eodm" : cache.set(s, EOdMSolver()); break
+
+                case "center": cache.set(s, CenterSolver()); break
             }
         }
         return cache.get(s) as SolverT

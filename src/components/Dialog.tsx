@@ -1,7 +1,6 @@
 import React from 'react';
 import { FormLabel, Box, Button, Dialog, DialogTitle, DialogContent, DialogActions, FormControl } from '@mui/material';
 import SettingsIcon from '@mui/icons-material/Settings';
-import { getDefaultCompilerOptions } from 'typescript';
 
 export interface DialogProps {
   label: string,
@@ -38,7 +37,7 @@ const makeDialog = <P extends object>(
     <Box height={8}/>
 
 
-    <Dialog disableEscapeKeyDown open={open} onClose={handleClose} maxWidth="md" style={{marginLeft: 10,marginRight: 10}}> 
+    <Dialog disableEscapeKeyDown open={open} onClose={handleClose} maxWidth="md" style={{marginLeft: 10,marginRight: 10}}>
       <DialogTitle> {title} </DialogTitle>
       <DialogContent >
         <Box paddingLeft={1}>

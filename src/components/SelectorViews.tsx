@@ -123,7 +123,7 @@ function SliderView(props: {
       min={slider.l - 1}
       max={slider.r}
       value={slider.value}
-      onChange={handleChange} 
+      onChange={handleChange}
       onFocus={(evt) => evt.target.blur()}
       style={{fontSize: "1.2rem"}}
       />
@@ -138,7 +138,7 @@ function SliderSelect(props: {state: AppState, dispatch: React.Dispatch<Action>,
     return <SliderView
       slider={(props.state.config as any)[sliderName] as SliderOpt}
       onChange={(n: number) => {
-        props.dispatch( { type: "config", 
+        props.dispatch( { type: "config",
          content: { [sliderName]: ({...sliderOpt, value:n }) }
         } )
       }}
@@ -174,9 +174,10 @@ function SingleSelect(props: {state: AppState, dispatch: React.Dispatch<Action>,
     return ""
   }()
 
+
   let label = sel.label || props.label || ""
   return (
-  <Box>
+  <FormControl component="fieldset" className={classes.select}>
     <FormLabel component="legend" className={classes.selectLabel} >
       {label}
     </FormLabel>
@@ -198,7 +199,7 @@ function SingleSelect(props: {state: AppState, dispatch: React.Dispatch<Action>,
         ))
       }
     </RadioGroup>
-  </Box>)
+  </FormControl>)
 }
 
 

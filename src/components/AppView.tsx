@@ -6,7 +6,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { Dialog, DialogContent, DialogActions } from '@mui/material';
 import { Grid, Container } from '@mui/material';
 
-import CmllTrainerView from './CmllTrainerView';
+import { CmllTrainerView, OllcpTrainerView } from './CmllTrainerView';
 import BlockTrainerView from './BlockTrainerView';
 import PanoramaView from './PanoramaView';
 
@@ -77,6 +77,7 @@ export const tab_modes : [Mode, string, string][] = [
   ["fbss", "First Block Last Pair + Second Square", "FB last pair + SS"],
   ["ss", "Second Block Square", "SB square"],
   ["cmll", "CMLL", "CMLL"],
+  //TODO: build this ["misc-algs", "OLLCP", "OLLCP"],
   ["4c", "LSE 4c", "LSE 4c"],
   ["eopair", "EOLR / EOLRb", "EOLR(b)"]
   //["tracking", "Tracking Trainer (Beta)", "Tracking"]
@@ -104,20 +105,23 @@ const introText = `# Onionhoney's Roux Trainers
 ## Modes supported
 - FB analyzer
     - Solves for all x2y FBs, and suggests the best FB to start with!
-    - Other orientations supported too (CN, b/g x2y, etc.)
-- FB last slot (+ DR) trainer 
+    - Also suggests the best FS/Pseudo FS/Line to start with!
+    - Can be presented as a 'can you find the x-mover' quiz with solution revealed in the spoiler.
+    - More orientations supported too (CN, blue/green x2y, red/orange x2y)
+- FB last slot (+ DR) trainer
     - \`HIGHLY USEFUL\` if you're learning FB or FB + DR. Get a random scramble, think on your own, and check with our solutions!
     - **Note**: while I try my best, the solver can still miss out on the best overall solution. So please, consult your human fellows when you're unsure, and always be careful with what you choose to learn.
-- FS/FB/SS trainer 
+- FS/FB/SS trainer
     - You can specify by piece positions. It seems these modes are pretty useful in providing new insights into blockbuilding  (for us dumb humans).
-- CMLL trainer 
-    - Truly random scrambles so you can't tell the cases. You can specify different OCLLs. You can even start with a random SB last pair (to simulate how real recognition works)
+- CMLL trainer
+    - Truly random L10P scrambles so you can't tell the cases. You can specify different OCLLs. You can even start with a random SB last pair (to simulate how real recognition works)
+    - Show only the stickers necessary for recognition!
 - LSE trainers (EOLR, 4c)
     - Good for reviewing EOLR and practicing your 4c recognition method. You can filter by MC/Non-MC cases too.
 
 ## Shortcuts
 - Space for the next scramble.
-- Enter to reset the virtual cube to current scramble. 
+- Enter to reset the virtual cube to current scramble.
 - Control your cube with cstimer key mapping.
 
 ## Functionalities
@@ -133,16 +137,17 @@ const introText = `# Onionhoney's Roux Trainers
 
 ---
 
-## Version Log 
+## Version Log
 - (v1.0.0) All work prior to 12/02/2020, which I forgot to version log for.
 - (v1.0.1) 12/02/2020: Add edge position control for FB Last Pair trainer.
 - (v1.1) 12/15/2020: Reworked UI. App bar now features a dropdown menu for selecting the mode. Scramble occupies its own row. Solutions are shown side by side with the sim cube in large screen.
 - (v1.2) 12/17/2020: Add support for scramble input for all modes. Now you can paste in a list of scrambles, and the trainer will consume them one by one in order.
 - (v1.3) 12/20/2020: Solve Analysis Beta is online! It can do the following:
-    - For any random scramble, it'll recommend the best FB solutions over all orientations (e.g. x2y yellow/white). 
+    - For any random scramble, it'll recommend the best FB solutions over all orientations (e.g. x2y yellow/white).
     - Given a solve reconstruction, it'll analyze each stage, and compare your solution there with the solver-suggested solutions.
-- (v1.4) 12/23/2020: Refine the appearance of the virtual cube and enable camera control with mouse dragging. 
+- (v1.4) 12/23/2020: Refine the appearance of the virtual cube and enable camera control with mouse dragging.
 - (v1.5) 2/18/2021: Introduced Tracking Trainer Beta.
+- Refer to Github page for the full version log: https://github.com/onionhoney/roux-trainers
 
 ---
 
@@ -201,7 +206,7 @@ function AppView(props: { state: AppState, dispatch: React.Dispatch<Action> } ) 
     <main>
       <Dialog open={open} onClose={handleInfoClose} >
       <DialogContent dividers>
-        <Intro></Intro> 
+        <Intro></Intro>
       </DialogContent>
       <DialogActions>
         <Button color="primary" onClick={handleInfoClose}>
@@ -246,12 +251,13 @@ function AppView(props: { state: AppState, dispatch: React.Dispatch<Action> } ) 
             <BlockTrainerView {...{state, dispatch}} />, // fbss
             <BlockTrainerView {...{state, dispatch}} />, // ss
             <CmllTrainerView {...{state, dispatch}} />,
+            <OllcpTrainerView {...{state, dispatch}} />,
             <BlockTrainerView {...{state, dispatch}} />,
             <BlockTrainerView {...{state, dispatch}} />,
             /*<TrackerView {...{state, dispatch}} /> */
           ])
         }
-        
+
         </Grid>
       </Grid>
       )
