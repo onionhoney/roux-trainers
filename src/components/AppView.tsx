@@ -251,7 +251,7 @@ function AppView(props: { state: AppState, dispatch: React.Dispatch<Action> } ) 
             <BlockTrainerView {...{state, dispatch}} />, // fbss
             <BlockTrainerView {...{state, dispatch}} />, // ss
             <CmllTrainerView {...{state, dispatch}} />,
-            <OllcpTrainerView {...{state, dispatch}} />,
+            // <OllcpTrainerView {...{state, dispatch}} />,
             <BlockTrainerView {...{state, dispatch}} />,
             <BlockTrainerView {...{state, dispatch}} />,
             /*<TrackerView {...{state, dispatch}} /> */
