@@ -62,6 +62,10 @@ export type CubeCaseState = {
     cube: CubeState,
     case: CaseState
 }
+export type BatchState = {
+    cases: CaseState[],
+    index: number
+}
 
 export type AppState = {
     name: StateT,
@@ -69,6 +73,7 @@ export type AppState = {
     cube: CubeState,
     case: CaseState,
     prev: CubeCaseState | null,
+    batch: BatchState | null,
     scrambleInput: string[],
     config: Config,
     keyMapping: KeyMapping,

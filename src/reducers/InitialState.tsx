@@ -43,6 +43,7 @@ export const getInitialState = (mode?: Mode): AppState => {
             desc: []
         },
         prev: null,
+        batch: null,
         config: getConfig(),
         favList: getFavList(),
         keyMapping: (mode === "4c" || mode === "eopair") ? new LSEKeyMapping() : new DefaultKeyMapping(),

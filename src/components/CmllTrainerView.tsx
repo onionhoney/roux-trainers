@@ -19,7 +19,7 @@ import CaseSelectDialog from './CaseSelectView';
 import { cmll_algs_raw, nmcll_display_parity, nmcll_to_cmll_mapping, ollcp_algs_raw } from '../lib/Algs';
 
 import CaseVisualizer from './CaseVisualizer';
-import CubeSim2D from './CubeSim2D';
+import { CubeSim2D, CubeSimFlat3D } from './CubeSim2D';
 import { Face } from '../lib/Defs';
 
 const useStyles = makeStyles(theme => ({
@@ -106,8 +106,13 @@ export function CmllTrainerView(props: { state: AppState, dispatch: React.Dispat
     let facelet = FaceletCube.from_cubie(cube,
       _getMask( state.config.cmllCubeMaskSelector.getActiveName() || "Show"))
 
-    const use3D = (state.config.cmll2D3DSelector.getActiveName() || "3D") === "3D"
+
+    let cmll2D3DActiveName = (state.config.cmll2D3DSelector.getActiveName() || "3D")
+    const use3D = cmll2D3DActiveName === "3D"
+    const useFlat3D = cmll2D3DActiveName === "flat3D"
     let kataMode = state.config.cmllKataSelector.getActiveName()
+    let flat3DShowLFace = state.config.cmllflat3DFaceSelector.getActiveName() === "L"
+    let _3DShowLFace = state.config.cmll3DFaceSelector.getActiveName() === "Show"
 
     let hyperori = state.config.hyperOriSelector.getActiveName() || "off"
     if (hyperori !== "off") {
@@ -175,6 +180,10 @@ export function CmllTrainerView(props: { state: AppState, dispatch: React.Dispat
 
         <SingleSelect {...{state, dispatch, select: _2d3dSel, label: "Visualize as" } } />
         <Box width={16} display="inline-block"></Box>
+
+        {use3D     && <SingleSelect {...{state, dispatch, select: "cmll3DFaceSelector", label: "Show L face" } } />}
+        {useFlat3D && <SingleSelect {...{state, dispatch, select: "cmllflat3DFaceSelector", label: "L/R faces to reveal" } } />}
+
         <br/>
         <SingleSelect {...{state, dispatch, select: kataSel, label: "Display recog stickers only" } } />
         <ColorPanel {...{state, dispatch}} />
@@ -183,6 +192,7 @@ export function CmllTrainerView(props: { state: AppState, dispatch: React.Dispat
         <Divider />
         <Box height={20}/>
 
+        {/* <SingleSelect {...{state, dispatch, select: "cmllBatchModeSelector", label: "Batch Mode" } } /> */}
         <SingleSelect {...{state, dispatch, select: hyperoriSel, label: "NMCLL Recog Mode" } } />
         {hyperori !== "off" && <NMCLLSelect {...{state, dispatch}}/>}
 
@@ -244,10 +254,24 @@ export function CmllTrainerView(props: { state: AppState, dispatch: React.Dispat
                 cube={facelet}
                 colorScheme={colorSchemeColors}
                 theme={state.config.theme.getActiveName()}
-                facesToReveal={[Face.L]}
+                facesToReveal={ _3DShowLFace ? [Face.L] : []}
               />}
               </Box>
             </Paper>
+           :
+           useFlat3D ?
+           <Paper className={canvasPaper}>
+             <Box margin="auto">
+             {<CubeSimFlat3D
+               width={400}
+               height={350}
+               cube={facelet}
+               colorScheme={colorSchemeColors}
+               theme={state.config.theme.getActiveName()}
+               facesToReveal={[ flat3DShowLFace ? Face.L : Face.R]}
+             />}
+             </Box>
+           </Paper>
            :
             <Paper className={canvasPaper}>
               <Box margin="auto">
@@ -414,6 +438,7 @@ export function OllcpTrainerView(props: { state: AppState, dispatch: React.Dispa
       <br/> */}
 
       <SingleSelect {...{state, dispatch, select: _2d3dSel, label: "Visualize as" } } />
+
       <Box width={16} display="inline-block"></Box>
       <SingleSelect {...{state, dispatch, select: kataSel, label: "Display recog stickers only" } } />
       <ColorPanel {...{state, dispatch}} />

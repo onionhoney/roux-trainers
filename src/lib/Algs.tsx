@@ -19,8 +19,8 @@ export type CaseDesc = {
     kind: string
 }
 
-export let createAlg = (id: string, alg: string | string[], kind:string, setup?: string) : CaseDesc => ({
-    id, algs:Array.isArray(alg) ? alg : [alg], kind, setup
+export let createAlg = (id: string, alg: string, kind:string, setup?: string) : CaseDesc => ({
+    id, algs:[alg], kind, setup
 })
 
 const empty_alg = createAlg("empty", "", "any")
@@ -68,7 +68,53 @@ export const cmll_algs_raw : [string,string][] = [
     ["l_front_commutator", "R U2 R D R' U2 R D' R2'"],
     ["l_diag", "U2 R' U' R U R' F' R U R' U' R' F R2"],
     ["l_back_commutator", "U' R' U2 R' D' R U2 R' D R2"],
-    //["solved", ""] // commenting out as it's unclear why we're ever interested in a solved state
+    ["solved", ""] // needed for nmcll mapping
+]
+// my 2h algs
+export const cmll_algs_raw_custom : [string,string][] = [
+    ["o_adjacent_swap", "R U R' F' R U R' U' R' F R2 U' R'"],
+    ["o_diagonal_swap", "F R U' R' U' R U R' F' R U R' U' R' F R F'"],
+    ["h_columns", "U' R U R' U R U' R' U R U2 R'"],
+    ["h_rows", "F R U R' U' R U R' U' R U R' U' F'"],
+    ["h_column", "U' R U2' R2' F R F' U2 R' F R F'"],
+    ["h_row", "r U' r2' D' r U' r' D r2 U r'"],
+    ["pi_right_bar", "F R U R' U' R U R' U' F'"],
+    ["pi_back_slash", "U F R' F' R U2 R U' R' U R U2' R'"],
+    ["pi_x_checkerboard", "U' R' F R U F U' R U R' U' F'"],
+    ["pi_forward_slash", "R U2 R' U' R U R' U2' R' F R F'"],
+    ["pi_columns", "U' r U' r2' D' r U r' D r2 U r'"],
+    ["pi_left_bar", "U' R' U' R' F R F' R U' R' U2 R"],
+    ["u_forward_slash", "U2 R2 D R' U2 R D' R' U2 R'"],
+    ["u_back_slash", "R2' D' R U2 R' D R U2 R"],
+    ["u_front_row", "R' U' R U' R' U2 R2 U R' U R U2 R'"],
+    ["u_rows", "U' F R2 D R' U R D' R2' U' F'"],
+    ["u_x_checkerboard", "U2 r U' r' U r' D' r U' r' D r"],
+    ["u_back_row", "U' F R U R' U' F'"],
+    ["t_left_bar", "U' R U R' U' R' F R F'"],
+    ["t_right_bar", "U L' U' L U L F' L' F"],
+    ["t_rows", "R U2 R' U' R U' R2' U2' R U R' U R"],
+    ["t_front_row", "r' U r U2' R2' F R F' R"],
+    ["t_back_row", "r' D' r U r' D r U' r U r'"],
+    ["t_columns", "U2 r2' D' r U r' D r2 U' r' U' r"],
+    ["s_left_bar", "R U R' U R U2 R'"],
+    ["s_x_checkerboard", "L' U2 L U2' L F' L' F"],
+    ["s_forward_slash", "F R' F' R U2 R U2' R'"],
+    ["s_columns", "R U R' U' R' F R F' R U R' U R U2' R'"],
+    ["s_right_bar", "U2' R U R' U R' F R F' R U2' R'"],
+    ["s_back_slash", "R U' L' U R' U' L"],
+    ["as_right_bar", "U' R U2' R' U' R U' R'"],
+    ["as_columns", "R' F R F' U r' D' r U' r' D r"],
+    ["as_back_slash", "F' r U r' U2' r' F2 r"],
+    ["as_x_checkerboard", "R U2' R' U2' R' F R F'"],
+    ["as_forward_slash", "L' U R U' L U R'"],
+    ["as_left_bar", "U2' R U2' R' F R' F' R U' R U' R'"],
+    ["l_mirror", "F R U' R' U' R U R' F'"],
+    ["l_inverse", "F R' F' R U R U' R'"],
+    ["l_pure", "U2 R U R' U R U' R' U R U' R' U R U2' R'"],
+    ["l_front_commutator", "R U2 R D R' U2 R D' R2'"],
+    ["l_diag", "U2 R' U' R U R' F' R U R' U' R' F R2"],
+    ["l_back_commutator", "U' R' U2 R' D' R U2 R' D R2"],
+    ["solved", ""] // needed for nmcll mapping
 ]
 
 export const ollcp_algs_raw : [string,string][] = [

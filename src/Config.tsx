@@ -23,7 +23,10 @@ export type Config = {
     cmllAufSelector: Selector;
     cmllCubeMaskSelector: Selector;
     cmll2D3DSelector: Selector;
+    cmll3DFaceSelector: Selector;
+    cmllflat3DFaceSelector: Selector;
     cmllKataSelector: Selector;
+    cmllBatchModeSelector: Selector;
     nmcllSelector: Selector;
     triggerSelector: Selector;
     hyperOriSelector: Selector;
@@ -108,7 +111,7 @@ export const initialConfig : Config = (() => {
         }),
         theme: new Selector({
             names: ["bright", "dark"],
-            flags: [1,0],
+            flags: [0, 1],
             kind: "theme"
         }),
         evaluator: new Selector({
@@ -151,14 +154,29 @@ export const initialConfig : Config = (() => {
             kind: "cube_mask"
         }),
         cmll2D3DSelector: new Selector({
-            names: ["2D", "3D"],
-            flags: [0, 1],
+            names: ["flat3D", "3D", "2D"],
+            flags: [1, 0, 0],
             kind: "cmll_vis_type"
+        }),
+        cmll3DFaceSelector: new Selector({
+            names: ["Show", "Hide"],
+            flags: [0, 1],
+            kind: "cmll_3d_faces"
+        }),
+        cmllflat3DFaceSelector: new Selector({
+            names: ["L", "R"],
+            flags: [0, 1],
+            kind: "cmll_flat3d_faces"
         }),
         cmllKataSelector: new Selector({
             names: ["off", "on"],
             flags: [1, 0],
             kind: "cmll_kata_type"
+        }),
+        cmllBatchModeSelector: new Selector({
+            names: ["off", "on"],
+            flags: [1, 0],
+            kind: "cmll_batch_mode"
         }),
         triggerSelector: new Selector({
             names: ["RUR'", "RU'R'", "R'U'R", "R'UR", "RU2R'", "R'U2R"],

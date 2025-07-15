@@ -35,6 +35,8 @@ const defaultKeyMapping : { [key: string]: string } = {
     "/": "d'",
     "ENTER": "#enter",
     " ": "#space",
+    "ARROWLEFT": "#left",
+    "ARROWRIGHT": "#right"
   }
 
 
@@ -49,6 +51,8 @@ const lseKeyMapping : { [key: string]: string } = {
     "L": "E",
     "ENTER": "#enter",
     " ": "#space",
+    "ARROWLEFT": "#left",
+    "ARROWRIGHT": "#right"
 };
 
 
