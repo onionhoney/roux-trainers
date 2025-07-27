@@ -12,7 +12,10 @@ type Config = {
     cube: FaceletCubeT, width: number, height: number, colorScheme: Array<string>, facesToReveal: Face[],
     theme: string,
     hintDistance?: number,
-    enableControl? : boolean
+    enableControl? : boolean,
+    obscureNonLR? : boolean,
+    obscureStickerWidth?: string,
+    obscureCornerMask?: boolean
 }
 let { Vector3 } = THREE
 
@@ -50,7 +53,7 @@ enum CameraState {
 }
 type ConfigT = {width: number, height: number, colorScheme: Array<string>, mode?: string,
     faces?: Face[], theme?: string, hintDistance?: number,     enableControl? : boolean,
-    cameraState?: CameraState
+    cameraState?: CameraState, obscureNonLR?: boolean, obscureStickerWidth?: string, obscureCornerMask?: boolean
 }
 
 const roundedFace = ((rounded?: number[], cornerRadius?: number, ) => {
@@ -62,7 +65,7 @@ const roundedFace = ((rounded?: number[], cornerRadius?: number, ) => {
     let squareCorner = new THREE.Vector3(1, 1, 0)
     for (let i = 0; i <= 90; i += 10) {
         let degree = (i * Math.PI) / 180
-        cornerVertices.push( 
+        cornerVertices.push(
             cornerCenter.clone().add(new THREE.Vector3(Math.cos(degree), Math.sin(degree), 0).multiplyScalar(cornerRadius))
         )
     }
@@ -116,7 +119,7 @@ const getCameraPosFromState = function (cstate: CameraState) : [number[], THREE.
 const redraw_cube = function (cube: FaceletCubeT, config: ConfigT ) {
     let { width, height, colorScheme, mode, faces, theme, enableControl} = config
     let hintDistance = config.hintDistance || 3
-    const bgColor = theme === "bright" ? "#eeeeef" : '#252525' 
+    const bgColor = theme === "bright" ? "#eeeeef" : '#252525'
 
     mode = mode || "FRU"
     let facesToReveal = faces || [Face.L, Face.B, Face.D]
@@ -144,7 +147,7 @@ const redraw_cube = function (cube: FaceletCubeT, config: ConfigT ) {
     const cameraState = config.cameraState || CameraState.HOME
     const [cameraPositionRaw, cameraUp] = getCameraPosFromState(cameraState)
     const cameraPosition = (mode === "FRU") ?
-        new THREE.Vector3(cameraPositionRaw[0] * scale, 
+        new THREE.Vector3(cameraPositionRaw[0] * scale,
                           cameraPositionRaw[1] * scale,
                           cameraPositionRaw[2] * scale) :
         new THREE.Vector3(0 / 1.1, 3 / 1.1, 3 / 1.1)
@@ -156,6 +159,8 @@ const redraw_cube = function (cube: FaceletCubeT, config: ConfigT ) {
     camera.lookAt(new THREE.Vector3(0, 0, 0))
 
     let stickers_tmpl: THREE.Mesh[], stickerwrap_tmpl: THREE.Mesh
+    let obscured_stickers_tmpl: THREE.Group[]
+    let greyMaterial: THREE.MeshBasicMaterial
 
     const geos : THREE.BufferGeometry[] = []; // new THREE.PlaneGeometry(0.89 * mag * 2, 0.89 * mag * 2)
     const geo_border = new THREE.PlaneGeometry(2.0, 2.0)//1.0 * mag * 2, 1.0 * mag * 2)
@@ -170,6 +175,17 @@ const redraw_cube = function (cube: FaceletCubeT, config: ConfigT ) {
     const sticker_scale = 0.88
     const corner_radius = 0.4
     const hint_scale = 0.95
+
+    // Get fill scale based on sticker width setting
+    const getFillScale = (widthSetting?: string) => {
+        switch (widthSetting) {
+            case "Thin": return 0.96
+            case "Medium": return 0.92
+            case "Thick": return 0.88
+            default: return 0.92 // Default to Medium
+        }
+    }
+    const fill_scale = getFillScale(config.obscureStickerWidth)
     const rounded_patterns = [
         [0, 0, 0, 1],
         [0, 0, 1, 1],
@@ -201,14 +217,42 @@ const redraw_cube = function (cube: FaceletCubeT, config: ConfigT ) {
             })
         }).flat()
 
+        // Create obscured stickers with grey fill and colored border
+        greyMaterial = new THREE.MeshBasicMaterial({ color: colorScheme[6], side: THREE.DoubleSide, alphaTest: alpha })
+
+        obscured_stickers_tmpl = materials.map((mat, colorIndex) => {
+            return rounded_patterns.map(pattern => {
+                // Create a group for the obscured sticker
+                const group = new THREE.Group()
+
+                // Grey fill (slightly smaller and behind)
+                let fillGeo = roundedFace(pattern, corner_radius)
+                geos.push(fillGeo)
+                let fillMesh = new THREE.Mesh(fillGeo, greyMaterial)
+                fillMesh.scale.set(sticker_scale * fill_scale, sticker_scale * fill_scale, sticker_scale * fill_scale)
+                fillMesh.setRotationFromEuler(axesInfo[0][1])
+                fillMesh.position.y = 0.01 // Small offset to prevent z-fighting
+                group.add(fillMesh)
+
+                // Colored border (original size)
+                let borderGeo = roundedFace(pattern, corner_radius)
+                geos.push(borderGeo)
+                let borderMesh = new THREE.Mesh(borderGeo, mat)
+                borderMesh.scale.set(sticker_scale, sticker_scale, sticker_scale)
+                borderMesh.setRotationFromEuler(axesInfo[0][1])
+                group.add(borderMesh)
+
+                return group
+            })
+        }).flat()
+
+
+
         let hint_mesh = Array(7).fill(0).map((_, i) => {
-            let color = (theme === "bright") 
+            let color = (theme === "bright")
                 ? chroma.mix(colorScheme[i], 'white', 0.18).hex()
-               :  chroma.mix(colorScheme[i], 'black', 0.35).hex()
- 
-               // 
-            //chroma.default(colorScheme[i]).brighten(0.7).hex()
-                  //desaturate(2).hex() //darken(0.5).hex()
+                : chroma.mix(colorScheme[i], 'black', 0.35).hex()
+
             let mat = new THREE.MeshBasicMaterial({ color, side: THREE.DoubleSide });
 
             let geo = roundedFace([1,1,1,1], corner_radius)
@@ -217,6 +261,31 @@ const redraw_cube = function (cube: FaceletCubeT, config: ConfigT ) {
             mesh.scale.set(hint_scale, hint_scale, hint_scale)
             mesh.setRotationFromEuler(axesInfo[0][1])
             return mesh
+        })
+
+        // Create obscured hint stickers with grey fill and colored border
+        let obscured_hint_mesh = Array(7).fill(0).map((_, i) => {
+            // Create a group for the obscured hint sticker
+            const group = new THREE.Group()
+
+            // Grey fill (slightly smaller)
+            let fillGeo = roundedFace([1,1,1,1], corner_radius)
+            geos.push(fillGeo)
+            let fillMesh = new THREE.Mesh(fillGeo, hint_mesh[6].material)
+            fillMesh.scale.set(hint_scale * fill_scale, hint_scale * fill_scale, hint_scale * fill_scale)
+            fillMesh.setRotationFromEuler(axesInfo[0][1])
+            fillMesh.position.y = -0.01 // Small offset to prevent z-fighting
+            group.add(fillMesh)
+
+            // Colored border (original size)
+            let borderGeo = roundedFace([1,1,1,1], corner_radius)
+            geos.push(borderGeo)
+            let borderMesh = new THREE.Mesh(borderGeo, hint_mesh[i].material)
+            borderMesh.scale.set(hint_scale, hint_scale, hint_scale)
+            borderMesh.setRotationFromEuler(axesInfo[0][1])
+            group.add(borderMesh)
+
+            return group
         })
 
 
@@ -229,8 +298,16 @@ const redraw_cube = function (cube: FaceletCubeT, config: ConfigT ) {
             for (let z = -1; z <= 1; z++) {
                 for (let x = -1; x <= 1; x++) {
                     let idx = (z + 1) * 3 + (x + 1)
+                    let colorIndex = faces[i][idx]
+                    let isLRColor = colorIndex === Face.L || colorIndex === Face.R
+                    let isCorner = (x === -1 || x === 1) && (z === -1 || z === 1)
+                    let shouldObscure = config.obscureNonLR && !isLRColor
+                    let shouldMaskCorner = config.obscureCornerMask && isCorner && !isLRColor
 
-                    const curr_tmpl = stickers_tmpl[faces[i][idx] * 9 + idx]
+                    // If corner masking is on, replace non-LR corner colors with grey
+                    let effectiveColorIndex = shouldMaskCorner ? 6 : colorIndex
+
+                    const curr_tmpl = (shouldObscure && !shouldMaskCorner) ? obscured_stickers_tmpl[colorIndex * 9 + idx] : stickers_tmpl[effectiveColorIndex * 9 + idx]
                     const sticker = curr_tmpl.clone()
                     const stickerwrap = stickerwrap_tmpl.clone()
 
@@ -239,7 +316,11 @@ const redraw_cube = function (cube: FaceletCubeT, config: ConfigT ) {
                     stickerwrap.position.copy(new THREE.Vector3(x * 2, 3 - eps, z * 2))
 
                     if (facesToReveal.indexOf(i) > -1) { // (i === 5 && mode === "UF")) {
-                        const stickerhint = hint_mesh[faces[i][idx]].clone()
+                        let isLRColor = colorIndex === Face.L || colorIndex === Face.R
+                        let shouldObscureHint = config.obscureNonLR && !isLRColor
+                        const stickerhint = (shouldObscureHint && !shouldMaskCorner) ?
+                            obscured_hint_mesh[faces[i][idx]].clone() :
+                            hint_mesh[effectiveColorIndex].clone()
                         stickerhint.position.copy(new THREE.Vector3(x * 2, 3 + hintDistance, z * 2))
                         cubie.add(stickerhint)
                     }
@@ -285,6 +366,7 @@ const redraw_cube = function (cube: FaceletCubeT, config: ConfigT ) {
         geos.forEach(g => g.dispose())
         materials_border.dispose()
         geo_border.dispose()
+        greyMaterial.dispose()
         scene.remove(cubeG)
         cancelAnimationFrame(frameID)
     }
@@ -311,7 +393,8 @@ let drawCube = (function(){
         else if (config.width === config_cache.width && config.height === config_cache.height &&
             arrayEqual(config.faces || [], config_cache.faces || []) && config.theme === config_cache.theme &&
             config.hintDistance === config_cache.hintDistance && config.enableControl === config_cache.enableControl
-            && config.cameraState === config_cache.cameraState) {
+            && config.cameraState === config_cache.cameraState && config.obscureNonLR === config_cache.obscureNonLR
+            && config.obscureStickerWidth === config_cache.obscureStickerWidth && config.obscureCornerMask === config_cache.obscureCornerMask) {
 
             painter?.updateCubeAndColor(cube, config.colorScheme)
             config_cache = config
@@ -337,15 +420,16 @@ type Painter = {
 function CubeSim(props: Config) {
     const mount = React.useRef<HTMLDivElement | null>(null)
     const [cameraState, setCameraState] = React.useState<CameraState>(CameraState.HOME);
-    let { width, height, colorScheme, facesToReveal, hintDistance, theme} = props
+    let { width, height, colorScheme, facesToReveal, hintDistance, theme, obscureNonLR, obscureStickerWidth, obscureCornerMask} = props
     let cubePainter = React.useMemo(drawCube, [])
+    // obscureNonLR defaults to false for non-SS modes, true only for SS mode when enabled
 
     const gt_xs = useMediaQuery(useTheme().breakpoints.up('sm'));
     const enableControl = gt_xs
 
     let painter = cubePainter(props.cube, {
             width, height, colorScheme, faces: facesToReveal, theme, hintDistance, enableControl,
-            cameraState})
+            cameraState, obscureNonLR: obscureNonLR, obscureStickerWidth: obscureStickerWidth, obscureCornerMask: obscureCornerMask})
 
     useEffect( () => {
         let dom = window //painter.getRenderer().domElement

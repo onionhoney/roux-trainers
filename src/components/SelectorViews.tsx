@@ -295,14 +295,14 @@ function MultiSelect(props: {state: AppState, dispatch: React.Dispatch<Action>, 
 
   if (options.noDialog)
   return (
-    <FormControl component="fieldset" className={classes.select}>
+    <FormControl component="fieldset" className={`${classes.select} multi-select`}>
       <FormLabel component="legend"className={classes.selectLabel} >{label}</FormLabel>
       {content}
     </FormControl>
   )
 
   return (
-  <Box>
+  <Box className="multi-select">
     <FormLabel component="legend">{label}</FormLabel>
     <Box height={8}/>
     <Button color="primary" variant="outlined" style={{borderWidth: 2}} onClick={handleClickOpen}>

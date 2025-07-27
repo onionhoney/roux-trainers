@@ -55,11 +55,11 @@ export function ColorPanel(props: {state: AppState, dispatch: React.Dispatch<Act
       setOpen(true);
     };
     const handleClose = (e: any, reason: string) => {
-      if (reason === "backdropClick") 
+      if (reason === "backdropClick")
         setOpen(false);
     }
     return (
-        <div>
+        <div className="color-panel">
         <FormLabel component="legend">Orientation and Color Scheme</FormLabel>
         <Box height={8}/>
         <Button color="primary" variant="outlined" style={{borderWidth: 2}} onClick={handleClickOpen}>

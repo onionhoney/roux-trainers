@@ -57,6 +57,9 @@ export type Config = {
     lseEOLRMCSelector: Selector;
     lseBarbieSelector: Selector;
     lseEOLRScrambleSelector: Selector;
+    obscureNonLRSelector: Selector;
+    obscureStickerWidthSelector: Selector;
+    obscureCornerMaskSelector: Selector;
 };
 
 const cmll_alg_names = cmll_algs_raw.map(x => x[0])
@@ -361,6 +364,24 @@ export const initialConfig : Config = (() => {
             names: ["Short", "Random State"],
             flags: [0, 1],
             kind: "lse-eolr-scramble"
+        }),
+        obscureNonLRSelector: new Selector({
+            label: "Obscure Non-L/R",
+            names: ["Off", "On"],
+            flags: [1, 0],
+            kind: "obscure-non-lr"
+        }),
+        obscureStickerWidthSelector: new Selector({
+            label: "Obscured Sticker Width",
+            names: ["Thin", "Medium", "Thick"],
+            flags: [0, 1, 0],
+            kind: "obscure-sticker-width"
+        }),
+        obscureCornerMaskSelector: new Selector({
+            label: "Full Corner Masking",
+            names: ["Off", "On"],
+            flags: [1, 0],
+            kind: "obscure-corner-mask"
         }),
         ...initialLevels
     }

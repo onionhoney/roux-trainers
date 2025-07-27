@@ -27,7 +27,7 @@ const useStyles = makeStyles(theme => ({
     container: {
         paddingTop: theme.spacing(0),
         paddingBottom: theme.spacing(2),
-        backgroundColor: theme.palette.background.default, 
+        backgroundColor: theme.palette.background.default,
         transition: "all .5s ease-in-out"
     },
     paper: {
@@ -54,7 +54,7 @@ const useStyles = makeStyles(theme => ({
     fgap: {
         flexShrink: 100, flexBasis: "2.5rem", minWidth: "1.5em",
         [theme.breakpoints.down('sm')]: {
-          flexBasis: "1.0rem", 
+          flexBasis: "1.0rem",
           minWidth: "0.4rem"
         }
     }
@@ -297,7 +297,7 @@ function TrackerView(props: { state: AppState, dispatch: React.Dispatch<Action> 
       </Paper>
       <Paper className={classes.paper} >
 
-        <Box style={{display: "flex", alignItems: "center", flexGrow: 1}}> 
+        <Box style={{display: "flex", alignItems: "center", flexGrow: 1}}>
 
         <Box style={{padding: 10}} display="flex" flexWrap="wrap" flexDirection="row">
         <Box className={classes.select}>

@@ -78,7 +78,7 @@ const useStyles = makeStyles(theme => ({
     fgap: {
       flexShrink: 100, flexBasis: "2.5rem", minWidth: "1.5em",
       [theme.breakpoints.down('sm')]: {
-        flexBasis: "1.0rem", 
+        flexBasis: "1.0rem",
         minWidth: "0.4rem"
       }
     },
@@ -107,6 +107,18 @@ const useStyles = makeStyles(theme => ({
     prompt: {
       color: theme.palette.text.secondary,
     },
+    configPanel: {
+      display: 'flex',
+      flexWrap: 'wrap',
+      columnGap: theme.spacing(2),
+      rowGap: 0,
+      '& .color-panel': {
+        flexBasis: '100%',
+      },
+      '& .multi-select': {
+        flexBasis: '100%',
+      },
+    },
   }))
 
 
@@ -130,8 +142,8 @@ function getMask(state: AppState) : Mask {
       let dpair = state.config.ssPairOnlySelector.getActiveName() === "D-Pair only"
 
       switch (name) {
-        case "Front SS": return dpair ? Mask.ssdp_front_mask : Mask.ss_front_mask; 
-        case "Back SS": return dpair ? Mask.ssdp_back_mask : Mask.ss_back_mask; 
+        case "Front SS": return dpair ? Mask.ssdp_front_mask : Mask.ss_front_mask;
+        case "Back SS": return dpair ? Mask.ssdp_back_mask : Mask.ss_back_mask;
         default : return dpair ? Mask.ssdp_both_mask : Mask.f2b_mask
       }
     }
@@ -255,7 +267,7 @@ function BlockTrainerView(props: { state: AppState, dispatch: React.Dispatch<Act
     let levelSelectionWarning = "We weren't able to generate your level within time limit. You can try again -- some levels are reachable within a few tries."
     let levelSelectionSuccess = state.cube.levelSuccess
 
-    const scramblePanel = 
+    const scramblePanel =
           <Box style={{display: "flex", flexWrap: "wrap", padding: 0}}>
             <ScrambleInputView display = {setup}
                 dispatch={dispatch} scrambles={state.scrambleInput}/>
@@ -268,10 +280,10 @@ function BlockTrainerView(props: { state: AppState, dispatch: React.Dispatch<Act
                   size="small"
                   name="fav"
                   onClick={handleFav}
-                  startIcon={<FavoriteIcon/>} 
+                  startIcon={<FavoriteIcon/>}
                   >
                   {favSelected ? "✓" : ADD_STR}
-              </Button> 
+              </Button>
               :
               null
               // <Button variant={favSelected ? "contained" : "outlined"}
@@ -295,7 +307,7 @@ function BlockTrainerView(props: { state: AppState, dispatch: React.Dispatch<Act
           <Box style={{display: "flex", flexDirection: "column", alignItems: "center"}}>
             <Box className={classes.title} style={{}}>
               Scramble
-            </Box> 
+            </Box>
           </Box>
           <Box style={{}} className={classes.fgap} />
           <Box style={{display: "flex", alignItems: "center", flexGrow: 1}}>
@@ -306,8 +318,8 @@ function BlockTrainerView(props: { state: AppState, dispatch: React.Dispatch<Act
           <Box style={{}} className={classes.fgap} />
 
           {gt_sm && scramblePanel}
-          
-          
+
+
         </Box>
       </Paper>
 
@@ -345,6 +357,9 @@ function BlockTrainerView(props: { state: AppState, dispatch: React.Dispatch<Act
               hintDistance={ (state.mode === "4c" || state.mode === "eopair") ? 3 : 7 }
               theme={state.config.theme.getActiveName()}
               facesToReveal={ [Face.L, Face.B, Face.D]  }
+              obscureNonLR={state.mode === "ss" && state.config.obscureNonLRSelector.getActiveName() === "On"}
+              obscureStickerWidth={state.mode === "ss" ? state.config.obscureStickerWidthSelector.getActiveName() : undefined}
+              obscureCornerMask={state.mode === "ss" && state.config.obscureCornerMaskSelector.getActiveName() === "On"}
             /> : null }
           </Box>
         </Grid>
@@ -355,8 +370,8 @@ function BlockTrainerView(props: { state: AppState, dispatch: React.Dispatch<Act
 
       <Grid container spacing={1}>
         <Grid item xs={5} sm={4} md={3} marginLeft={1}>
-          <Button onFocus={(evt) => evt.target.blur() } className={classes.button} 
-            size="large" variant="contained" color="primary" 
+          <Button onFocus={(evt) => evt.target.blur() } className={classes.button}
+            size="large" variant="contained" color="primary"
             onClick={handleSpace} sx={{borderRadius: 0}}>
               {spaceButtonText}
           </Button>
@@ -368,7 +383,7 @@ function BlockTrainerView(props: { state: AppState, dispatch: React.Dispatch<Act
               <IconButton>
                 <ErrorOutlineIcon sx={{ fontSize: 30 }}/>
               </IconButton>
-            </CustomTooltip> 
+            </CustomTooltip>
           </Grid> :
           null
         }
@@ -382,7 +397,9 @@ function BlockTrainerView(props: { state: AppState, dispatch: React.Dispatch<Act
       <Divider/>
       <Box height={20}/>
 
-      <ConfigPanelGroup {...{state, dispatch} } />
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <ConfigPanelGroup {...{state, dispatch, classes} } />
+      </Box>
 
       {helperText ?
       <Fragment>
@@ -405,8 +422,8 @@ function BlockTrainerView(props: { state: AppState, dispatch: React.Dispatch<Act
 
 
 
-function ConfigPanelGroup(props: {state: AppState, dispatch: React.Dispatch<Action> }) {
-  let { state, dispatch } = props
+function ConfigPanelGroup(props: {state: AppState, dispatch: React.Dispatch<Action>, classes: any }) {
+  let { state, dispatch, classes } = props
   if (state.mode === "ss") {
     let DRManip = [
       // names: ["UF", "FU", "UL", "LU", "UB", "BU", "UR", "RU", "DF", "FD", "DB", "BD",
@@ -416,17 +433,30 @@ function ConfigPanelGroup(props: {state: AppState, dispatch: React.Dispatch<Acti
     ]
     return (
       <Fragment>
-      <SliderSelect {...{state, dispatch, select: "ssLevelSelector"}} /> 
+      <SliderSelect {...{state, dispatch, select: "ssLevelSelector"}} />
 
-      <SingleSelect {...{state, dispatch, select: "ssSelector"}}> </SingleSelect>
-      <SingleSelect {...{state, dispatch, select: "ssPairOnlySelector"}}> </SingleSelect>
-      <SingleSelect {...{state, dispatch, select: "solutionNumSelector"}}> </SingleSelect>
-      {/* <SingleSelect {...{state, dispatch, select: "evaluator"}}> </SingleSelect> */}
-      
-      <SingleSelect {...{state, dispatch, select: "moveCountHint"}}> </SingleSelect>
-      <SingleSelect {...{state, dispatch, select: "showCube"}}> </SingleSelect>
-      <MultiSelect {...{state, dispatch, select: "ssPosSelector", options: {manipulators: DRManip} }}> </MultiSelect>
-      <ColorPanel {...{state, dispatch}} />
+      <Box className={classes.configPanel}>
+        <SingleSelect {...{state, dispatch, select: "ssSelector"}}> </SingleSelect>
+        <SingleSelect {...{state, dispatch, select: "ssPairOnlySelector"}}> </SingleSelect>
+        <SingleSelect {...{state, dispatch, select: "solutionNumSelector"}}> </SingleSelect>
+        {/* <SingleSelect {...{state, dispatch, select: "evaluator"}}> </SingleSelect> */}
+
+        <SingleSelect {...{state, dispatch, select: "moveCountHint"}}> </SingleSelect>
+        <SingleSelect {...{state, dispatch, select: "showCube"}}> </SingleSelect>
+
+        <Box>
+          <SingleSelect {...{state, dispatch, select: "obscureNonLRSelector"}}> </SingleSelect>
+          {state.config.obscureNonLRSelector.getActiveName() === "On" &&
+            <SingleSelect {...{state, dispatch, select: "obscureStickerWidthSelector"}}> </SingleSelect>
+          }
+          {state.config.obscureNonLRSelector.getActiveName() === "On" &&
+            <SingleSelect {...{state, dispatch, select: "obscureCornerMaskSelector"}}> </SingleSelect>
+          }
+        </Box>
+
+        <MultiSelect {...{state, dispatch, select: "ssPosSelector", options: {manipulators: DRManip} }}> </MultiSelect>
+        <ColorPanel {...{state, dispatch}} />
+      </Box>
 
       </Fragment>
     )
@@ -445,38 +475,41 @@ function ConfigPanelGroup(props: {state: AppState, dispatch: React.Dispatch<Acti
 
     return (
       <Fragment>
-      <SliderSelect {...{state, dispatch, select: "fbdrLevelSelector"}} /> 
+      <SliderSelect {...{state, dispatch, select: "fbdrLevelSelector"}} />
 
-      <SingleSelect {...{state, dispatch, select: select2}}> </SingleSelect>
-      <SingleSelect {...{state, dispatch, select: select1}}> </SingleSelect>
-      <SingleSelect {...{state, dispatch, select: select3}}> </SingleSelect>
-      <SingleSelect {...{state, dispatch, select: select4}}> </SingleSelect>
-      <SingleSelect {...{state, dispatch, select: select5}}> </SingleSelect>
-      {/* <SingleSelect {...{state, dispatch, select: "evaluator"}}> </SingleSelect> */}
-      <SingleSelect {...{state, dispatch, select: "moveCountHint"}}> </SingleSelect>
-      <SingleSelect {...{state, dispatch, select: "showCube"}}> </SingleSelect>
+      <Box className={classes.configPanel}>
+        <SingleSelect {...{state, dispatch, select: select2}}> </SingleSelect>
+        <SingleSelect {...{state, dispatch, select: select1}}> </SingleSelect>
+        <SingleSelect {...{state, dispatch, select: select3}}> </SingleSelect>
+        <SingleSelect {...{state, dispatch, select: select4}}> </SingleSelect>
+        <SingleSelect {...{state, dispatch, select: select5}}> </SingleSelect>
+        {/* <SingleSelect {...{state, dispatch, select: "evaluator"}}> </SingleSelect> */}
+        <SingleSelect {...{state, dispatch, select: "moveCountHint"}}> </SingleSelect>
+        <SingleSelect {...{state, dispatch, select: "showCube"}}> </SingleSelect>
 
-      <MultiSelect {...{state, dispatch, select: pos1, options: {manipulators: LPEdgeManip} }}> </MultiSelect>
-      <MultiSelect {...{state, dispatch, select: pos3, options: {manipulators: LPEdgeManip} }}> </MultiSelect>
-      <ColorPanel {...{state, dispatch}} />
+        <MultiSelect {...{state, dispatch, select: pos1, options: {manipulators: LPEdgeManip} }}> </MultiSelect>
+        <MultiSelect {...{state, dispatch, select: pos3, options: {manipulators: LPEdgeManip} }}> </MultiSelect>
+        <ColorPanel {...{state, dispatch}} />
+      </Box>
 
       </Fragment>
     )
   } else if (state.mode === "fb") {
     return (
       <Fragment>
-        <SliderSelect {...{state, dispatch, select: "fbLevelSelector"}} /> 
+        <SliderSelect {...{state, dispatch, select: "fbLevelSelector"}} />
         {/* <SingleSelect {...{state, dispatch, select: "fbStratSelector"}} />  */}
 
-        <SingleSelect {...{ state, dispatch, select: "fbPieceSolvedSelector" }}> </SingleSelect>
-        {/* <SingleSelect {...{state, dispatch, select: "fbBasisSelector"}} />  */}
-        <SingleSelect {...{ state, dispatch, select: "solutionNumSelector"}}> </SingleSelect>
-      {/* <SingleSelect {...{state, dispatch, select: "evaluator"}}> </SingleSelect> */}
-        <SingleSelect {...{state, dispatch, select: "moveCountHint"}}> </SingleSelect>
-        <SingleSelect {...{state, dispatch, select: "showCube"}}> </SingleSelect>
+        <Box className={classes.configPanel}>
+          <SingleSelect {...{ state, dispatch, select: "fbPieceSolvedSelector" }}> </SingleSelect>
+          {/* <SingleSelect {...{state, dispatch, select: "fbBasisSelector"}} />  */}
+          <SingleSelect {...{ state, dispatch, select: "solutionNumSelector"}}> </SingleSelect>
+        {/* <SingleSelect {...{state, dispatch, select: "evaluator"}}> </SingleSelect> */}
+          <SingleSelect {...{state, dispatch, select: "moveCountHint"}}> </SingleSelect>
+          <SingleSelect {...{state, dispatch, select: "showCube"}}> </SingleSelect>
 
-        <ColorPanel {...{state, dispatch}} />
-
+          <ColorPanel {...{state, dispatch}} />
+        </Box>
 
       </Fragment>
     )
@@ -486,16 +519,17 @@ function ConfigPanelGroup(props: {state: AppState, dispatch: React.Dispatch<Acti
 
     return (
       <Fragment>
-        <SliderSelect {...{state, dispatch, select: "fsLevelSelector"}} /> 
+        <SliderSelect {...{state, dispatch, select: "fsLevelSelector"}} />
 
-        <SingleSelect {...{ state, dispatch, select: select1 }}> </SingleSelect>
-        <SingleSelect {...{ state, dispatch, select: select2 }}> </SingleSelect>
-        {/* <SingleSelect {...{state, dispatch, select: "evaluator"}}> </SingleSelect> */}
-        <SingleSelect {...{state, dispatch, select: "moveCountHint"}}> </SingleSelect>
-        <SingleSelect {...{state, dispatch, select: "showCube" }}> </SingleSelect>
+        <Box className={classes.configPanel}>
+          <SingleSelect {...{ state, dispatch, select: select1 }}> </SingleSelect>
+          <SingleSelect {...{ state, dispatch, select: select2 }}> </SingleSelect>
+          {/* <SingleSelect {...{state, dispatch, select: "evaluator"}}> </SingleSelect> */}
+          <SingleSelect {...{state, dispatch, select: "moveCountHint"}}> </SingleSelect>
+          <SingleSelect {...{state, dispatch, select: "showCube" }}> </SingleSelect>
 
-        <ColorPanel {...{state, dispatch}} />
-
+          <ColorPanel {...{state, dispatch}} />
+        </Box>
 
       </Fragment>
     )
@@ -505,20 +539,21 @@ function ConfigPanelGroup(props: {state: AppState, dispatch: React.Dispatch<Acti
 
     return (
       <Fragment>
-        <SliderSelect {...{state, dispatch, select: "fsLevelSelector"}} /> 
+        <SliderSelect {...{state, dispatch, select: "fsLevelSelector"}} />
 
-        <SingleSelect {...{ state, dispatch, select: select1 }}> </SingleSelect>
-        <SingleSelect {...{ state, dispatch, select: select2 }}> </SingleSelect>
-        {/* <SingleSelect {...{state, dispatch, select: "evaluator"}}> </SingleSelect> */}
-        <SingleSelect {...{state, dispatch, select: "moveCountHint"}}> </SingleSelect>
-        <SingleSelect {...{state, dispatch, select: "showCube" }}> </SingleSelect>
+        <Box className={classes.configPanel}>
+          <SingleSelect {...{ state, dispatch, select: select1 }}> </SingleSelect>
+          <SingleSelect {...{ state, dispatch, select: select2 }}> </SingleSelect>
+          {/* <SingleSelect {...{state, dispatch, select: "evaluator"}}> </SingleSelect> */}
+          <SingleSelect {...{state, dispatch, select: "moveCountHint"}}> </SingleSelect>
+          <SingleSelect {...{state, dispatch, select: "showCube" }}> </SingleSelect>
 
-        <ColorPanel {...{state, dispatch}} />
-
+          <ColorPanel {...{state, dispatch}} />
+        </Box>
 
       </Fragment>
     )
-   }  
+   }
    else if (state.mode === "fbss") {
     let select1 = "fbssLpSelector"
     let select2 = "fbssSsSelector"
@@ -526,14 +561,15 @@ function ConfigPanelGroup(props: {state: AppState, dispatch: React.Dispatch<Acti
 
     return (
       <Fragment>
-        <SliderSelect {...{state, dispatch, select: "fbssLevelSelector"}} /> 
-        <SingleSelect {...{ state, dispatch, select: select1 }}> </SingleSelect>
-        <SingleSelect {...{ state, dispatch, select: select2 }}> </SingleSelect>
-        <SingleSelect {...{ state, dispatch, select: select3 }}> </SingleSelect>
-        {/* <SingleSelect {...{state, dispatch, select: "evaluator"}}> </SingleSelect> */}
-        <SingleSelect {...{state, dispatch, select: "moveCountHint"}}> </SingleSelect>
-        <ColorPanel {...{state, dispatch}} />
-
+        <SliderSelect {...{state, dispatch, select: "fbssLevelSelector"}} />
+        <Box className={classes.configPanel}>
+          <SingleSelect {...{ state, dispatch, select: select1 }}> </SingleSelect>
+          <SingleSelect {...{ state, dispatch, select: select2 }}> </SingleSelect>
+          <SingleSelect {...{ state, dispatch, select: select3 }}> </SingleSelect>
+          {/* <SingleSelect {...{state, dispatch, select: "evaluator"}}> </SingleSelect> */}
+          <SingleSelect {...{state, dispatch, select: "moveCountHint"}}> </SingleSelect>
+          <ColorPanel {...{state, dispatch}} />
+        </Box>
 
       </Fragment>
     )
@@ -546,15 +582,17 @@ function ConfigPanelGroup(props: {state: AppState, dispatch: React.Dispatch<Acti
 
     return (
       <Fragment>
-        <SingleSelect {...{ state, dispatch, select: select1 }}> </SingleSelect>
-        <SingleSelect {...{ state, dispatch, select: select2 }}> </SingleSelect>
-        <SingleSelect {...{ state, dispatch, select: select3 }}> </SingleSelect>
-        <SingleSelect {...{ state, dispatch, select: select4 }}> </SingleSelect>
-        {/* <SingleSelect {...{state, dispatch, select: "evaluator"}}> </SingleSelect> */}
-        <SingleSelect {...{state, dispatch, select: "moveCountHint"}}> </SingleSelect>
-        <SingleSelect {...{state, dispatch, select: "showCube"}}> </SingleSelect>
+        <Box className={classes.configPanel}>
+          <SingleSelect {...{ state, dispatch, select: select1 }}> </SingleSelect>
+          <SingleSelect {...{ state, dispatch, select: select2 }}> </SingleSelect>
+          <SingleSelect {...{ state, dispatch, select: select3 }}> </SingleSelect>
+          <SingleSelect {...{ state, dispatch, select: select4 }}> </SingleSelect>
+          {/* <SingleSelect {...{state, dispatch, select: "evaluator"}}> </SingleSelect> */}
+          <SingleSelect {...{state, dispatch, select: "moveCountHint"}}> </SingleSelect>
+          <SingleSelect {...{state, dispatch, select: "showCube"}}> </SingleSelect>
 
-        <ColorPanel {...{state, dispatch}} />
+          <ColorPanel {...{state, dispatch}} />
+        </Box>
       </Fragment>
     )
    } else if (state.mode === "eopair"){
@@ -566,16 +604,18 @@ function ConfigPanelGroup(props: {state: AppState, dispatch: React.Dispatch<Acti
 
     return (
       <Fragment>
-        <MultiSelect {...{ state, dispatch, select: select1, options: {noDialog: true}} }> </MultiSelect>
-        <SingleSelect {...{ state, dispatch, select: select2 }}> </SingleSelect>
-        <SingleSelect {...{ state, dispatch, select: select3 }}> </SingleSelect>
-        <SingleSelect {...{ state, dispatch, select: select4 }}> </SingleSelect>
-        <SingleSelect {...{ state, dispatch, select: select5 }}> </SingleSelect>
-        {/* <SingleSelect {...{state, dispatch, select: "evaluator"}}> </SingleSelect> */}
-        <SingleSelect {...{state, dispatch, select: "moveCountHint"}}> </SingleSelect>
-        <SingleSelect {...{state, dispatch, select: "showCube"}}> </SingleSelect>
+        <Box className={classes.configPanel}>
+          <MultiSelect {...{ state, dispatch, select: select1, options: {noDialog: true}} }> </MultiSelect>
+          <SingleSelect {...{ state, dispatch, select: select2 }}> </SingleSelect>
+          <SingleSelect {...{ state, dispatch, select: select3 }}> </SingleSelect>
+          <SingleSelect {...{ state, dispatch, select: select4 }}> </SingleSelect>
+          <SingleSelect {...{ state, dispatch, select: select5 }}> </SingleSelect>
+          {/* <SingleSelect {...{state, dispatch, select: "evaluator"}}> </SingleSelect> */}
+          <SingleSelect {...{state, dispatch, select: "moveCountHint"}}> </SingleSelect>
+          <SingleSelect {...{state, dispatch, select: "showCube"}}> </SingleSelect>
 
-        <ColorPanel {...{state, dispatch}} />
+          <ColorPanel {...{state, dispatch}} />
+        </Box>
       </Fragment>
     )
    }
