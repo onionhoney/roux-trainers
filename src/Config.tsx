@@ -32,6 +32,7 @@ export type Config = {
     hyperOriSelector: Selector;
     ollcpCaseSelector: Selector;
     orientationSelector: Selector;
+    handednessSelector: Selector;
     fbdrSelector: Selector;
     fsSelector: Selector;
     fbdrPosSelector1: Selector;
@@ -78,6 +79,12 @@ Explanation:
 These modes apply different constraints on your FB state.
 [Hard] means there's no free pair AND no edges attached to the L center.
 [Hard over x2y] means it's hard for all FBs over the x2y orientations. To see solutions, paste them into the FB analyzer.`
+
+const handednessAnnotation = `
+Explanation:
+Left-handed Roux is the mirror image of regular Roux: the first block is built at DR
+instead of DL, and the second block at DL. Scrambles, solutions and the virtual cube
+are all mirrored accordingly.`
 
 const initialLevels = {
     fbdrLevelSelector: ({
@@ -195,6 +202,13 @@ export const initialConfig : Config = (() => {
             names: ollcp_alg_names,
             flags: Array(ollcp_alg_names.length).fill(1),
             kind: "ollcp_case"
+        }),
+        handednessSelector: new Selector({
+            label: "Handedness",
+            names: ["Right-handed", "Left-handed"],
+            flags: [1, 0],
+            kind: "handedness",
+            annotation: handednessAnnotation
         }),
         orientationSelector: new Selector({
             label: "Color Scheme (U-F)",

@@ -16,6 +16,7 @@ import IconButton from '@mui/material/IconButton';
 
 
 import { FaceletCube, Mask, MoveSeq } from '../lib/CubeLib';
+import { isLeftHanded, mirrorAlg, mirrorMask } from '../lib/Handedness';
 
 import { AppState,  Action, FavCase, Mode} from "../Types";
 import 'typeface-roboto-mono';
@@ -183,12 +184,20 @@ function getHelperTextForMode(mode: Mode) {
 
 function BlockTrainerView(props: { state: AppState, dispatch: React.Dispatch<Action> } ) {
     let { state, dispatch } = props
-    let cube = state.cube.state
     let classes = useStyles()
 
-    let facelet = FaceletCube.from_cubie(cube, getMask(state))
+    const lefty = isLeftHanded(state.mode, state.config)
+    let cube = lefty ? state.cube.state.mirror() : state.cube.state
 
-    let desc : CaseDesc[] = state.case.desc.length ? state.case.desc :
+    let facelet = FaceletCube.from_cubie(cube, lefty ? mirrorMask(getMask(state)) : getMask(state))
+
+    let caseDesc : CaseDesc[] = lefty ? state.case.desc.map(d => ({
+        ...d,
+        algs: d.algs.map(mirrorAlg),
+        setup: d.setup === undefined ? undefined : mirrorAlg(d.setup)
+    })) : state.case.desc
+
+    let desc : CaseDesc[] = caseDesc.length ? caseDesc :
        [ { algs: [""], setup:"Press next for new case", id: "", kind: ""} ]
 
     let spaceButtonText = (state.name === "hiding") ? "Reveal" : "Next"
@@ -246,7 +255,7 @@ function BlockTrainerView(props: { state: AppState, dispatch: React.Dispatch<Act
       const case_ : FavCase = {
         mode: state.mode,
         solver: state.case.desc.map(x => x.kind),
-        setup: setup || ""
+        setup: state.case.desc[0].setup || ""
       }
       if (!favSelected){
         setFav(true)
@@ -455,6 +464,7 @@ function ConfigPanelGroup(props: {state: AppState, dispatch: React.Dispatch<Acti
         </Box>
 
         <MultiSelect {...{state, dispatch, select: "ssPosSelector", options: {manipulators: DRManip} }}> </MultiSelect>
+        <SingleSelect {...{state, dispatch, select: "handednessSelector"}}> </SingleSelect>
         <ColorPanel {...{state, dispatch}} />
       </Box>
 
@@ -489,6 +499,7 @@ function ConfigPanelGroup(props: {state: AppState, dispatch: React.Dispatch<Acti
 
         <MultiSelect {...{state, dispatch, select: pos1, options: {manipulators: LPEdgeManip} }}> </MultiSelect>
         <MultiSelect {...{state, dispatch, select: pos3, options: {manipulators: LPEdgeManip} }}> </MultiSelect>
+        <SingleSelect {...{state, dispatch, select: "handednessSelector"}}> </SingleSelect>
         <ColorPanel {...{state, dispatch}} />
       </Box>
 
@@ -508,6 +519,7 @@ function ConfigPanelGroup(props: {state: AppState, dispatch: React.Dispatch<Acti
           <SingleSelect {...{state, dispatch, select: "moveCountHint"}}> </SingleSelect>
           <SingleSelect {...{state, dispatch, select: "showCube"}}> </SingleSelect>
 
+          <SingleSelect {...{state, dispatch, select: "handednessSelector"}}> </SingleSelect>
           <ColorPanel {...{state, dispatch}} />
         </Box>
 
@@ -528,6 +540,7 @@ function ConfigPanelGroup(props: {state: AppState, dispatch: React.Dispatch<Acti
           <SingleSelect {...{state, dispatch, select: "moveCountHint"}}> </SingleSelect>
           <SingleSelect {...{state, dispatch, select: "showCube" }}> </SingleSelect>
 
+          <SingleSelect {...{state, dispatch, select: "handednessSelector"}}> </SingleSelect>
           <ColorPanel {...{state, dispatch}} />
         </Box>
 
@@ -548,6 +561,7 @@ function ConfigPanelGroup(props: {state: AppState, dispatch: React.Dispatch<Acti
           <SingleSelect {...{state, dispatch, select: "moveCountHint"}}> </SingleSelect>
           <SingleSelect {...{state, dispatch, select: "showCube" }}> </SingleSelect>
 
+          <SingleSelect {...{state, dispatch, select: "handednessSelector"}}> </SingleSelect>
           <ColorPanel {...{state, dispatch}} />
         </Box>
 
@@ -568,6 +582,7 @@ function ConfigPanelGroup(props: {state: AppState, dispatch: React.Dispatch<Acti
           <SingleSelect {...{ state, dispatch, select: select3 }}> </SingleSelect>
           {/* <SingleSelect {...{state, dispatch, select: "evaluator"}}> </SingleSelect> */}
           <SingleSelect {...{state, dispatch, select: "moveCountHint"}}> </SingleSelect>
+          <SingleSelect {...{state, dispatch, select: "handednessSelector"}}> </SingleSelect>
           <ColorPanel {...{state, dispatch}} />
         </Box>
 

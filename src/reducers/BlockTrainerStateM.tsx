@@ -7,6 +7,7 @@ import { CachedSolver } from "../lib/CachedSolver";
 import { rand_choice, arrayEqual } from '../lib/Math';
 import { AbstractStateM, StateFactory } from "./AbstractStateM";
 import { Config } from "../Config";
+import { isLeftHanded, mirrorScramble } from "../lib/Handedness";
 
 type RandomCubeT = {
     cube: CubieCube,
@@ -173,7 +174,9 @@ export abstract class BlockTrainerStateM extends AbstractStateM {
         let {cube, solvers: solverNames, ssolver: scrambleSolver, failed} = this.getRandom();
         let inputScramble : string | undefined = undefined
         if (this.state.scrambleInput.length > 0) {
-            inputScramble = this.state.scrambleInput[0]
+            inputScramble = isLeftHanded(this.state.mode, this.state.config)
+                ? mirrorScramble(this.state.scrambleInput[0])
+                : this.state.scrambleInput[0]
             cube = new CubieCube().apply(inputScramble)
         }
         let state = this._solve(cube, solverNames, {

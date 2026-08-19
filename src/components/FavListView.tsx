@@ -16,6 +16,7 @@ import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import AddIcon from '@mui/icons-material/Add';
 import { AppState, Action, FavCase } from '../Types';
 import { all_solvers } from '../lib/CachedSolver';
+import { isLeftHanded, mirrorScramble } from '../lib/Handedness';
 
 
 const useStyles = makeStyles(theme => ({
@@ -38,7 +39,10 @@ function parseAddString(state: AppState, s : string) : [ FavCase[], boolean] {
     let cols = line.split(',')
     if (cols.length !== 2) continue
     let solver = cols[0].trim().split("|")
-    let setup = cols[1].trim()
+    // favorites are stored right-handed; a left-handed user types left-handed setups
+    let setup = isLeftHanded(state.mode, state.config)
+      ? mirrorScramble(cols[1].trim())
+      : cols[1].trim()
 
     if (solver.every(x => allSolvers.has(x))) {
       let case_ : FavCase = {
@@ -57,6 +61,8 @@ export default function FavListView(props: { state: AppState, dispatch: React.Di
   const {state, dispatch} = props
   const classes = useStyles();
   const favList = state.favList.filter(c => c.mode === state.mode)
+  const lefty = isLeftHanded(state.mode, state.config)
+  const displaySetup = (setup: string) => lefty ? mirrorScramble(setup) : setup
 
   const play = (i: number) => {
     dispatch({ type: "favList", content: [ favList[i] ], action: "replay" })
@@ -153,7 +159,7 @@ export default function FavListView(props: { state: AppState, dispatch: React.Di
                   {/* padding=checkbox <Checkbox></Checkbox> */}
 
                 <TableCell align="center">
-                { value.solver.join("|") + "," + value.setup }
+                { value.solver.join("|") + "," + displaySetup(value.setup) }
                 </TableCell>
                 <TableCell align="center">
                   <IconButton onFocus={(e: { target: { blur: () => void; }; }) => e.target.blur() } onClick={() => play(i)}

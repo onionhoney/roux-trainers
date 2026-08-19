@@ -8,6 +8,14 @@ const C_MOD = 3;
 const E_MOD = 2;
 const T_MOD = 1;
 
+// M-plane reflection: piece index i maps to mirror_*_map[i].
+// corners: UFL<->URF, ULB<->UBR, DLF<->DFR, DBL<->DRB
+const mirror_cp_map = [3, 2, 1, 0, 7, 6, 5, 4]
+// edges: UL<->UR, DL<->DR, FL<->FR, BL<->BR
+const mirror_ep_map = [0, 3, 2, 1, 4, 7, 6, 5, 11, 10, 9, 8]
+// centers: L<->R
+const mirror_tp_map = [0, 1, 2, 3, 5, 4]
+
 export class CubieCube {
     cp: number[] = [];
     co: number[] = [];
@@ -263,6 +271,26 @@ export class CubieCube {
         return perm_correct && ori_correct
     }
 
+    // Reflection through the M plane (swaps the L and R halves of the cube).
+    // Used to turn a right-handed Roux case into its left-handed counterpart.
+    mirror() : CubieCube {
+        let cp = Array(8).fill(0), co = Array(8).fill(0)
+        let ep = Array(12).fill(0), eo = Array(12).fill(0)
+        let tp = Array(6).fill(0)
+        for (let i = 0; i < 8; i++) {
+            cp[mirror_cp_map[i]] = mirror_cp_map[this.cp[i]]
+            co[mirror_cp_map[i]] = (C_MOD - this.co[i]) % C_MOD
+        }
+        for (let i = 0; i < 12; i++) {
+            ep[mirror_ep_map[i]] = mirror_ep_map[this.ep[i]]
+            eo[mirror_ep_map[i]] = this.eo[i]
+        }
+        for (let i = 0; i < 6; i++) {
+            tp[mirror_tp_map[i]] = mirror_tp_map[this.tp[i]]
+        }
+        return new CubieCube({cp, co, ep, eo, tp})
+    }
+
     changeBasis(s: MoveSeq) {
         // only take x and y for now
         let facelet_mapping = this._to_facelet_mapping(corners_coord, edges_coord, centers_coord)
@@ -389,6 +417,23 @@ export class Move {
         return moves_dict
     }
     static all: {[key: string]: Move} = Move.generate_base_moves();
+
+    // Name of this move reflected through the M plane.
+    // Reflecting reverses the turn direction, except around the L-R axis, where the
+    // reflection also flips the axis so the spatial direction survives 
+    static mirror_name(name: string) : string {
+        if (name === "id" || name.length === 0) return name
+        if (name[0] === "M" || name[0] === "x") return name
+        const swap : {[key: string]: string} = { "R": "L", "L": "R", "r": "l", "l": "r" }
+        const face = swap[name[0]] || name[0]
+        const suffix = name.slice(1)
+        const mirrored_suffix = (suffix === "'") ? "" : (suffix === "2") ? "2" : "'"
+        return face + mirrored_suffix
+    }
+
+    mirror(): Move {
+        return Move.all[Move.mirror_name(this.name)]
+    }
 
     inv(): Move {
         let name: string
@@ -527,6 +572,10 @@ export class MoveSeq {
     inv() {
         let moves: Move[] = this.moves.slice(0).reverse().map(x => x.inv()).flat()
         return new MoveSeq(moves)
+    }
+
+    mirror() {
+        return new MoveSeq(this.moves.map(x => x.mirror()))
     }
 
     slice(n: number) {
@@ -772,6 +821,23 @@ function mask_copy (m: Mask) {
         cp: [...m.cp],
         ep: [...m.ep]
     }
+}
+
+function mask_mirror (m: Mask) : Mask {
+    const permute = (arr: number[] | undefined, map: number[]) =>
+        arr && map.map((_, i) => arr[map.indexOf(i)])
+    return {
+        co: permute(m.co, mirror_cp_map),
+        eo: permute(m.eo, mirror_ep_map),
+        tp: permute(m.tp, mirror_tp_map),
+        cp: permute(m.cp, mirror_cp_map)!,
+        ep: permute(m.ep, mirror_ep_map)!
+    }
+}
+
+function mirror_alg_string (s: string) : string {
+    return s.replace(/[A-Za-z][2']?/g, (token) =>
+        Move.all[token] ? Move.mirror_name(token) : token)
 }
 
 const lse_mask: Mask = {
@@ -1182,7 +1248,8 @@ export class ColorScheme extends Storage {
 let Mask = {
     lse_mask, fs_back_mask, fs_front_mask, fbdr_mask, fb_mask, f2b_mask, sb_mask, cmll_mask, ss_front_mask, ss_back_mask,
     ssdp_front_mask, ssdp_back_mask, ssdp_both_mask, empty_mask, dl_solved_mask, bl_solved_mask, solved_mask, zhouheng_mask, lse_4c_mask,
-    copy: mask_copy
+    copy: mask_copy,
+    mirror: mask_mirror
 }
 
-export { FaceletCube, CubeUtil, Mask }
+export { FaceletCube, CubeUtil, Mask, mirror_alg_string }
